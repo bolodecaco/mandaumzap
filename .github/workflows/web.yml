@@ -31,7 +31,7 @@ jobs:
     - name: Run ESLint
       run: |
         cd web
-        npm run lintn
+        npm run lint
 
     # 5. Tentar buildar a aplicação
     - name: Build application
