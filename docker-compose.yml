@@ -32,7 +32,28 @@ services:
       - '8081:8081'
     volumes:
       - ./data:/data/mongo-db
+      
+  postgres:
+    image: postgres:13
+    restart: always
+    container_name: postgres
+    environment:
+      PGUSER: postgres
+      POSTGRES_DB: test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - postgres-network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   mongo-compose-network:
+    driver: bridge
+  postgres-network:
     driver: bridge
