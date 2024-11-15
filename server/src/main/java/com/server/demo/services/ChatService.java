@@ -43,12 +43,12 @@ public class ChatService {
     }
 
     public ChatDTO createChat(Chat chat) {
-        Chat curretnChat = chatRepository.save(chat);
+        Chat currentChat = chatRepository.save(chat);
         return new ChatDTO(
-                curretnChat.getId(),
-                curretnChat.getChatId(),
-                curretnChat.getChatName(),
-                curretnChat.getOwner().getId()
+                currentChat.getId(),
+                currentChat.getChatId(),
+                currentChat.getChatName(),
+                currentChat.getOwner().getId()
         );
     }
 
