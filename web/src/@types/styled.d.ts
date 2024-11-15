@@ -1,8 +1,8 @@
 import { THEME } from '@/lib/styled/theme'
 import 'styled-components'
 
-type CustomTheme = typeof THEME
-
 declare module 'styled-components' {
-  export type DefaultTheme = CustomTheme
+  type Theme = typeof THEME
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  export interface DefaultTheme extends Theme {}
 }
