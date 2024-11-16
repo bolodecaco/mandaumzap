@@ -1,5 +1,6 @@
 package com.server.demo.models;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.server.demo.enums.PlanType;
@@ -11,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -35,4 +37,7 @@ public class Plan {
     @Enumerated(EnumType.STRING) 
     @Column(nullable = false)
     private PlanType type;
+
+    @OneToMany(mappedBy = "plan")
+    private List<User> users;
 }

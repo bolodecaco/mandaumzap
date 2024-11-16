@@ -33,7 +33,8 @@ public class UserController {
                 user.getId(),
                 user.getName(),
                 user.getPhone(),
-                user.getAvatar()
+                user.getAvatar(),
+                user.getPlan()
         ))
                 .collect(Collectors.toList());
     }
