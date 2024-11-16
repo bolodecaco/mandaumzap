@@ -1,18 +1,17 @@
 'use client'
 
+import { ElementType } from 'react'
 import { Title, Wrapper } from './styles'
 
-const planTitles = {
-  free: 'Plano Gratuito',
-  premium: 'Plano Premium',
-}
-
 export interface PlanBadgeProps {
-  type: keyof typeof planTitles
+  title: string
+  variant: 'free' | 'premium'
+  icon?: ElementType
 }
 
-export const PlanBadge = ({ type }: PlanBadgeProps) => (
-  <Wrapper type={type}>
-    <Title type={type}>{planTitles[type]}</Title>
+export const PlanBadge = ({ title, variant, icon: Icon }: PlanBadgeProps) => (
+  <Wrapper variant={variant}>
+    {Icon && <Icon size={16} />}
+    <Title variant={variant}>{title}</Title>
   </Wrapper>
 )

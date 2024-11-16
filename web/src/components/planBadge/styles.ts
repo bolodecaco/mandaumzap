@@ -1,17 +1,14 @@
 import { styled } from 'styled-components'
 import { PlanBadgeProps } from '.'
 
-export const Wrapper = styled.div<{ type: PlanBadgeProps['type'] }>`
-  background-color: ${({ theme, type }) =>
-    type === 'free'
-      ? theme.variants.plan.free['background-color']
-      : theme.variants.plan.premium['background-color']};
+export const Wrapper = styled.div<{ variant: PlanBadgeProps['variant'] }>`
+  ${({ theme, variant }) => {
+    const styles = theme.variants.plan[variant]
+    return { ...styles }
+  }}
+
   border-radius: 1rem;
-  border: 1px solid
-    ${({ theme, type }) =>
-      type === 'free'
-        ? theme.variants.plan.free['border-color']
-        : theme.variants.plan.premium['border-color']};
+  border: 1px solid;
   padding: 0.25rem 0.5rem;
   display: flex;
   align-items: center;
@@ -20,12 +17,12 @@ export const Wrapper = styled.div<{ type: PlanBadgeProps['type'] }>`
   gap: 0.25rem;
 `
 
-export const Title = styled.h3<{ type: PlanBadgeProps['type'] }>`
-  color: ${({ theme, type }) => {
-    return type === 'free'
-      ? theme.variants.plan.free.color
-      : theme.variants.plan.premium.color
-  }};
-  font-size: 1rem;
-  font-weight: 600;
+export const Title = styled.p<{ variant: PlanBadgeProps['variant'] }>`
+  ${({ theme, variant }) => {
+    const styles = theme.variants.plan[variant]
+    return styles.color
+  }}
+
+  font-size: 0.875rem;
+  font-weight: 500;
 `
