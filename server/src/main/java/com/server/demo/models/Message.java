@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.annotation.CreatedDate;
+
 import java.util.Date;
 
 
@@ -28,15 +32,18 @@ public class Message {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
+    @Value("${timesSent:1}")
     private int timesSent;
 
-    @Column(name = "first_sent_at", nullable = false)
+    @Column(name = "first_sent_at", nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
+    @CreatedDate
     private Date firstSentAt;
 
     @Column(name = "last_sent_at")
     @Temporal(TemporalType.TIMESTAMP)
+    @CreatedDate
     private Date lastSentAt;
 
 }
