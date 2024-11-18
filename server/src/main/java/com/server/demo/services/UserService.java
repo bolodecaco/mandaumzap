@@ -31,22 +31,21 @@ public class UserService {
                                 user.getName(),
                                 user.getPhone(),
                                 user.getAvatar(),
-                                user.getPlan()
+                                user.getPlan().getType()
                         )
                 ).collect(Collectors.toList());
     }
 
     public UserDTO getUserById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        return new UserDTO(user.getId(), user.getName(), user.getPhone(), user.getAvatar(), user.getPlan());
+        return new UserDTO(user.getId(), user.getName(), user.getPhone(), user.getAvatar(), user.getPlan().getType());
     }
 
     public UserDTO createUser(User user) {
         Plan freePlan = planRepository.findByType(PlanType.FREE).orElseThrow(() -> new RuntimeException("Plan not found"));
         user.setPlan(freePlan);
         User currentUser = userRepository.save(user);
-
-        return new UserDTO(currentUser.getId(), currentUser.getName(), currentUser.getPhone(), currentUser.getAvatar(), user.getPlan());
+        return new UserDTO(currentUser.getId(), currentUser.getName(), currentUser.getPhone(), currentUser.getAvatar(), currentUser.getPlan().getType());
     }
 
     public UserDTO updateUser(UUID id, User userDetails) {
@@ -70,7 +69,7 @@ public class UserService {
             user.setPlan(userDetails.getPlan());
         }
         User updatedUser = userRepository.save(user);
-        return new UserDTO(updatedUser.getId(), updatedUser.getName(), updatedUser.getPhone(), updatedUser.getAvatar(), updatedUser.getPlan());
+        return new UserDTO(updatedUser.getId(), updatedUser.getName(), updatedUser.getPhone(), updatedUser.getAvatar(), updatedUser.getPlan().getType());
     }
 
     public void deleteUser(UUID id) {

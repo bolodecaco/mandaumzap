@@ -2,7 +2,7 @@ package com.server.demo.dtos;
 
 import java.util.UUID;
 
-import com.server.demo.models.Plan;
+import com.server.demo.enums.PlanType;
 
 import lombok.Data;
 
@@ -13,9 +13,9 @@ public class UserDTO {
     private String name;
     private String phone;
     private String avatar;
-    private Plan plan;
+    private PlanType plan;
 
-    public UserDTO(UUID id, String name, String phone, String avatar, Plan plan) {
+    public UserDTO(UUID id, String name, String phone, String avatar, PlanType plan) {
         this.id = id;
         this.name = name;
         this.phone = phone;
