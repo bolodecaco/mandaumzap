@@ -62,14 +62,14 @@ public class NotificationService {
         return notificationMapper.toDTO(notification);
     }
 
-    public List<NotificationDTO> getUnreadNotifications() {
-        return notificationRepository.findByReadFalse().stream()
+    public List<NotificationDTO> getUnreadNotifications(UUID receiverId) {
+        return notificationRepository.findNotificationsReadFalseByReceiverId(receiverId).stream()
                 .map(notificationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public void sendNotification(UUID receiverId) {
-        List<NotificationDTO> notificationsDTOs = this.getUnreadNotifications();
+        List<NotificationDTO> notificationsDTOs = this.getUnreadNotifications(receiverId);
         try {
             notificationHandler.sendMessage(receiverId, notificationsDTOs);
         } catch (Exception e) {

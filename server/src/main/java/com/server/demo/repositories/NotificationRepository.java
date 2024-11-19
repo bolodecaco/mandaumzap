@@ -12,6 +12,6 @@ import com.server.demo.models.Notification;
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
     List<Notification> findByReceiverId(UUID id);
-    List<Notification> findByReadFalse();
+    List<Notification> findNotificationsReadFalseByReceiverId(UUID receiverId);
 
 }
