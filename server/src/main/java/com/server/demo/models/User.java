@@ -39,7 +39,7 @@ public class User {
     @Column(nullable = true)
     private String avatar;
 
-    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications;
 
     @ManyToOne

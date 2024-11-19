@@ -8,47 +8,72 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.NotificationDTO;
+import com.server.demo.handlers.NotificationHandler;
+import com.server.demo.mappers.NotificationMapper;
 import com.server.demo.models.Notification;
 import com.server.demo.repositories.NotificationRepository;
 
 @Service
 public class NotificationService {
-    
+
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private NotificationMapper notificationMapper;
+
+    @Autowired
+    private NotificationHandler notificationHandler;
+
     public List<NotificationDTO> getAllNotifications() {
         return notificationRepository.findAll().stream()
-                .map(
-                        notification -> new NotificationDTO(
-                                notification.getId(),
-                                notification.getContent(),
-                                notification.isRead(),
-                                notification.getType()
-                        )
-                ).collect(Collectors.toList());
+                .map(notificationMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public NotificationDTO getNotificationById(UUID id) {
-        Notification notification = notificationRepository.findById(id).orElseThrow(() -> new RuntimeException("Notification not found"));
-        return new NotificationDTO(notification.getId(), notification.getContent(), notification.isRead(), notification.getType());
+    public List<NotificationDTO> getNotificationByReceiverId(UUID receiverId) {
+        return notificationRepository.findByReceiverId(receiverId).stream()
+                .map(notificationMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public NotificationDTO createNotification(Notification notification) {
-        Notification currentNotification = notificationRepository.save(notification);
-        return new NotificationDTO(currentNotification.getId(), currentNotification.getContent(), currentNotification.isRead(), currentNotification.getType());
+    public void createNotification(Notification notification) {
+        UUID receiverId = notification.getReceiver().getId();
+        notificationRepository.save(notification);
+        this.sendNotification(receiverId);
     }
 
     public NotificationDTO updateRead(UUID id, boolean read) {
-        Notification notification = notificationRepository.findById(id).orElseThrow(() -> new RuntimeException("Notification not found"));
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        UUID receiverId = notification.getReceiver().getId();
         notification.setRead(read);
         Notification updatedNotification = notificationRepository.save(notification);
-        return new NotificationDTO(updatedNotification.getId(), updatedNotification.getContent(), updatedNotification.isRead(), updatedNotification.getType());
+        this.sendNotification(receiverId);
+        return notificationMapper.toDTO(updatedNotification);
     }
 
     public NotificationDTO deleteNotification(UUID id) {
-        Notification notification = notificationRepository.findById(id).orElseThrow(() -> new RuntimeException("Notification not found"));
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        UUID receiverId = notification.getReceiver().getId();
         notificationRepository.delete(notification);
-        return new NotificationDTO(notification.getId(), notification.getContent(), notification.isRead(), notification.getType());
+        this.sendNotification(receiverId);
+        return notificationMapper.toDTO(notification);
+    }
+
+    public List<NotificationDTO> getUnreadNotifications() {
+        return notificationRepository.findByReadFalse().stream()
+                .map(notificationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public void sendNotification(UUID receiverId) {
+        List<NotificationDTO> notificationsDTOs = this.getUnreadNotifications();
+        try {
+            notificationHandler.sendMessage(receiverId, notificationsDTOs);
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar notificação: " + e.getMessage());
+        }
     }
 }
