@@ -16,6 +16,6 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     List<Notification> findByReceiverId(UUID id);
 
     @Query("SELECT n FROM Notification n WHERE n.receiver.id = :receiverId AND n.read = false")
-    List<Notification> findNotificationsReadFalseByReceiverId(@Param("receiverId") UUID receiverId);
+    List<Notification> findUnreadNotificationsByReceiverId(@Param("receiverId") UUID receiverId);
 
 }
