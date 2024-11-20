@@ -16,7 +16,7 @@ import lombok.Data;
 @Entity
 @Table(name = "notifications")
 public class Notification {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -24,7 +24,7 @@ public class Notification {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    @Column(nullable = true, columnDefinition = "BOOLEAN DEFAULT false")
     private boolean read;
 
     @Column(nullable = false)
@@ -32,5 +32,5 @@ public class Notification {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User recipient;
+    private User receiver;
 }
