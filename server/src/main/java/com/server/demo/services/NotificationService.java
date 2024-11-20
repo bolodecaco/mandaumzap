@@ -74,7 +74,7 @@ public class NotificationService {
     }
 
     public List<NotificationDTO> getUnreadNotifications(UUID receiverId) {
-        return notificationRepository.findNotificationsReadFalseByReceiverId(receiverId).stream()
+        return notificationRepository.findUnreadNotificationsByReceiverId(receiverId).stream()
                 .map(notificationMapper::toDTO)
                 .collect(Collectors.toList());
     }
