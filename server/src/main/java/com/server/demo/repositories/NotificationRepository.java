@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.server.demo.models.Notification;
@@ -12,6 +14,8 @@ import com.server.demo.models.Notification;
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
     List<Notification> findByReceiverId(UUID id);
-    List<Notification> findNotificationsReadFalseByReceiverId(UUID receiverId);
+
+    @Query("SELECT n FROM Notification n WHERE n.receiver.id = :receiverId AND n.read = false")
+    List<Notification> findNotificationsReadFalseByReceiverId(@Param("receiverId") UUID receiverId);
 
 }

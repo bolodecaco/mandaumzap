@@ -1,28 +1,28 @@
 package com.server.demo.handlers;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.demo.dtos.NotificationDTO;
+import com.server.demo.events.ConnectionEstablishedEvent;
 
 @Component
 public class NotificationHandler extends TextWebSocketHandler {
 
-    List<WebSocketSession> webSocketSessions
-            = Collections.synchronizedList(new ArrayList<>());
     private final Map<UUID, WebSocketSession> sessionMap = Collections.synchronizedMap(new HashMap<>());
+
+    private final ApplicationEventPublisher eventPublisher;
+
+    public NotificationHandler(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -36,37 +36,21 @@ public class NotificationHandler extends TextWebSocketHandler {
                     UUID uuid = UUID.fromString(receiverId);
                     session.getAttributes().put("receiverId", receiverId);
                     sessionMap.put(uuid, session);
+
+                    eventPublisher.publishEvent(new ConnectionEstablishedEvent(this, uuid));
                     break;
                 }
             }
         }
-        webSocketSessions.add(session);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
         sessionMap.values().remove(session);
-        webSocketSessions.remove(session);
     }
 
-    @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-        super.handleMessage(session, message);
-        for (WebSocketSession webSocketSession : webSocketSessions) {
-            if (session == webSocketSession) {
-                continue;
-            }
-            webSocketSession.sendMessage(message);
-        }
-    }
-
-    public void sendMessage(UUID receiverId, List<NotificationDTO> notifications) throws Exception {
-        WebSocketSession session = sessionMap.get(receiverId);
-        if (session != null && session.isOpen()) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String notificationsJson = objectMapper.writeValueAsString(notifications);
-            session.sendMessage(new TextMessage(notificationsJson));
-        }
+    public WebSocketSession getSession(UUID receiverId) {
+        return sessionMap.get(receiverId);
     }
 }
