@@ -32,7 +32,7 @@ public class ChatController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ChatDTO> getChatById(@PathVariable UUID id) {
-        return ResponseEntity.ok(chatService.getChatById(id));
+        return ResponseEntity.ok(chatService.getChatDTOById(id));
     }
 
     @PostMapping

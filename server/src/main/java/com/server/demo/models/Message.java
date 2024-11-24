@@ -5,11 +5,9 @@ import lombok.Data;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.annotation.CreatedDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
-
 
 @Data
 @Entity
@@ -20,30 +18,50 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    // @ManyToOne
-    // @JoinColumn(name = "list_id")
-    // private List list;
-
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = true)
-    @Value("${timesSent:1}")
-    private int timesSent;
+    @ManyToOne
+    @JoinColumn(name = "broadcast_list_id", nullable = true)
+    private BroadcastList broadcastList;  
 
-    @Column(name = "first_sent_at", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "chat_id", nullable = true)
+    private Chat chatRecipient; 
+
+    @Column(name = "times_sent", nullable = false)
+    private int timesSent = 0;
+
     @Temporal(TemporalType.TIMESTAMP)
-    @CreatedDate
     private Date firstSentAt;
 
-    @Column(name = "last_sent_at")
     @Temporal(TemporalType.TIMESTAMP)
-    @CreatedDate
     private Date lastSentAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deletedAt; 
+
+    @PrePersist
+    protected void onCreate() {
+        if (firstSentAt == null) {
+            firstSentAt = new Date();
+        }
+        lastSentAt = firstSentAt;
+    }
+
+    public void softDelete() {
+        if (deletedAt == null) {
+            this.deletedAt = new Date(); 
+        }
+    }
+
+    @JsonIgnore
+    public boolean isDeleted() {
+        return deletedAt != null;
+}
 
 }

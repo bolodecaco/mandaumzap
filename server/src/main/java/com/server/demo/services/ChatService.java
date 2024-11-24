@@ -30,7 +30,7 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
-    public ChatDTO getChatById(UUID id) {
+    public ChatDTO getChatDTOById(UUID id) {
         Chat chat = chatRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Chat not found"));
 
@@ -40,6 +40,11 @@ public class ChatService {
                 chat.getChatName(),
                 chat.getOwner().getId()
         );
+    }
+
+    public Chat getChatById(UUID id) {
+        return chatRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Chat not found"));
     }
 
     public ChatDTO createChat(Chat chat) {
