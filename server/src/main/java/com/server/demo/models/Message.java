@@ -18,18 +18,18 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
-
     @Column(nullable = false)
     private String content;
-
-    @ManyToOne
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "broadcast_list_id", nullable = true)
     private BroadcastList broadcastList;  
-
-    @ManyToOne
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id", nullable = true)
     private Chat chatRecipient; 
 
@@ -49,13 +49,15 @@ public class Message {
     protected void onCreate() {
         if (firstSentAt == null) {
             firstSentAt = new Date();
+            lastSentAt = firstSentAt; 
         }
-        lastSentAt = firstSentAt;
     }
 
     public void softDelete() {
         if (deletedAt == null) {
             this.deletedAt = new Date(); 
+        } else {
+            throw new IllegalStateException("A mensagem já foi deletada.");
         }
     }
 
