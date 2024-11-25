@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.UUID;
-import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.Date;
 
 @Data
 @Entity
@@ -16,27 +18,52 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-
-    @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
-
-    // @ManyToOne
-    // @JoinColumn(name = "list_id")
-    // private List list;
-
     @Column(nullable = false)
     private String content;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "broadcast_list_id", nullable = true)
+    private BroadcastList broadcastList;  
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_id", nullable = true)
+    private Chat chatRecipient; 
 
-    @Column(nullable = false)
-    private int timesSent;
+    @Column(name = "times_sent", nullable = false)
+    private int timesSent = 0;
 
-    @Column(name = "first_sent_at", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date firstSentAt;
 
-    @Column(name = "last_sent_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSentAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deletedAt; 
+
+    @PrePersist
+    protected void onCreate() {
+        if (firstSentAt == null) {
+            firstSentAt = new Date();
+            lastSentAt = firstSentAt; 
+        }
+    }
+
+    public void softDelete() {
+        if (deletedAt == null) {
+            this.deletedAt = new Date(); 
+        } else {
+            throw new IllegalStateException("A mensagem já foi deletada.");
+        }
+    }
+
+    @JsonIgnore
+    public boolean isDeleted() {
+        return deletedAt != null;
+}
 
 }
