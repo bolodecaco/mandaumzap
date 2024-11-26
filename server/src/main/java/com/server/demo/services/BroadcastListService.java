@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.BroadcastListDTO;
+import com.server.demo.mappers.BroadcastListMapper;
 import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Chat;
 import com.server.demo.repositories.BroadcastListRepository;
@@ -22,43 +23,32 @@ public class BroadcastListService {
     @Autowired
     private ChatRepository chatRepository;
 
+    @Autowired
+    private BroadcastListMapper broadcastListMapper;
+
+    public List<BroadcastListDTO> findAllByUserId(UUID userId) {
+        List<BroadcastList> list = broadcastListRepository.findAllByUserId(userId);
+        return list.stream()
+                .map(broadcastListMapper::toDTO)
+                .toList();
+    }
+
     public List<BroadcastListDTO> getAllLists() {
         return broadcastListRepository.findAll().stream()
-                .map(
-                        chat -> new BroadcastListDTO(
-                                chat.getId(),
-                                chat.getOwner().getId(),
-                                chat.getChats(),
-                                chat.getTitle(),
-                                chat.getLastActiveAt(),
-                                chat.getMessagesSent()
-                        )
-                ).collect(Collectors.toList());
+                .map(broadcastListMapper::toDTO)
+                .collect(Collectors.toList());
+
     }
 
     public BroadcastListDTO getListById(UUID id) {
         BroadcastList list = broadcastListRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("BroadcastList not found"));
-        return new BroadcastListDTO(
-                list.getId(),
-                list.getOwner().getId(),
-                list.getChats(),
-                list.getTitle(),
-                list.getLastActiveAt(),
-                list.getMessagesSent()
-        );
+        return broadcastListMapper.toDTO(list);
     }
 
     public BroadcastListDTO createList(BroadcastList list) {
         BroadcastList currentList = broadcastListRepository.save(list);
-        return new BroadcastListDTO(
-                currentList.getId(),
-                currentList.getOwner().getId(),
-                currentList.getChats(),
-                currentList.getTitle(),
-                currentList.getLastActiveAt(),
-                currentList.getMessagesSent()
-        );
+        return broadcastListMapper.toDTO(currentList);
     }
 
     public BroadcastListDTO updateList(UUID id, BroadcastList listDetails) {
@@ -77,14 +67,7 @@ public class BroadcastListService {
             existingList.setChats(listDetails.getChats());
         }
         BroadcastList updatedList = broadcastListRepository.save(existingList);
-        return new BroadcastListDTO(
-                updatedList.getId(),
-                updatedList.getOwner().getId(),
-                updatedList.getChats(),
-                updatedList.getTitle(),
-                updatedList.getLastActiveAt(),
-                updatedList.getMessagesSent()
-        );
+        return broadcastListMapper.toDTO(updatedList);
     }
 
     public void deleteList(UUID id) {
