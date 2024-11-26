@@ -13,8 +13,8 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("APIs Envie.ai")
+                        .title("APIs Mandaumzap")
                         .version("1.0.0")
-                        .description("Aqui se encontra a documentação das APIs do projeto Envie.ai"));
+                        .description("Aqui se encontra a documentação das APIs do projeto mandaumzap"));
     }
 }
