@@ -13,7 +13,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Data;
 
 @Data
@@ -40,9 +43,20 @@ public class BroadcastList {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date lastActiveAt;
 
     @Column(nullable = false)
-    private Integer messagesSent;
+    private Integer messagesSent = 0;
+
+    public BroadcastList() {
+        this.messagesSent = 0;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (lastActiveAt == null) {
+            lastActiveAt = new Date();
+        }
+    }
 }
