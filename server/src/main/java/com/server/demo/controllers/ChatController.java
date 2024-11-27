@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.ChatDTO;
+import com.server.demo.dtos.RequestChatDTO;
 import com.server.demo.models.Chat;
 import com.server.demo.services.ChatService;
 
@@ -43,7 +44,7 @@ public class ChatController {
 
     @Operation(summary = "Cria um novo chat")
     @PostMapping
-    public ResponseEntity<ChatDTO> createChat(@RequestBody Chat chat) {
+    public ResponseEntity<ChatDTO> createChat(@RequestBody RequestChatDTO chat) {
         return ResponseEntity.ok(chatService.createChat(chat));
     }
 
