@@ -1,19 +1,20 @@
 package com.server.demo.services;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.mappers.MessageMapper;
 import com.server.demo.models.Chat;
 import com.server.demo.models.Message;
 import com.server.demo.repositories.MessageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.Date;
-import java.util.List;
 
 @Service
 public class MessageService {
@@ -40,7 +41,7 @@ public class MessageService {
             throw new IllegalArgumentException("Não é possível enviar uma mensagem que foi deletada.");
         }
 
-        Chat chatRecipient = chatService.getChatById(requestMessage.getChatRecipientId());
+        Chat chatRecipient = chatService.getChatById(requestMessage.getChatId());
         message.setChatRecipient(chatRecipient);
 
         message.setTimesSent(message.getTimesSent() + 1);
@@ -62,8 +63,9 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
 
-    public MessageDTO saveMessage(Message message) {
-        Message currentMessage = messageRepository.save(message);
+    public MessageDTO saveMessage(RequestMessageDTO message) {
+        Message currentMessage = messageMapper.toEntity(message);
+        messageRepository.save(currentMessage);
         return messageMapper.toDTO(currentMessage);
     }
 
