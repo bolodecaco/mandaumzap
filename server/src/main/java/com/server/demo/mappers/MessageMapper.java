@@ -18,4 +18,11 @@ public class MessageMapper {
             message.getChatRecipient() != null ? message.getChatRecipient().getId() : null 
         );
     }
+
+    public Message toEntity(MessageDTO dto) {
+        Message message = new Message();
+        message.setId(dto.getId());
+        message.setContent(dto.getContent());
+        return message;
+    }
 }
