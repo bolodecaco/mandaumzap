@@ -37,7 +37,11 @@ public class UserService {
 
     public UserDTO getUserById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        return new UserDTO(user.getId(), user.getName(), user.getPhone(), user.getAvatar(), user.getPlan().getType());
+        return userMapper.toDTO(user);
+    }
+
+    public User findById(UUID id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     public UserDTO createUser(RequestUserDTO requestedUser) {
@@ -45,14 +49,14 @@ public class UserService {
         Plan freePlan = planRepository.findByType(PlanType.FREE).orElseThrow(() -> new RuntimeException("Plan not found"));
         user.setPlan(freePlan);
         User currentUser = userRepository.save(user);
-        return new UserDTO(currentUser.getId(), currentUser.getName(), currentUser.getPhone(), currentUser.getAvatar(), currentUser.getPlan().getType());
+        return userMapper.toDTO(currentUser);
     }
 
     public UserDTO updateUser(UUID id, RequestUserDTO userDetails) {
         User updatedUser = userMapper.toEntity(userDetails);
         updatedUser.setId(id);
         updatedUser = userRepository.save(updatedUser);
-        return new UserDTO(updatedUser.getId(), updatedUser.getName(), updatedUser.getPhone(), updatedUser.getAvatar(), updatedUser.getPlan().getType());
+        return userMapper.toDTO(updatedUser);
     }
 
     public void deleteUser(UUID id) {

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.BroadcastListDTO;
+import com.server.demo.dtos.RequestBroadcastListDTO;
 import com.server.demo.mappers.BroadcastListMapper;
 import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Chat;
@@ -46,8 +47,9 @@ public class BroadcastListService {
         return broadcastListMapper.toDTO(list);
     }
 
-    public BroadcastListDTO createList(BroadcastList list) {
-        BroadcastList currentList = broadcastListRepository.save(list);
+    public BroadcastListDTO createList(RequestBroadcastListDTO list) {
+        BroadcastList currentList = broadcastListMapper.toEntity(list);
+        broadcastListRepository.save(currentList);
         return broadcastListMapper.toDTO(currentList);
     }
 
