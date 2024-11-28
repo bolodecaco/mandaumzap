@@ -11,6 +11,7 @@ import org.springframework.web.socket.TextMessage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.demo.dtos.NotificationDTO;
+import com.server.demo.dtos.RequestNotificationDTO;
 import com.server.demo.events.ConnectionEstablishedEvent;
 import com.server.demo.events.NotificationEvent;
 import com.server.demo.handlers.NotificationHandler;
@@ -51,9 +52,10 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
-    public void createNotification(Notification notification) {
-        notificationRepository.save(notification);
-        eventPublisher.publishEvent(new NotificationEvent(this, notification.getReceiver().getId()));
+    public void createNotification(RequestNotificationDTO notification) {
+        Notification newNotification = notificationMapper.toEntity(notification);
+        notificationRepository.save(newNotification);
+        eventPublisher.publishEvent(new NotificationEvent(this, newNotification.getReceiver().getId()));
     }
 
     public NotificationDTO updateRead(UUID id, boolean read) {
