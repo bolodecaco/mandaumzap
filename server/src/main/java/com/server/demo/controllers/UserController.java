@@ -31,7 +31,6 @@ public class UserController {
     private UserService userService;
 
     @Operation(summary = "Retorna todos os usuários")
-
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers().stream()
