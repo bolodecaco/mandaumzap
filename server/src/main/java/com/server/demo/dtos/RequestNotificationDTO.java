@@ -6,18 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "DTO para requisições dos chats")
-public class RequestChatDTO {
+@Schema(description = "DTO da requisição de notificação")
+public class RequestNotificationDTO {
 
-    @Schema(description = "Identificador do chat", example = "123e4567-e89b-12d3-a456-426614174000")
-    private String id;
+    @Schema(name = "content", description = "Título da notificação", example = "Notificação de teste")
+    private String content;
 
-    @Schema(description = "Nome do chat", example = "Meu Chat")
-    private String chatName;
-
-    @Schema(description = "Identificador do chat", example = "chat-123")
-    private String chatId;
-
+    @Schema(name = "type", description = "Descrição da notificação", example = "Essa é uma notificação de teste")
+    private String type;
     @Schema(description = "Dono do chat")
     private OwnerDTO owner;
 

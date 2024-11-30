@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.NotificationDTO;
+import com.server.demo.dtos.RequestNotificationDTO;
 import com.server.demo.dtos.UpdateNotificationReadDTO;
 import com.server.demo.models.Notification;
 import com.server.demo.services.NotificationService;
@@ -42,7 +43,7 @@ public class NotificationController {
 
     @Operation(summary = "Cria uma nova notificação")
     @PostMapping
-    public String createNotification(@RequestBody Notification notification) {
+    public String createNotification(@RequestBody RequestNotificationDTO notification) {
         notificationService.createNotification(notification);
         return "Notification created";
     }

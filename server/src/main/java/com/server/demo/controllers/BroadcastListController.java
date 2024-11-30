@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.BroadcastListDTO;
+import com.server.demo.dtos.RequestBroadcastListDTO;
 import com.server.demo.dtos.RequestChatDTO;
 import com.server.demo.models.BroadcastList;
 import com.server.demo.services.BroadcastListService;
@@ -44,7 +45,7 @@ public class BroadcastListController {
 
     @Operation(summary = "Cria uma nova lista de transmissão")
     @PostMapping
-    public ResponseEntity<BroadcastListDTO> createList(@RequestBody BroadcastList list) {
+    public ResponseEntity<BroadcastListDTO> createList(@RequestBody RequestBroadcastListDTO list) {
         return ResponseEntity.ok(listService.createList(list));
     }
 

@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.server.demo.dtos.RequestUserDTO;
 import com.server.demo.dtos.UserDTO;
-import com.server.demo.models.User;
 import com.server.demo.services.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,6 @@ public class UserController {
     private UserService userService;
 
     @Operation(summary = "Retorna todos os usuários")
-    
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers().stream()
@@ -44,26 +43,29 @@ public class UserController {
         ))
                 .collect(Collectors.toList());
     }
+
     @Operation(summary = "Retorna um usuário pelo ID")
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
     @Operation(summary = "Cria um novo usuário")
-    
+
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody User user) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody RequestUserDTO user) {
         return ResponseEntity.ok(userService.createUser(user));
     }
+
     @Operation(summary = "Atualiza um usuário")
-    
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable UUID id, @RequestBody User userDetails) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable UUID id, @RequestBody RequestUserDTO userDetails) {
         return ResponseEntity.ok(userService.updateUser(id, userDetails));
     }
+
     @Operation(summary = "Deleta um usuário")
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);

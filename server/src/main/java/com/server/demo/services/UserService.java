@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.server.demo.dtos.RequestUserDTO;
 import com.server.demo.dtos.UserDTO;
 import com.server.demo.enums.PlanType;
+import com.server.demo.mappers.UserMapper;
 import com.server.demo.models.Plan;
 import com.server.demo.models.User;
 import com.server.demo.repositories.PlanRepository;
@@ -23,53 +25,38 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserMapper userMapper;
+
     public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(
-                        user -> new UserDTO(
-                                user.getId(),
-                                user.getName(),
-                                user.getPhone(),
-                                user.getAvatar(),
-                                user.getPlan().getType()
-                        )
-                ).collect(Collectors.toList());
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public UserDTO getUserById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        return new UserDTO(user.getId(), user.getName(), user.getPhone(), user.getAvatar(), user.getPlan().getType());
+        return userMapper.toDTO(user);
     }
 
-    public UserDTO createUser(User user) {
+    public User findById(UUID id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public UserDTO createUser(RequestUserDTO requestedUser) {
+        User user = userMapper.toEntity(requestedUser);
         Plan freePlan = planRepository.findByType(PlanType.FREE).orElseThrow(() -> new RuntimeException("Plan not found"));
         user.setPlan(freePlan);
         User currentUser = userRepository.save(user);
-        return new UserDTO(currentUser.getId(), currentUser.getName(), currentUser.getPhone(), currentUser.getAvatar(), currentUser.getPlan().getType());
+        return userMapper.toDTO(currentUser);
     }
 
-    public UserDTO updateUser(UUID id, User userDetails) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        if (userDetails.getName() != null) {
-            user.setName(userDetails.getName());
-        }
-        if (userDetails.getPhone() != null) {
-            user.setPhone(userDetails.getPhone());
-        }
-        if (userDetails.getAvatar() != null) {
-            user.setAvatar(userDetails.getAvatar());
-        }
-        if (userDetails.getEmail() != null) {
-            user.setEmail(userDetails.getEmail());
-        }
-        if (userDetails.getPassword() != null) {
-            user.setPassword(userDetails.getPassword());
-        }
-        if (userDetails.getPlan() != null) {
-            user.setPlan(userDetails.getPlan());
-        }
-        User updatedUser = userRepository.save(user);
-        return new UserDTO(updatedUser.getId(), updatedUser.getName(), updatedUser.getPhone(), updatedUser.getAvatar(), updatedUser.getPlan().getType());
+    public UserDTO updateUser(UUID id, RequestUserDTO userDetails) {
+        User updatedUser = userMapper.toEntity(userDetails);
+        updatedUser.setId(id);
+        updatedUser = userRepository.save(updatedUser);
+        return userMapper.toDTO(updatedUser);
     }
 
     public void deleteUser(UUID id) {

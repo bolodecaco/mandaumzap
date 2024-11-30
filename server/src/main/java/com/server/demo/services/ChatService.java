@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.ChatDTO;
+import com.server.demo.dtos.RequestChatDTO;
+import com.server.demo.mappers.ChatMapper;
 import com.server.demo.models.Chat;
 import com.server.demo.repositories.ChatRepository;
 
@@ -17,29 +19,20 @@ public class ChatService {
     @Autowired
     private ChatRepository chatRepository;
 
+    @Autowired
+    private ChatMapper chatMapper;
+
     public List<ChatDTO> getAllChats() {
-        return chatRepository.findAll().stream()
-                .map(
-                        chat -> new ChatDTO(
-                                chat.getId(),
-                                chat.getChatId(),
-                                chat.getChatName(),
-                                chat.getOwner().getId()
-                        )
-                )
+        List<Chat> chats = chatRepository.findAll();
+        return chats.stream()
+                .map(chatMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
     public ChatDTO getChatDTOById(UUID id) {
         Chat chat = chatRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Chat not found"));
-
-        return new ChatDTO(
-                chat.getId(),
-                chat.getChatId(),
-                chat.getChatName(),
-                chat.getOwner().getId()
-        );
+        return chatMapper.toDTO(chat);
     }
 
     public Chat getChatById(UUID id) {
@@ -47,14 +40,9 @@ public class ChatService {
                 .orElseThrow(() -> new RuntimeException("Chat not found"));
     }
 
-    public ChatDTO createChat(Chat chat) {
-        Chat currentChat = chatRepository.save(chat);
-        return new ChatDTO(
-                currentChat.getId(),
-                currentChat.getChatId(),
-                currentChat.getChatName(),
-                currentChat.getOwner().getId()
-        );
+    public ChatDTO createChat(RequestChatDTO chat) {
+        Chat currentChat = chatMapper.toEntity(chat);
+        return chatMapper.toDTO(chatRepository.save(currentChat));
     }
 
     public ChatDTO updateChat(UUID id, Chat chatDetails) {
@@ -67,12 +55,7 @@ public class ChatService {
             existingChat.setChatName(chatDetails.getChatName());
         }
         Chat updatedChat = chatRepository.save(existingChat);
-        return new ChatDTO(
-                updatedChat.getId(),
-                updatedChat.getChatId(),
-                updatedChat.getChatName(),
-                updatedChat.getOwner().getId()
-        );
+        return chatMapper.toDTO(updatedChat);
     }
 
     public void deleteChat(UUID id) {
