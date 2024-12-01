@@ -1,5 +1,7 @@
 package com.server.demo.mappers;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,4 +38,14 @@ public class MessageMapper {
         message.setOwner(owner);
         return message;
     }
+
+
+    public RequestMessageDTO toRequestDTO(MessageDTO messageDTO) {
+        RequestMessageDTO requestMessageDTO = new RequestMessageDTO();
+        requestMessageDTO.setId(messageDTO.getId());
+        requestMessageDTO.setContent(messageDTO.getContent());
+        requestMessageDTO.setOwnerId(messageDTO.getOwnerId());
+        return requestMessageDTO;
+    }
+    
 }
