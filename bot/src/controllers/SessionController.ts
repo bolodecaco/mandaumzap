@@ -13,24 +13,23 @@ const sessionService = new SessionService();
  *     summary: Lista de sessões
  *     description: Retorna uma lista com os IDs das sessões ativas
  *     parameters:
- *        - in: query
- *          name: token
- *          schema:
+ *       - in: query
+ *         name: token
+ *         schema:
  *           type: string
  *           default: "token"
- *          required: true
- *          description: Token for authentication
+ *         required: true
+ *         description: Token for authentication
  *     responses:
  *       200:
  *         description: Sucesso
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Exemplo de resposta"
+ *               type: array
+ *               items:
+ *                 type: string
+ *                 example: "sessionId"
  */
 router.get("/sessions", (req, res): any => {
   const sessionsIds = Array.from(sessionService.getAll());
@@ -65,7 +64,9 @@ router.get("/sessions", (req, res): any => {
  *                 description: O ID único para a sessão a ser criada.
  *     responses:
  *       200:
- *         description: Sucesso
+ *         description: Sessão já existe e será inicializada
+ *       201:
+ *         description: Session criada com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -76,14 +77,16 @@ router.get("/sessions", (req, res): any => {
  *                   example: "https://example.com/qrcode.png"
  *                   description: URL do QR Code para a conexão.
  *       400:
- *         description: Requisição inválida
+ *         description: Requisição inválida, já existe uma sessão com o ID fornecido.
  */
 router.post("/sessions", async (req, res): Promise<any> => {
   const { sessionId } = req.body;
   if (sessionService.haveSession(sessionId))
-    return res.status(400).json("Session already exists");
+    return res.status(400).json("A sessão já existe");
   const qrcode = await sessionService.connectSession(sessionId);
-  return res.status(200).json({ qrcode });
+  return qrcode === ""
+    ? res.status(200).json("Iniciando sessão")
+    : res.status(201).json({ qrcode });
 });
 
 /**
@@ -131,14 +134,16 @@ router.post("/sessions", async (req, res): Promise<any> => {
  *           application/json:
  *             schema:
  *               type: string
- *               example: "Sending message"
+ *               example: "Enviando mensagem"
+ *       400:
+ *        description: Erro ao enviar a mensagem
  */
 router.post("/messages/send/text", async (req, res): Promise<any> => {
   const { sessionId, text, recipients } = req.body;
   const result = await sessionService.sendText({ recipients, text, sessionId });
   return result
-    ? res.status(200).json("Sending message")
-    : res.status(400).json("Error sending message");
+    ? res.status(200).json("Enviando mensagem")
+    : res.status(400).json("Erro ao enviar a mensagem");
 });
 
 export default router;
