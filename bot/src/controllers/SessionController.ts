@@ -42,7 +42,7 @@ router.get("/sessions", (req, res): any => {
  * /api/sessions:
  *   post:
  *     tags: [Session]
- *     summary: Cria uma nova sessão
+ *     summary: Cria ou inicializa uma sessão
  *     description: Cria uma nova sessão e retorna o QR Code para conexão.
  *     parameters:
  *       - in: query
@@ -61,7 +61,7 @@ router.get("/sessions", (req, res): any => {
  *             properties:
  *               sessionId:
  *                 type: string
- *                 example: "session_12345"
+ *                 example: "session"
  *                 description: O ID único para a sessão a ser criada.
  *     responses:
  *       200:
@@ -88,10 +88,10 @@ router.post("/sessions", async (req, res): Promise<any> => {
 
 /**
  * @swagger
- * /api/messages/send:
+ * /api/messages/send/text:
  *   post:
  *     tags: [Message]
- *     summary: Envia mensagens
+ *     summary: Envia mensagens de texto
  *     description: Envia uma mensagem de texto para os destinatários especificados usando uma sessão ativa.
  *     parameters:
  *       - in: query
@@ -110,7 +110,7 @@ router.post("/sessions", async (req, res): Promise<any> => {
  *             properties:
  *               sessionId:
  *                 type: string
- *                 example: "session_12345"
+ *                 example: "session"
  *                 description: O ID da sessão que será usada para enviar a mensagem.
  *               text:
  *                 type: string
@@ -120,7 +120,9 @@ router.post("/sessions", async (req, res): Promise<any> => {
  *                 type: array
  *                 items:
  *                   type: string
- *                   example: "+5511999999999"
+ *                 example:
+ *                   - "5511999999999@s.whatsapp.net"
+ *                   - "31636136171888171313@g.us"
  *                 description: Uma lista de números de telefone dos destinatários (no formato E.164).
  *     responses:
  *       200:
@@ -131,7 +133,7 @@ router.post("/sessions", async (req, res): Promise<any> => {
  *               type: string
  *               example: "Sending message"
  */
-router.post("/messages/send", async (req, res): Promise<any> => {
+router.post("/messages/send/text", async (req, res): Promise<any> => {
   const { sessionId, text, recipients } = req.body;
   const result = await sessionService.sendText({ recipients, text, sessionId });
   return result
