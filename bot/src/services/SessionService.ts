@@ -11,23 +11,35 @@ class SessionService {
     return SessionRepository.createSession(sessionId);
   }
 
-  async connectSession(session: Session): Promise<string> {
+  haveSession(sessionId: string): boolean {
+    return this.sessions.get(sessionId) ? true : false;
+  }
+
+  getAll() {
+    return Array.from(this.sessions.keys());
+  }
+
+  async connectSession(sessionId: string): Promise<string> {
+    const session = this.createSession(sessionId);
     const { qrcode, socket } = await session.connect();
     this.sessions.set(session.getId(), socket);
     return qrcode;
   }
 
-  async sendText({ to, text, sessionId }: MessageTextProps) {
+  async sendText({ recipients, text, sessionId }: MessageTextProps) {
     const socketClient = this.sessions.get(sessionId);
     if (!socketClient) {
-      throw new Error("Session not found");
+      return false;
     }
     try {
-      for (const chat of to) {
+      for (const chat of recipients) {
         await delay(getBetweenValue({ textLength: text.length }));
         await socketClient.sendMessage(chat, { text });
       }
-    } catch (error) {}
+    } catch (error) {
+      return false;
+    }
+    return true;
   }
 }
 

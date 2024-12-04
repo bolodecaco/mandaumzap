@@ -16,6 +16,10 @@ export const swaggerOptions = {
         name: "Session",
         description: "Endpoints to manage session information",
       },
+      {
+        name: "Message",
+        description: "Endpoints to manage messages",
+      },
     ],
   },
   apis: ["./src/controllers/*.ts"],

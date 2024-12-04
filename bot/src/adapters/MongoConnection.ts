@@ -8,7 +8,8 @@ import {
 import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 
-const { DB_URI = "mongodb://database:27017", DB_NAME } = process.env;
+const { DB_URI = "mongodb://admin:pass@localhost:27017", DB_NAME } =
+  process.env;
 
 class MongoConnection {
   sessionId: string;

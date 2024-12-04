@@ -1,5 +1,5 @@
 export interface MessageTextProps {
-  to: string[];
+  recipients: string[];
   text: string;
   sessionId: string;
 }

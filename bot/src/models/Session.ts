@@ -24,6 +24,7 @@ class Session {
       this.socketClient!.ev.on("connection.update", async (update) => {
         const { connection, qr } = update;
         if (connection === "open") {
+          console.log("Session connected");
           return resolve({ qrcode: "", socket: this.socketClient! });
         }
         if (connection === "close") {
