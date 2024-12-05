@@ -1,7 +1,7 @@
 {
   "exclude": ["node_modules", "lib"],
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES6",
     "module": "commonjs",
     "rootDir": "./",
     "sourceMap": true,
@@ -11,6 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "strictBindCallApply": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "noEmitOnError": false
   }
 }
