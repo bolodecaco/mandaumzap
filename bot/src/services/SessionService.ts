@@ -26,6 +26,11 @@ class SessionService {
     return qrcode;
   }
 
+  async getChats(sessionId: string) {
+    const session = this.createSession(sessionId);
+    return await session.getChats();
+  }
+
   async sendText({ recipients, text, sessionId }: MessageTextProps) {
     const socketClient = this.sessions.get(sessionId);
     if (!socketClient) {
