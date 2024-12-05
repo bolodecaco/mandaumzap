@@ -150,14 +150,14 @@ class MongoConnection {
       } catch (error: any) {}
     };
 
-    const sessionDataB: any = await this.sessions.findOne({
+    const sessionData: any = await this.sessions.findOne({
       sessionId: this.sessionId,
     });
 
-    if (sessionDataB) {
-      const resultB = JSON.parse(sessionDataB.session, BufferJSON.reviver);
-      this.creds = resultB.creds;
-      const { keys } = resultB;
+    if (sessionData) {
+      const result = JSON.parse(sessionData.session, BufferJSON.reviver);
+      this.creds = result.creds;
+      const { keys } = result;
 
       if (Object.keys(keys).length) {
         this.logger.debug("Starting conversion of keys to new format");
