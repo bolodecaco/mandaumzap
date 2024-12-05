@@ -61,6 +61,17 @@ class MongoConnection {
     } catch (error) {}
   }
 
+  async close() {
+    try {
+      await this.client.close();
+      this.logger.info(`Conexão com o MongoDB fechada com sucesso.`);
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao fechar a conexão com o MongoDB: ${error.message}`
+      );
+    }
+  }
+
   async connectToMongo() {
     try {
       await this.client.connect();

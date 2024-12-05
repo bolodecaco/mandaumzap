@@ -27,7 +27,7 @@ class WASocketWrapper {
   }
 
   private async getMongoConnection(): Promise<MongoConnection> {
-    if (!WASocketWrapper.mongoConnection) {
+    if (!WASocketWrapper.mongoConnection || WASocketWrapper.mongoConnection.sessionId !== this.sessionId) {
       WASocketWrapper.mongoConnection = new MongoConnection({
         logger: this.logger,
         sessionId: this.sessionId,
@@ -36,6 +36,10 @@ class WASocketWrapper {
       await WASocketWrapper.mongoConnection.init();
     }
     return WASocketWrapper.mongoConnection;
+  }
+
+  async closeConnection(): Promise<void> {
+    WASocketWrapper.mongoConnection?.close();
   }
 
   async addChats(chats: ChatProps[]): Promise<void> {

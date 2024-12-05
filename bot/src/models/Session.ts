@@ -28,7 +28,6 @@ class Session {
       this.socketClient!.ev.on("connection.update", async (update) => {
         const { connection, qr } = update;
         if (connection === "open") {
-          console.log("Session connected");
           return resolve({ qrcode: "", socket: this.socketClient! });
         }
         if (connection === "close") {
@@ -54,7 +53,10 @@ class Session {
       });
       this.socketClient!.ev.on("contacts.upsert", (contacts) => {
         const chats = contacts.map((contact) => {
-          return { id: contact.id, name: contact.notify|| contact.verifiedName || "Desconhecido" };
+          return {
+            id: contact.id,
+            name: contact.notify || contact.verifiedName || "Desconhecido",
+          };
         });
         this.waSocket.addChats(chats);
       });
