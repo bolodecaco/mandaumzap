@@ -26,13 +26,13 @@ class SessionService {
     return qrcode;
   }
 
-  async sendText({ recipients, text, sessionId }: MessageTextProps) {
+  async sendText({ receivers, text, sessionId }: MessageTextProps) {
     const socketClient = this.sessions.get(sessionId);
     if (!socketClient) {
       return false;
     }
     try {
-      for (const chat of recipients) {
+      for (const chat of receivers) {
         await delay(getBetweenValue({ textLength: text.length }));
         await socketClient.sendMessage(chat, { text });
       }

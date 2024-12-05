@@ -119,7 +119,7 @@ router.post("/sessions", async (req, res): Promise<any> => {
  *                 type: string
  *                 example: "Olá! Esta é uma mensagem de teste."
  *                 description: O conteúdo da mensagem a ser enviada.
- *               recipients:
+ *               receivers:
  *                 type: array
  *                 items:
  *                   type: string
@@ -139,8 +139,8 @@ router.post("/sessions", async (req, res): Promise<any> => {
  *        description: Erro ao enviar a mensagem
  */
 router.post("/messages/send/text", async (req, res): Promise<any> => {
-  const { sessionId, text, recipients } = req.body;
-  const result = await sessionService.sendText({ recipients, text, sessionId });
+  const { sessionId, text, receivers } = req.body;
+  const result = await sessionService.sendText({ receivers, text, sessionId });
   return result
     ? res.status(200).json("Enviando mensagem")
     : res.status(400).json("Erro ao enviar a mensagem");
