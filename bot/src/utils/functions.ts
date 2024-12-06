@@ -19,7 +19,7 @@ export async function getSiteString(url: string) {
 export async function getWhatsappSocketVersion(): Promise<
   [number, number, number]
 > {
-  const siteHtml = await getSiteString(sockerVersionPage);
+  const siteHtml = await getSiteString(socketVersionPage);
   const versionMatch = versionFinder.exec(siteHtml);
   if (!versionMatch) throw new Error("Version not found in the HTML");
   const versionString = versionMatch[0];
