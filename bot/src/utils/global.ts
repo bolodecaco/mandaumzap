@@ -1,4 +1,8 @@
 export const port = 7000;
+export const socketVersionPage =
+  "https://wppconnect-team.github.io/pt-BR/whatsapp-versions";
+export const versionFinder = /[1-9]+.[0-9]+.[0-9]+-alpha/;
+export const versionParser = /[1-9]+.[0-9]+.[0-9]+/;
 export const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -19,6 +23,10 @@ export const swaggerOptions = {
       {
         name: "Message",
         description: "Endpoints to manage messages",
+      },
+      {
+        name: "Chat",
+        description: "Endpoints to manage chats",
       },
     ],
   },

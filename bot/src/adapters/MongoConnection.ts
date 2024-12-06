@@ -7,13 +7,15 @@ import {
 } from "@whiskeysockets/baileys";
 import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
+import { ChatProps } from "../@types/ChatProps";
+import { ChatsDocument } from "../@types/ChatDocument";
 
 const { DB_URI = "mongodb://admin:pass@localhost:27017", DB_NAME } =
   process.env;
 
 class MongoConnection {
   sessionId: string;
-  messages!: Collection<Document>;
+  chats!: Collection<Document>;
   sessions!: Collection<Document>;
   logger: Logger;
   creds!: AuthenticationCreds;
@@ -30,14 +32,44 @@ class MongoConnection {
     const db = this.client.db(DB_NAME!);
     this.keys = db.collection("keys");
     this.sessions = db.collection("sessions");
-    this.messages = db.collection("messages");
+    this.chats = db.collection("chats");
+  }
+
+  async addChats(chats: ChatProps[]) {
+    try {
+      await this.chats.updateOne(
+        { sessionId: this.sessionId },
+        {
+          $setOnInsert: { sessionId: this.sessionId },
+          $push: { chats: { $each: chats } },
+        },
+        { upsert: true }
+      );
+      this.logger.info(`Chats adicionados para a sessão: ${this.sessionId}`);
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao adicionar chats para a sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
+    }
   }
 
   async removeSession() {
     try {
-      await this.sessions.deleteOne({ id: this.sessionId });
-      await this.keys.deleteMany({ id: this.sessionId });
+      await this.sessions.deleteOne({ sessionId: this.sessionId });
+      await this.keys.deleteMany({ sessionId: this.sessionId });
     } catch (error) {}
+  }
+
+  async close() {
+    try {
+      await this.client.close();
+      this.logger.info(`Conexão com o MongoDB fechada com sucesso.`);
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao fechar a conexão com o MongoDB: ${error.message}`
+      );
+    }
   }
 
   async connectToMongo() {
@@ -123,9 +155,9 @@ class MongoConnection {
     });
 
     if (sessionData) {
-      const resultB = JSON.parse(sessionData.session, BufferJSON.reviver);
-      this.creds = resultB.creds;
-      const { keys } = resultB;
+      const result = JSON.parse(sessionData.session, BufferJSON.reviver);
+      this.creds = result.creds;
+      const { keys } = result;
 
       if (Object.keys(keys).length) {
         this.logger.debug("Starting conversion of keys to new format");
@@ -184,7 +216,7 @@ class MongoConnection {
             try {
               await this.keys.deleteMany({ sessionId: this.sessionId });
               await this.sessions.deleteMany({ sessionId: this.sessionId });
-              await this.messages.deleteMany({ sessionId: this.sessionId });
+              await this.chats.deleteMany({ sessionId: this.sessionId });
             } catch (error: any) {}
           },
         },
@@ -193,8 +225,14 @@ class MongoConnection {
     };
   }
 
-  getMessages() {
-    return this.messages;
+  async getChats(): Promise<ChatProps[]> {
+    const session = await this.chats.findOne({
+      sessionId: this.sessionId,
+    });
+    if (session && "chats" in session) {
+      return session.chats as ChatProps[];
+    }
+    return [];
   }
 
   async getSubSessions() {
