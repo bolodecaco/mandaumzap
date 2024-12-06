@@ -36,4 +36,14 @@ public class MessageMapper {
         message.setOwner(owner);
         return message;
     }
+
+    public Message toEntity(MessageDTO messageDTO) {
+        Message message = new Message();
+        message.setId(messageDTO.getId());
+        message.setContent(messageDTO.getContent());
+        User owner = userRepository.findById(messageDTO.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found with id: " + messageDTO.getOwnerId()));
+        message.setOwner(owner);
+        return message;
+    }
 }
