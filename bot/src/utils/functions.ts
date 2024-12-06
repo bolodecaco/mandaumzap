@@ -1,5 +1,5 @@
 import { WaitTimeProps } from "../@types/WaitTimeProps";
-import { sockerVersionPage, versionFinder, versionParser } from "./global";
+import { socketVersionPage, versionFinder, versionParser } from "./global";
 
 export function getBetweenValue({
   textLength,
