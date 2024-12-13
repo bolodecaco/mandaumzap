@@ -27,7 +27,7 @@ export const Nav = styled.nav`
   gap: 1.5rem;
 `
 
-export const NavItem = styled.a<{$active?: Boolean}>`
+export const NavItem = styled.a<{$active?: boolean}>`
   width: 1.5rem;
   height: 1.5rem;
   display: flex;
