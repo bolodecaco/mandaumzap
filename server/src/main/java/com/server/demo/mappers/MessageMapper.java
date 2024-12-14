@@ -1,5 +1,7 @@
 package com.server.demo.mappers;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +38,13 @@ public class MessageMapper {
         message.setOwner(owner);
         return message;
     }
-
-    public Message toEntity(MessageDTO messageDTO) {
-        Message message = new Message();
-        message.setId(messageDTO.getId());
-        message.setContent(messageDTO.getContent());
-        User owner = userRepository.findById(messageDTO.getOwnerId())
-                .orElseThrow(() -> new RuntimeException("Owner not found with id: " + messageDTO.getOwnerId()));
-        message.setOwner(owner);
-        return message;
+    
+    public RequestMessageDTO toRequestDTO(MessageDTO messageDTO) {
+        RequestMessageDTO requestMessageDTO = new RequestMessageDTO();
+        requestMessageDTO.setId(messageDTO.getId());
+        requestMessageDTO.setContent(messageDTO.getContent());
+        requestMessageDTO.setOwnerId(messageDTO.getOwnerId());
+        return requestMessageDTO;
     }
+    
 }

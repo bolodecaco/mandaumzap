@@ -1,6 +1,7 @@
 package com.server.demo.services;
 
 import com.server.demo.dtos.MessageDTO;
+import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.dtos.RoutineDTO;
 import com.server.demo.mappers.MessageMapper;
 import com.server.demo.mappers.RoutineMapper;
@@ -58,17 +59,17 @@ public class RoutineService {
     public RoutineDTO createRoutine(Routine routine) {
         User owner = userRepository.findById(routine.getOwner().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        routine.setOwner(owner); 
-    
+        routine.setOwner(owner);
+
         MessageDTO messageDTO = messageService.getMessageById(routine.getMessage().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Message not found"));
-        Message message = messageMapper.toEntity(messageDTO);
-        routine.setMessage(message); 
-    
+        RequestMessageDTO requestMessageDTO = messageMapper.toRequestDTO(messageDTO);
+        Message message = messageMapper.toEntity(requestMessageDTO);
+        routine.setMessage(message);
+
         Routine savedRoutine = routineRepository.save(routine);
         return routineMapper.toDTO(savedRoutine);
     }
-    
 
     public RoutineDTO updateRoutine(UUID id, Routine updatedRoutine) {
         return routineRepository.findById(id).map(routine -> {
