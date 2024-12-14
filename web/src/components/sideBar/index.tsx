@@ -2,8 +2,15 @@
 
 import { usePathname } from 'next/navigation'
 import { ElementType } from 'react'
-import { Footer, FooterItem, Logo, Nav, NavItem, Wrapper, WrapperNavs } from './styles'
-
+import {
+  Footer,
+  FooterItem,
+  Logo,
+  Nav,
+  NavItem,
+  Wrapper,
+  WrapperNavs,
+} from './styles'
 
 interface SidebarItem {
   id: number
@@ -26,11 +33,7 @@ interface SidebarProps {
   }
 }
 
-export const Sidebar = ({ 
-  navItems, 
-  footerItems, 
-  logoProps
-}: SidebarProps) => {
+export const Sidebar = ({ navItems, footerItems, logoProps }: SidebarProps) => {
   const pathname = usePathname()
 
   return (
@@ -39,8 +42,8 @@ export const Sidebar = ({
       <WrapperNavs>
         <Nav>
           {navItems.map(({ id, href, icon: Icon }) => (
-            <NavItem 
-              key={id} 
+            <NavItem
+              key={id}
               href={href}
               $active={pathname === href || (href === '/' && pathname === '/')}
             >
@@ -50,8 +53,8 @@ export const Sidebar = ({
         </Nav>
         <Footer>
           {footerItems.map(({ id, href, icon: Icon }, index) => (
-            <FooterItem 
-              key={id} 
+            <FooterItem
+              key={id}
               href={href}
               $active={index !== footerItems.length - 1 && pathname === href}
               $isLogout={index === footerItems.length - 1}
