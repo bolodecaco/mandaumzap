@@ -38,8 +38,7 @@ public class MessageMapper {
         message.setOwner(owner);
         return message;
     }
-
-
+    
     public RequestMessageDTO toRequestDTO(MessageDTO messageDTO) {
         RequestMessageDTO requestMessageDTO = new RequestMessageDTO();
         requestMessageDTO.setId(messageDTO.getId());
