@@ -2,7 +2,6 @@ package com.server.demo.services;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,10 +28,8 @@ public class UserService {
     private UserMapper userMapper;
 
     public List<UserDTO> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
+        List<User> users = userRepository.findAll();
+        return userMapper.toDTOList(users);
     }
 
     public UserDTO getUserById(UUID id) {

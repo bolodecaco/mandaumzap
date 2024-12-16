@@ -1,5 +1,12 @@
 package com.server.demo.services;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.dtos.RoutineDTO;
@@ -10,14 +17,6 @@ import com.server.demo.models.Routine;
 import com.server.demo.models.User;
 import com.server.demo.repositories.RoutineRepository;
 import com.server.demo.repositories.UserRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class RoutineService {
@@ -40,9 +39,8 @@ public class RoutineService {
     }
 
     public List<RoutineDTO> getAllRoutines() {
-        return routineRepository.findAll().stream()
-                .map(routineMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Routine> routines = routineRepository.findAll();
+        return routineMapper.toDTOList(routines);
     }
 
     public Optional<RoutineDTO> getRoutineById(UUID id) {
@@ -51,9 +49,8 @@ public class RoutineService {
     }
 
     public List<RoutineDTO> getRoutinesByOwnerId(UUID ownerId) {
-        return routineRepository.findByOwnerId(ownerId).stream()
-                .map(routineMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Routine> routines = routineRepository.findByOwnerId(ownerId);
+        return routineMapper.toDTOList(routines);
     }
 
     public RoutineDTO createRoutine(Routine routine) {

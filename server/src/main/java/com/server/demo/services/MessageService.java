@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,9 +57,8 @@ public class MessageService {
     }
 
     public List<MessageDTO> getMessagesByOwnerId(UUID ownerId) {
-        return messageRepository.findByOwnerId(ownerId).stream()
-                .map(messageMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Message> messages = messageRepository.findByOwnerId(ownerId);
+        return messageMapper.toDTOList(messages);
     }
 
     public MessageDTO saveMessage(RequestMessageDTO message) {
@@ -70,9 +68,8 @@ public class MessageService {
     }
 
     public List<MessageDTO> getActiveMessages() {
-        return messageRepository.findByDeletedAtIsNull().stream()
-                .map(messageMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Message> messages = messageRepository.findByDeletedAtIsNull();
+        return messageMapper.toDTOList(messages);
     }
 
     public void deleteMessage(UUID messageId) {

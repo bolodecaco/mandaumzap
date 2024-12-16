@@ -3,13 +3,13 @@ package com.server.demo.services;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.PlanDTO;
 import com.server.demo.enums.PlanType;
+import com.server.demo.mappers.PlanMapper;
 import com.server.demo.models.Plan;
 import com.server.demo.repositories.PlanRepository;
 
@@ -19,17 +19,12 @@ public class PlanService {
     @Autowired
     private PlanRepository planRepository;
 
+    @Autowired
+    private PlanMapper planMapper;
+
     public List<PlanDTO> getAllPlans() {
-        return planRepository.findAll().stream()
-                .map(
-                        plan -> new PlanDTO(
-                                plan.getId(),
-                                plan.getName(),
-                                plan.getBenefits(),
-                                plan.getPrice(),
-                                plan.getType()
-                        )
-                ).collect(Collectors.toList());
+        List<Plan> plans = planRepository.findAll();
+        return planMapper.toDTOList(plans);
     }
 
     private PlanDTO getPlanByType(PlanType type) {
@@ -37,7 +32,7 @@ public class PlanService {
         if (plan == null) {
             throw new RuntimeException("Plan not found for type: " + type);
         }
-        return new PlanDTO(plan.getId(), plan.getName(), plan.getBenefits(), plan.getPrice(), plan.getType());
+        return planMapper.toDTO(plan);
     }
 
     public PlanDTO getPlanByType(String type) {
@@ -49,15 +44,15 @@ public class PlanService {
         }
         return getPlanByType(planType);
     }
-    
+
     public PlanDTO getPlanById(UUID id) {
         Plan plan = planRepository.findById(id).orElseThrow(() -> new RuntimeException("Plan not found"));
-        return new PlanDTO(plan.getId(), plan.getName(), plan.getBenefits(), plan.getPrice(), plan.getType());
+        return planMapper.toDTO(plan);
     }
 
     public PlanDTO createPlan(Plan plan) {
         Plan currentPlan = planRepository.save(plan);
-        return new PlanDTO(currentPlan.getId(), currentPlan.getName(), currentPlan.getBenefits(), currentPlan.getPrice(), currentPlan.getType());
+        return planMapper.toDTO(currentPlan);
     }
 
     public PlanDTO updatePlan(UUID id, Plan planDetails) {
@@ -75,8 +70,7 @@ public class PlanService {
             plan.setType(planDetails.getType());
         }
         Plan updatedPlan = planRepository.save(plan);
-        return new PlanDTO(updatedPlan.getId(), updatedPlan.getName(), updatedPlan.getBenefits(), updatedPlan.getPrice(), updatedPlan.getType());
-
+        return planMapper.toDTO(updatedPlan);
     }
 
     public void deletePlan(UUID id) {
