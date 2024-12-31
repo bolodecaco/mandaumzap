@@ -2,7 +2,6 @@ package com.server.demo.services;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,16 +28,12 @@ public class BroadcastListService {
 
     public List<BroadcastListDTO> findAllByUserId(UUID userId) {
         List<BroadcastList> list = broadcastListRepository.findAllByUserId(userId);
-        return list.stream()
-                .map(broadcastListMapper::toDTO)
-                .toList();
+        return broadcastListMapper.toDTOList(list);
     }
 
     public List<BroadcastListDTO> getAllLists() {
-        return broadcastListRepository.findAll().stream()
-                .map(broadcastListMapper::toDTO)
-                .collect(Collectors.toList());
-
+        List<BroadcastList> list = broadcastListRepository.findAll();
+        return broadcastListMapper.toDTOList(list);
     }
 
     public BroadcastListDTO getListById(UUID id) {

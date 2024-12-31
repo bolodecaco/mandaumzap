@@ -2,7 +2,6 @@ package com.server.demo.services;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -41,15 +40,13 @@ public class NotificationService {
     }
 
     public List<NotificationDTO> getAllNotifications() {
-        return notificationRepository.findAll().stream()
-                .map(notificationMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Notification> notifications = notificationRepository.findAll();
+        return notificationMapper.toDTOList(notifications);
     }
 
     public List<NotificationDTO> getNotificationByReceiverId(UUID receiverId) {
-        return notificationRepository.findByReceiverId(receiverId).stream()
-                .map(notificationMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Notification> notifications = notificationRepository.findByReceiverId(receiverId);
+        return notificationMapper.toDTOList(notifications);
     }
 
     public void createNotification(RequestNotificationDTO notification) {
@@ -76,9 +73,8 @@ public class NotificationService {
     }
 
     public List<NotificationDTO> getUnreadNotifications(UUID receiverId) {
-        return notificationRepository.findUnreadNotificationsByReceiverId(receiverId).stream()
-                .map(notificationMapper::toDTO)
-                .collect(Collectors.toList());
+        List<Notification> notifications = notificationRepository.findUnreadNotificationsByReceiverId(receiverId);
+        return notificationMapper.toDTOList(notifications);
     }
 
     private void sendUnreadNotifications(UUID receiverId) {

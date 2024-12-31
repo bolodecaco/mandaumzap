@@ -1,31 +1,22 @@
 package com.server.demo.mappers;
 
-import org.springframework.stereotype.Service;
+import java.util.List;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import com.server.demo.dtos.RequestUserDTO;
 import com.server.demo.dtos.UserDTO;
 import com.server.demo.models.User;
 
-@Service
-public class UserMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface UserMapper {
 
-    public UserDTO toDTO(User user) {
-        return new UserDTO(
-                user.getId(),
-                user.getName(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getPlan().getType()
-        );
-    }
+    @Mapping(target = "plan", ignore = true)
+    UserDTO toDTO(User user);
 
-    public User toEntity(RequestUserDTO chat) {
-        User currentUser = new User();
-        currentUser.setPassword(chat.getPassword());
-        currentUser.setEmail(chat.getEmail());
-        currentUser.setName(chat.getName());
-        currentUser.setPhone(chat.getPhone());
-        currentUser.setAvatar(chat.getAvatar());
-        return currentUser;
-    }
+    User toEntity(RequestUserDTO chat);
+
+    List<UserDTO> toDTOList(List<User> users);
 }

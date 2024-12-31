@@ -2,7 +2,6 @@ package com.server.demo.services;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,9 +23,7 @@ public class ChatService {
 
     public List<ChatDTO> getAllChats() {
         List<Chat> chats = chatRepository.findAll();
-        return chats.stream()
-                .map(chatMapper::toDTO)
-                .collect(Collectors.toList());
+        return chatMapper.toDTOList(chats);
     }
 
     public ChatDTO getChatDTOById(UUID id) {
