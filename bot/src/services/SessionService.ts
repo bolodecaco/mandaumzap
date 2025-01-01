@@ -5,7 +5,7 @@ import { getBetweenValue } from "../utils/functions";
 import { MessageTextProps } from "../@types/MessageTextProps";
 
 class SessionService {
-  private sessions: Map<string, WASocket> = new Map<string, WASocket>();
+  private sessions: Map<string, Session> = new Map<string, Session>();
 
   createSession(sessionId: string): Session {
     return SessionRepository.createSession(sessionId);
@@ -21,8 +21,8 @@ class SessionService {
 
   async connectSession(sessionId: string): Promise<string> {
     const session = this.createSession(sessionId);
-    const { qrcode, socket } = await session.connect();
-    this.sessions.set(session.getId(), socket);
+    const { qrcode } = await session.connect();
+    this.sessions.set(session.getId(), session);
     return qrcode;
   }
 
@@ -32,7 +32,7 @@ class SessionService {
   }
 
   async sendText({ receivers, text, sessionId }: MessageTextProps) {
-    const socketClient = this.sessions.get(sessionId);
+    const socketClient = this.sessions.get(sessionId)?.getWASocket();
     if (!socketClient) {
       return false;
     }
@@ -45,6 +45,35 @@ class SessionService {
       return false;
     }
     return true;
+  }
+
+  async closeSession(sessionId: string) {
+    try {
+      const socketClient = this.sessions.get(sessionId)?.getWASocket();
+      if (!socketClient) {
+        return false;
+      }
+      socketClient.end(new Error("Closed by user"));
+      this.sessions.delete(sessionId);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async deleteSession(sessionId: string) {
+    try {
+      const session = this.sessions.get(sessionId);
+      if (!session) {
+        return false;
+      }
+      session.getWASocket().end(new Error("Closed by user"));
+      await session.delete();
+      this.sessions.delete(sessionId);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }
 

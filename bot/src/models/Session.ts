@@ -17,8 +17,16 @@ class Session {
     return this.id;
   }
 
+  getWASocket(): WASocket {
+    return this.waSocket.getSocket();
+  }
+
   async getChats() {
     return await this.waSocket.getChats();
+  }
+
+  async delete() {
+    await this.waSocket.removeSession();
   }
 
   async connect(): Promise<ConnectSessionProps> {
@@ -26,14 +34,17 @@ class Session {
     this.socketClient = this.waSocket.getSocket();
     return new Promise((resolve, reject) => {
       this.socketClient!.ev.on("connection.update", async (update) => {
+        const statusCode = (update.lastDisconnect?.error as any)?.output
+          ?.statusCode;
         const { connection, qr } = update;
         if (connection === "open") {
           return resolve({ qrcode: "", socket: this.socketClient! });
         }
         if (connection === "close") {
-          if (DisconnectReason.restartRequired) {
+          if (DisconnectReason.restartRequired == statusCode) {
             return this.connect();
           }
+          this.waSocket.removeSession();
         }
         if (qr && this.id) {
           qrcode.generate(qr, { small: true });

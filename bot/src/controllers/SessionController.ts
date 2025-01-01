@@ -89,4 +89,82 @@ sessionRouter.post("/sessions", async (req, res): Promise<any> => {
     : res.status(201).json({ qrcode });
 });
 
+/**
+ * @swagger
+ * /api/sessions/close:
+ *   delete:
+ *     tags:
+ *       - Session
+ *     summary: Fecha uma sessão
+ *     description: Fecha uma sessão ativa.
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *           default: "token"
+ *         required: true
+ *         description: Token para autenticação.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *                 example: "session"
+ *                 description: O ID único da sessão a ser fechada.
+ *     responses:
+ *       200:
+ *         description: Sessão fechada com sucesso.
+ *       400:
+ *         description: A sessão não existe.
+ */
+sessionRouter.delete("/sessions/close", async (req, res): Promise<any> => {
+  const { sessionId } = req.body;
+  if (!sessionService.haveSession(sessionId))
+    return res.status(400).json("A sessão não existe");
+  sessionService.closeSession(sessionId);
+  return res.status(200).json("Sessão fechada");
+});
+
+/**
+ * @swagger
+ * /api/sessions/{sessionId}:
+ *   delete:
+ *     tags:
+ *       - Session
+ *     summary: Fecha uma sessão
+ *     description: Fecha uma sessão ativa.
+ *     parameters:
+ *       - in: path
+ *         name: sessionId
+ *         schema:
+ *           type: string
+ *           default: "session"
+ *         required: true
+ *         description: O ID único da sessão a ser fechada.
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *           default: "token"
+ *         required: true
+ *         description: Token para autenticação.
+ *     responses:
+ *       200:
+ *         description: Sessão fechada com sucesso.
+ *       400:
+ *         description: A sessão não existe.
+ */
+sessionRouter.delete("/sessions/:sessionId", async (req, res): Promise<any> => {
+  const { sessionId } = req.params;
+  if (!sessionService.haveSession(sessionId))
+    return res.status(400).json("A sessão não existe");
+  sessionService.deleteSession(sessionId);
+  return res.status(200).json("Sessão excluída");
+});
+
 export default sessionRouter;
