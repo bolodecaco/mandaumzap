@@ -1,4 +1,5 @@
 import { WASocket, DisconnectReason, delay } from "@whiskeysockets/baileys";
+import { Boom } from '@hapi/boom';
 import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
 import { ConnectSessionProps } from "../@types/ConnectSessionProps";
@@ -34,7 +35,7 @@ class Session {
     this.socketClient = this.waSocket.getSocket();
     return new Promise((resolve, reject) => {
       this.socketClient!.ev.on("connection.update", async (update) => {
-        const statusCode = (update.lastDisconnect?.error as any)?.output
+        const statusCode = (update.lastDisconnect?.error as Boom)?.output
           ?.statusCode;
         const { connection, qr } = update;
         if (connection === "open") {
