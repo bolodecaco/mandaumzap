@@ -8,10 +8,13 @@ let session: Session;
 
 const signalsActions: SignalsProps = {
   initialize: async (message: ParentMessageProps) => {
-    const sessionId = message.data.sessionId;
+    const { sessionId } = message.data;
     session = SessionRepository.createSession(sessionId);
     const { qrcode } = await session.connect();
-    parentPort?.postMessage({ type: "qrcode", data: qrcode });
+    parentPort?.postMessage({
+      type: "qrcode",
+      data: { qrcode, token: await session.getHashToken() },
+    });
   },
   getChats: async () => {
     if (!session) {

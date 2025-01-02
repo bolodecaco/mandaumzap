@@ -35,7 +35,7 @@ class SessionService {
     return Array.from(this.sessions.keys());
   }
 
-  async connectSession(sessionId: string): Promise<string | false> {
+  async connectSession(sessionId: string): Promise<any> {
     if (this.haveSession(sessionId)) {
       return false;
     }
@@ -44,11 +44,9 @@ class SessionService {
 
     return new Promise((resolve, reject) => {
       worker.postMessage({ type: "initialize", data: { sessionId } });
-
       worker.on("message", (message) => {
-        if (message.type === "qrcode") {
-          resolve(message.data);
-        }
+        if (message.type === "error") this.sessions.delete(sessionId);
+        resolve(message.data);
       });
 
       worker.on("error", (error) => reject(error));

@@ -32,7 +32,7 @@ const sessionRouter = (sessionService: SessionService) => {
    */
   router.get("/sessions", (req, res): any => {
     const sessionsIds = Array.from(sessionService.getAll());
-    return res.status(200).json(sessionsIds);
+    return res.status(200).end(JSON.stringify(sessionsIds));
   });
 
   /**
@@ -80,12 +80,16 @@ const sessionRouter = (sessionService: SessionService) => {
    */
   router.post("/sessions", async (req, res): Promise<any> => {
     const { sessionId } = req.body;
-    if (sessionService.haveSession(sessionId))
-      return res.status(400).json("A sessão já existe");
-    const qrcode = await sessionService.connectSession(sessionId);
-    return qrcode === ""
-      ? res.status(200).json("Iniciando sessão")
-      : res.status(201).json({ qrcode });
+    if (sessionService.haveSession(sessionId)) {
+      return res.status(400).end(JSON.stringify("A sessão já existe"));
+    }
+    const { qrcode, error, token } = await sessionService.connectSession(
+      sessionId
+    );
+    if (error) return res.status(400).end(JSON.stringify(error));
+    if (qrcode === "")
+      return res.status(200).end(JSON.stringify("Iniciando sessão"));
+    return res.status(201).end(JSON.stringify({ qrcode, token }));
   });
 
   /**
@@ -123,10 +127,11 @@ const sessionRouter = (sessionService: SessionService) => {
    */
   router.delete("/sessions/close", async (req, res): Promise<any> => {
     const { sessionId } = req.body;
-    if (!sessionService.haveSession(sessionId))
-      return res.status(400).json("A sessão não existe");
+    if (!sessionService.haveSession(sessionId)) {
+      return res.status(400).end(JSON.stringify("A sessão não existe"));
+    }
     sessionService.closeSession(sessionId);
-    return res.status(200).json("Sessão fechada");
+    return res.status(200).end(JSON.stringify("Sessão fechada"));
   });
 
   /**
@@ -160,10 +165,11 @@ const sessionRouter = (sessionService: SessionService) => {
    */
   router.delete("/sessions/:sessionId", async (req, res): Promise<any> => {
     const { sessionId } = req.params;
-    if (!sessionService.haveSession(sessionId))
-      return res.status(400).json("A sessão não existe");
+    if (!sessionService.haveSession(sessionId)) {
+      return res.status(400).end(JSON.stringify("A sessão não existe"));
+    }
     sessionService.deleteSession(sessionId);
-    return res.status(200).json("Sessão excluída");
+    return res.status(200).end(JSON.stringify("Sessão excluída"));
   });
 
   return router;

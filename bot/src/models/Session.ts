@@ -1,5 +1,5 @@
 import { WASocket, DisconnectReason, delay } from "@whiskeysockets/baileys";
-import { Boom } from '@hapi/boom';
+import { Boom } from "@hapi/boom";
 import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
 import { ConnectSessionProps } from "../@types/ConnectSessionProps";
@@ -20,6 +20,10 @@ class Session {
 
   getWASocket(): WASocket {
     return this.waSocket.getSocket();
+  }
+
+  async getHashToken() {
+    return await this.waSocket.getHashToken();
   }
 
   async getChats() {
