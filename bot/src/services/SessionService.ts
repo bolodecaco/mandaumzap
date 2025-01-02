@@ -1,79 +1,117 @@
-import { WASocket, delay } from "@whiskeysockets/baileys";
-import Session from "../models/Session";
-import SessionRepository from "../repository/SessionRepository";
-import { getBetweenValue } from "../utils/functions";
+import { Worker } from "worker_threads";
+import { resolve } from "path";
 import { MessageTextProps } from "../@types/MessageTextProps";
 
 class SessionService {
-  private sessions: Map<string, Session> = new Map<string, Session>();
+  private sessions: Map<string, Worker> = new Map<string, Worker>();
 
-  createSession(sessionId: string): Session {
-    return SessionRepository.createSession(sessionId);
+  private createSession(sessionId: string): Worker {
+    const workerPath = resolve(__dirname, "SessionWorker.js");
+    const worker = new Worker(workerPath, {
+      workerData: { sessionId },
+    });
+
+    worker.on("error", (err) => {
+      console.error(`Worker error in session ${sessionId}:`, err);
+    });
+
+    worker.on("exit", (code) => {
+      if (code !== 0) {
+        console.error(
+          `Worker for session ${sessionId} stopped with exit code ${code}`
+        );
+      }
+    });
+
+    this.sessions.set(sessionId, worker);
+    return worker;
   }
 
   haveSession(sessionId: string): boolean {
-    return this.sessions.get(sessionId) ? true : false;
+    return this.sessions.has(sessionId);
   }
 
-  getAll() {
+  getAll(): string[] {
     return Array.from(this.sessions.keys());
   }
 
-  async connectSession(sessionId: string): Promise<string> {
-    const session = this.createSession(sessionId);
-    const { qrcode } = await session.connect();
-    this.sessions.set(session.getId(), session);
-    return qrcode;
-  }
-
-  async getChats(sessionId: string) {
-    const session = this.createSession(sessionId);
-    return await session.getChats();
-  }
-
-  async sendText({ receivers, text, sessionId }: MessageTextProps) {
-    const socketClient = this.sessions.get(sessionId)?.getWASocket();
-    if (!socketClient) {
+  async connectSession(sessionId: string): Promise<string | false> {
+    if (this.haveSession(sessionId)) {
       return false;
     }
-    try {
-      for (const chat of receivers) {
-        await delay(getBetweenValue({ textLength: text.length }));
-        await socketClient.sendMessage(chat, { text });
-      }
-    } catch (error) {
+
+    const worker = this.createSession(sessionId);
+
+    return new Promise((resolve, reject) => {
+      worker.postMessage({ type: "initialize", data: { sessionId } });
+
+      worker.on("message", (message) => {
+        if (message.type === "qrcode") {
+          resolve(message.data);
+        }
+      });
+
+      worker.on("error", (error) => reject(error));
+    });
+  }
+
+  async getChats(sessionId: string): Promise<any | false> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
       return false;
     }
+
+    return new Promise((resolve, reject) => {
+      worker.postMessage({ type: "getChats" });
+
+      worker.once("message", (message) => {
+        if (message.type === "chats") {
+          resolve(message.data);
+        }
+      });
+
+      worker.on("error", (error) => reject(error));
+    });
+  }
+
+  async sendText({
+    receivers,
+    text,
+    sessionId,
+  }: MessageTextProps): Promise<boolean> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
+      return false;
+    }
+
+    worker.postMessage({
+      type: "sendText",
+      data: { receivers, text },
+    });
+
     return true;
   }
 
-  async closeSession(sessionId: string) {
-    try {
-      const socketClient = this.sessions.get(sessionId)?.getWASocket();
-      if (!socketClient) {
-        return false;
-      }
-      socketClient.end(new Error("Closed by user"));
-      this.sessions.delete(sessionId);
-      return true;
-    } catch (error) {
+  async closeSession(sessionId: string): Promise<boolean> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
       return false;
     }
+
+    worker.postMessage({ type: "close" });
+    this.sessions.delete(sessionId);
+    return true;
   }
 
-  async deleteSession(sessionId: string) {
-    try {
-      const session = this.sessions.get(sessionId);
-      if (!session) {
-        return false;
-      }
-      session.getWASocket().end(new Error("Closed by user"));
-      await session.delete();
-      this.sessions.delete(sessionId);
-      return true;
-    } catch (error) {
+  async deleteSession(sessionId: string): Promise<boolean> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
       return false;
     }
+
+    worker.postMessage({ type: "delete" });
+    this.sessions.delete(sessionId);
+    return true;
   }
 }
 
