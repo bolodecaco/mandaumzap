@@ -26,6 +26,10 @@ class Session {
     return await this.waSocket.getHashToken();
   }
 
+  async getFirstToken() {
+    return await this.waSocket.getHashToken();
+  }
+
   async getChats() {
     return await this.waSocket.getChats();
   }

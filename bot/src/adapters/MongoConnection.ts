@@ -38,8 +38,16 @@ class MongoConnection {
     this.chats = db.collection("chats");
   }
 
-  async getHashToken() {
+  async getFirstToken() {
     return this.hashToken;
+  }
+
+  async getHashToken(): Promise<string | null> {
+    const session = await this.sessions.findOne({ sessionId: this.sessionId });
+    if (session && "token" in session) {
+      return session.token as string;
+    }
+    return null;
   }
 
   async addChats(chats: ChatProps[]) {

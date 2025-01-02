@@ -61,6 +61,10 @@ const sessionRouter = (sessionService: SessionService) => {
    *                 type: string
    *                 example: "session"
    *                 description: O ID único para a sessão a ser criada.
+   *               hashToken:
+   *                 type: string
+   *                 example: "hashToken"
+   *                 description: Token de autenticação para a sessão.
    *     responses:
    *       200:
    *         description: Sessão já existe e será inicializada
@@ -79,12 +83,13 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: Requisição inválida, já existe uma sessão com o ID fornecido.
    */
   router.post("/sessions", async (req, res): Promise<any> => {
-    const { sessionId } = req.body;
+    const { sessionId, hashToken } = req.body;
     if (sessionService.haveSession(sessionId)) {
       return res.status(400).end(JSON.stringify("A sessão já existe"));
     }
     const { qrcode, error, token } = await sessionService.connectSession(
-      sessionId
+      sessionId,
+      hashToken
     );
     if (error) return res.status(400).end(JSON.stringify(error));
     if (qrcode === "")

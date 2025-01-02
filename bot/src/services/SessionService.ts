@@ -35,15 +35,14 @@ class SessionService {
     return Array.from(this.sessions.keys());
   }
 
-  async connectSession(sessionId: string): Promise<any> {
-    if (this.haveSession(sessionId)) {
-      return false;
-    }
-
+  async connectSession(sessionId: string, hashToken: string): Promise<any> {
+    if (this.haveSession(sessionId)) return false;
     const worker = this.createSession(sessionId);
-
     return new Promise((resolve, reject) => {
-      worker.postMessage({ type: "initialize", data: { sessionId } });
+      worker.postMessage({
+        type: "initialize",
+        data: { sessionId, hashToken },
+      });
       worker.on("message", (message) => {
         if (message.type === "error") this.sessions.delete(sessionId);
         resolve(message.data);

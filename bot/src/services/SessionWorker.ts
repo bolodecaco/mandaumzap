@@ -3,17 +3,26 @@ import SessionRepository from "../repository/SessionRepository";
 import Session from "../models/Session";
 import { ParentMessageProps } from "../@types/ParentMessageProps";
 import { SignalsProps } from "../@types/SignalsProps";
+import { error } from "console";
 
 let session: Session;
 
 const signalsActions: SignalsProps = {
   initialize: async (message: ParentMessageProps) => {
-    const { sessionId } = message.data;
+    const { sessionId, hashToken } = message.data;
     session = SessionRepository.createSession(sessionId);
+    const tokenSession = await session.getHashToken();
+    if (hashToken !== tokenSession) {
+      parentPort?.postMessage({
+        type: "error",
+        data: { error: "Invalid token" },
+      });
+      return;
+    }
     const { qrcode } = await session.connect();
     parentPort?.postMessage({
       type: "qrcode",
-      data: { qrcode, token: await session.getHashToken() },
+      data: { qrcode, token: await session.getFirstToken() },
     });
   },
   getChats: async () => {
