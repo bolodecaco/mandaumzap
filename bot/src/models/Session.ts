@@ -8,10 +8,12 @@ class Session {
   private id: string;
   private waSocket: WASocketWrapper;
   private socketClient: WASocket | null = null;
+  private isConnected: boolean;
 
   constructor(id: string) {
     this.id = id;
     this.waSocket = new WASocketWrapper(id);
+    this.isConnected = false;
   }
 
   getId(): string {
@@ -27,7 +29,7 @@ class Session {
   }
 
   async getFirstToken() {
-    return await this.waSocket.getHashToken();
+    return await this.waSocket.getFirstToken();
   }
 
   async getChats() {
@@ -36,6 +38,7 @@ class Session {
 
   async delete() {
     await this.waSocket.removeSession();
+    process.exit(0);
   }
 
   async connect(): Promise<ConnectSessionProps> {
@@ -47,21 +50,20 @@ class Session {
           ?.statusCode;
         const { connection, qr } = update;
         if (connection === "open") {
+          this.isConnected = true;
           return resolve({ qrcode: "", socket: this.socketClient! });
         }
         if (connection === "close") {
           if (DisconnectReason.restartRequired == statusCode) {
             return this.connect();
           }
-          this.waSocket.removeSession();
+          this.delete();
         }
         if (qr && this.id) {
           qrcode.generate(qr, { small: true });
           setTimeout(() => {
-            if (!this.socketClient!.user) {
-              reject("Session not connected");
-            }
-          }, 50 * 1000);
+            if (!this.isConnected) this.delete();
+          }, 50 * 1000); //50 seconds
           resolve({ socket: this.socketClient!, qrcode: qr });
         }
       });

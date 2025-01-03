@@ -69,7 +69,9 @@ const sessionRouter = (sessionService: SessionService) => {
    *       200:
    *         description: Sessão já existe e será inicializada
    *       201:
-   *         description: Session criada com sucesso
+   *         description: >
+   *           Session criada com sucesso
+   *           OBS: Caso seja a primeira conexão, o hashToken deve ser undefined ou null.
    *         content:
    *           application/json:
    *             schema:
@@ -83,7 +85,7 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: Requisição inválida, já existe uma sessão com o ID fornecido.
    */
   router.post("/sessions", async (req, res): Promise<any> => {
-    const { sessionId, hashToken } = req.body;
+    const { sessionId, hashToken = null } = req.body;
     if (sessionService.haveSession(sessionId)) {
       return res.status(400).end(JSON.stringify("A sessão já existe"));
     }
@@ -99,7 +101,7 @@ const sessionRouter = (sessionService: SessionService) => {
 
   /**
    * @swagger
-   * /api/sessions/close:
+   * /api/sessions/close/{sessionId}:
    *   delete:
    *     tags:
    *       - Session
@@ -113,31 +115,30 @@ const sessionRouter = (sessionService: SessionService) => {
    *           default: "token"
    *         required: true
    *         description: Token para autenticação.
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               sessionId:
-   *                 type: string
-   *                 example: "session"
-   *                 description: O ID único da sessão a ser fechada.
+   *       - in: path
+   *         name: sessionId
+   *         schema:
+   *           type: string
+   *           default: "session"
+   *         required: true
+   *         description: O ID único da sessão a ser fechada.
    *     responses:
    *       200:
    *         description: Sessão fechada com sucesso.
    *       400:
    *         description: A sessão não existe.
    */
-  router.delete("/sessions/close", async (req, res): Promise<any> => {
-    const { sessionId } = req.body;
-    if (!sessionService.haveSession(sessionId)) {
-      return res.status(400).end(JSON.stringify("A sessão não existe"));
+  router.delete(
+    "/sessions/close/:sessionId",
+    async (req, res): Promise<any> => {
+      const { sessionId } = req.params;
+      if (!sessionService.haveSession(sessionId)) {
+        return res.status(400).end(JSON.stringify("A sessão não existe"));
+      }
+      sessionService.closeSession(sessionId);
+      return res.status(200).end(JSON.stringify("Sessão fechada"));
     }
-    sessionService.closeSession(sessionId);
-    return res.status(200).end(JSON.stringify("Sessão fechada"));
-  });
+  );
 
   /**
    * @swagger
