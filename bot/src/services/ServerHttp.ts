@@ -1,13 +1,18 @@
 import express, { Request, Response, NextFunction } from "express";
 import timeout from "connect-timeout";
 import dotenv from "dotenv";
-import router from "../controllers/SessionController";
+import sessionRouter from "../controllers/SessionController";
+import chatRouter from "../controllers/ChatController";
+import messageRouter from "../controllers/MessageController";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { swaggerOptions } from "../utils/global";
+import SessionService from "./SessionService";
 
 const app = express();
 dotenv.config();
+
+const sessionService = new SessionService();
 
 const specs = swaggerJSDoc(swaggerOptions);
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(specs));
@@ -25,7 +30,9 @@ app.use(express.json());
 
 app.use(timeout("3s"));
 
-app.use("/api", router);
+app.use("/api", sessionRouter(sessionService));
+app.use("/api", chatRouter(sessionService));
+app.use("/api", messageRouter(sessionService));
 
 app.use((req: Request, res: Response, next: NextFunction): any => {
   if (!req.timedout) next();

@@ -1,4 +1,5 @@
 import { WaitTimeProps } from "../@types/WaitTimeProps";
+import crypto from "crypto";
 import { socketVersionPage, versionFinder, versionParser } from "./global";
 
 export function getBetweenValue({
@@ -34,4 +35,11 @@ export async function getWhatsappSocketVersion(): Promise<
     parseInt(versionArray[1]),
     parseInt(versionArray[2]),
   ];
+}
+
+export function generateHashToken() {
+  return crypto
+    .createHash("sha256")
+    .update(crypto.randomBytes(32))
+    .digest("hex");
 }

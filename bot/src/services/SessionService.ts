@@ -1,49 +1,113 @@
-import { WASocket, delay } from "@whiskeysockets/baileys";
-import Session from "../models/Session";
-import SessionRepository from "../repository/SessionRepository";
-import { getBetweenValue } from "../utils/functions";
+import { Worker } from "worker_threads";
+import { resolve } from "path";
 import { MessageTextProps } from "../@types/MessageTextProps";
 
 class SessionService {
-  private sessions: Map<string, WASocket> = new Map<string, WASocket>();
+  private sessions: Map<string, Worker> = new Map<string, Worker>();
 
-  createSession(sessionId: string): Session {
-    return SessionRepository.createSession(sessionId);
+  private createSession(sessionId: string): Worker {
+    const workerPath = resolve(__dirname, "SessionWorker.js");
+    const worker = new Worker(workerPath, {
+      workerData: { sessionId },
+    });
+
+    worker.on("error", (err) => {
+      console.error(`Worker error in session ${sessionId}:`, err);
+    });
+
+    worker.on("exit", (code) => {
+      if (code !== 0) {
+        console.error(
+          `Worker for session ${sessionId} stopped with exit code ${code}`
+        );
+      }
+    });
+
+    this.sessions.set(sessionId, worker);
+    return worker;
   }
 
   haveSession(sessionId: string): boolean {
-    return this.sessions.get(sessionId) ? true : false;
+    return this.sessions.has(sessionId);
   }
 
-  getAll() {
+  getAll(): string[] {
     return Array.from(this.sessions.keys());
   }
 
-  async connectSession(sessionId: string): Promise<string> {
-    const session = this.createSession(sessionId);
-    const { qrcode, socket } = await session.connect();
-    this.sessions.set(session.getId(), socket);
-    return qrcode;
+  async connectSession(sessionId: string, hashToken: string): Promise<any> {
+    if (this.haveSession(sessionId)) return false;
+    const worker = this.createSession(sessionId);
+    return new Promise((resolve, reject) => {
+      worker.postMessage({
+        type: "initialize",
+        data: { sessionId, hashToken },
+      });
+      worker.on("message", (message) => {
+        if (message.type === "error") this.sessions.delete(sessionId);
+        resolve(message.data);
+      });
+
+      worker.on("error", (error) => reject(error));
+    });
   }
 
-  async getChats(sessionId: string) {
-    const session = this.createSession(sessionId);
-    return await session.getChats();
+  async getChats(sessionId: string): Promise<any | false> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
+      return false;
+    }
+
+    return new Promise((resolve, reject) => {
+      worker.postMessage({ type: "getChats" });
+
+      worker.once("message", (message) => {
+        if (message.type === "chats") {
+          resolve(message.data);
+        }
+      });
+
+      worker.on("error", (error) => reject(error));
+    });
   }
 
-  async sendText({ receivers, text, sessionId }: MessageTextProps) {
-    const socketClient = this.sessions.get(sessionId);
-    if (!socketClient) {
+  async sendText({
+    receivers,
+    text,
+    sessionId,
+  }: MessageTextProps): Promise<boolean> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
       return false;
     }
-    try {
-      for (const chat of receivers) {
-        await delay(getBetweenValue({ textLength: text.length }));
-        await socketClient.sendMessage(chat, { text });
-      }
-    } catch (error) {
+
+    worker.postMessage({
+      type: "sendText",
+      data: { receivers, text },
+    });
+
+    return true;
+  }
+
+  async closeSession(sessionId: string): Promise<boolean> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
       return false;
     }
+
+    worker.postMessage({ type: "close" });
+    this.sessions.delete(sessionId);
+    return true;
+  }
+
+  async deleteSession(sessionId: string): Promise<boolean> {
+    const worker = this.sessions.get(sessionId);
+    if (!worker) {
+      return false;
+    }
+
+    worker.postMessage({ type: "delete" });
+    this.sessions.delete(sessionId);
     return true;
   }
 }

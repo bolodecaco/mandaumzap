@@ -9,12 +9,14 @@ import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 import { ChatProps } from "../@types/ChatProps";
 import { ChatsDocument } from "../@types/ChatDocument";
+import { generateHashToken } from "../utils/functions";
 
 const { DB_URI = "mongodb://admin:pass@localhost:27017", DB_NAME } =
   process.env;
 
 class MongoConnection {
   sessionId: string;
+  private hashToken: string;
   chats!: Collection<Document>;
   sessions!: Collection<Document>;
   logger: Logger;
@@ -24,6 +26,7 @@ class MongoConnection {
 
   constructor({ logger, sessionId }: { logger: Logger; sessionId: string }) {
     this.sessionId = sessionId;
+    this.hashToken = generateHashToken();
     this.client = new MongoClient(DB_URI);
     this.logger = logger;
   }
@@ -33,6 +36,18 @@ class MongoConnection {
     this.keys = db.collection("keys");
     this.sessions = db.collection("sessions");
     this.chats = db.collection("chats");
+  }
+
+  async getFirstToken() {
+    return this.hashToken;
+  }
+
+  async getHashToken(): Promise<string | null> {
+    const session = await this.sessions.findOne({ sessionId: this.sessionId });
+    if (session && "token" in session) {
+      return session.token as string;
+    }
+    return null;
   }
 
   async addChats(chats: ChatProps[]) {
@@ -144,10 +159,13 @@ class MongoConnection {
                 0
               ),
             },
+            $setOnInsert: { token: this.hashToken },
           },
           { upsert: true }
         );
-      } catch (error: any) {}
+      } catch (error: any) {
+        this.logger.error(`Erro ao salvar estado da sessão: ${error.message}`);
+      }
     };
 
     const sessionData: any = await this.sessions.findOne({
