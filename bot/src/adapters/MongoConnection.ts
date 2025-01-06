@@ -9,24 +9,23 @@ import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 import { ChatProps } from "../@types/ChatProps";
 import { ChatsDocument } from "../@types/ChatDocument";
-import { generateHashToken } from "../utils/functions";
+import { UserMongoProps } from "../@types/UserMongoProps";
 
 const { DB_URI = "mongodb://admin:pass@localhost:27017", DB_NAME } =
   process.env;
 
 class MongoConnection {
   sessionId: string;
-  private hashToken: string;
   chats!: Collection<Document>;
   sessions!: Collection<Document>;
+  keys!: Collection<Document>;
+  users!: Collection<Document>;
   logger: Logger;
   creds!: AuthenticationCreds;
   client: MongoClient;
-  keys!: Collection<Document>;
 
   constructor({ logger, sessionId }: { logger: Logger; sessionId: string }) {
     this.sessionId = sessionId;
-    this.hashToken = generateHashToken();
     this.client = new MongoClient(DB_URI);
     this.logger = logger;
   }
@@ -36,18 +35,76 @@ class MongoConnection {
     this.keys = db.collection("keys");
     this.sessions = db.collection("sessions");
     this.chats = db.collection("chats");
+    this.users = db.collection("users");
   }
 
-  async getFirstToken() {
-    return this.hashToken;
-  }
-
-  async getHashToken(): Promise<string | null> {
-    const session = await this.sessions.findOne({ sessionId: this.sessionId });
-    if (session && "token" in session) {
-      return session.token as string;
+  async addUser(user: UserMongoProps) {
+    try {
+      await this.users.updateOne(
+        {
+          userId: user.userId,
+          sessionId: user.sessionId,
+        },
+        {
+          $setOnInsert: { sessionId: user.sessionId, userId: user.userId },
+        },
+        { upsert: true }
+      );
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao adicionar usuário para a sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
     }
-    return null;
+  }
+
+  async getSessionByUserId(userId: string) {
+    try {
+      const sessions = await this.users.find({ userId }).toArray();
+      return {
+        user: userId,
+        sessions: sessions.map((session: any) => session.sessionId),
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao buscar usuário da sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
+    }
+  }
+
+  async getSession(user: UserMongoProps) {
+    try {
+      const userSession: any = await this.users.findOne({
+        sessionId: user.sessionId,
+      });
+      if (!userSession) return { exists: false, allowed: true };
+      if (userSession.userId !== user.userId)
+        return { allowed: false, exists: true };
+      return {
+        allowed: true,
+        exists: true,
+      };
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao buscar usuário da sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
+    }
+  }
+
+  async deleteUser(user: UserMongoProps) {
+    try {
+      await this.users.deleteOne({
+        sessionId: user.sessionId,
+        userId: user.userId,
+      });
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao remover usuário da sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
+    }
   }
 
   async addChats(chats: ChatProps[]) {
@@ -71,6 +128,7 @@ class MongoConnection {
 
   async removeSession() {
     try {
+      await this.users.deleteMany({ sessionId: this.sessionId });
       await this.sessions.deleteOne({ sessionId: this.sessionId });
       await this.keys.deleteMany({ sessionId: this.sessionId });
     } catch (error) {}
@@ -159,7 +217,7 @@ class MongoConnection {
                 0
               ),
             },
-            $setOnInsert: { token: this.hashToken },
+            $setOnInsert: {},
           },
           { upsert: true }
         );
@@ -251,15 +309,6 @@ class MongoConnection {
       return session.chats as ChatProps[];
     }
     return [];
-  }
-
-  async getSubSessions() {
-    return this.client
-      .db(DB_NAME!)
-      .collection("sessions")
-      .find({ sessionId: { $not: /main/ } })
-      .project({ sessionId: true })
-      .toArray();
   }
 }
 

@@ -6,19 +6,26 @@ const sessionRouter = (sessionService: SessionService) => {
 
   /**
    * @swagger
-   * /api/sessions:
+   * /api/sessions/{userId}:
    *   get:
    *     tags: [Session]
    *     summary: Lista de sessões
    *     description: Retorna uma lista com os IDs das sessões ativas
    *     parameters:
+   *       - in: path
+   *         name: userId
+   *         schema:
+   *           type: string
+   *           example: "userId"
+   *         required: true
+   *         description: O ID único do usuário.
    *       - in: query
    *         name: token
    *         schema:
    *           type: string
-   *           default: "token"
+   *           example: "token"
    *         required: true
-   *         description: Token for authentication
+   *         description: Token para autenticação
    *     responses:
    *       200:
    *         description: Sucesso
@@ -28,11 +35,12 @@ const sessionRouter = (sessionService: SessionService) => {
    *               type: array
    *               items:
    *                 type: string
-   *                 example: "sessionId"
+   *                 example: "sessionId12345"
    */
-  router.get("/sessions", (req, res): any => {
-    const sessionsIds = Array.from(sessionService.getAll());
-    return res.status(200).end(JSON.stringify(sessionsIds));
+  router.get("/sessions/:userId", async (req, res): Promise<any> => {
+    const { userId } = req.params;
+    const sessions = await sessionService.getAll(userId);
+    return res.status(200).end(JSON.stringify(sessions));
   });
 
   /**
@@ -61,9 +69,9 @@ const sessionRouter = (sessionService: SessionService) => {
    *                 type: string
    *                 example: "session"
    *                 description: O ID único para a sessão a ser criada.
-   *               hashToken:
+   *               userId:
    *                 type: string
-   *                 example: "hashToken"
+   *                 example: "userId"
    *                 description: Token de autenticação para a sessão.
    *     responses:
    *       200:
@@ -71,7 +79,7 @@ const sessionRouter = (sessionService: SessionService) => {
    *       201:
    *         description: >
    *           Session criada com sucesso
-   *           OBS: Caso seja a primeira conexão, o hashToken deve ser undefined ou null.
+   *           OBS: Caso seja a primeira conexão, o userId deve ser undefined ou null.
    *         content:
    *           application/json:
    *             schema:
@@ -85,18 +93,18 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: Requisição inválida, já existe uma sessão com o ID fornecido.
    */
   router.post("/sessions", async (req, res): Promise<any> => {
-    const { sessionId, hashToken = null } = req.body;
+    const { sessionId, userId = null } = req.body;
     if (sessionService.haveSession(sessionId)) {
       return res.status(400).end(JSON.stringify("A sessão já existe"));
     }
-    const { qrcode, error, token } = await sessionService.connectSession(
+    const { qrcode, error } = await sessionService.connectSession({
       sessionId,
-      hashToken
-    );
+      userId,
+    });
     if (error) return res.status(400).end(JSON.stringify(error));
     if (qrcode === "")
       return res.status(200).end(JSON.stringify("Iniciando sessão"));
-    return res.status(201).end(JSON.stringify({ qrcode, token }));
+    return res.status(201).end(JSON.stringify({ qrcode }));
   });
 
   /**

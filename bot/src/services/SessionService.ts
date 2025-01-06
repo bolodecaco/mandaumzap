@@ -1,9 +1,21 @@
 import { Worker } from "worker_threads";
 import { resolve } from "path";
 import { MessageTextProps } from "../@types/MessageTextProps";
+import MongoConnection from "../adapters/MongoConnection";
+import pino from "pino";
+import { UserMongoProps } from "../@types/UserMongoProps";
 
 class SessionService {
   private sessions: Map<string, Worker> = new Map<string, Worker>();
+  private mongoConnection: MongoConnection = new MongoConnection({
+    logger: pino({ level: "fatal" }),
+    sessionId: "main",
+  });
+
+  constructor() {
+    this.mongoConnection.connectToMongo();
+    this.mongoConnection.init();
+  }
 
   private createSession(sessionId: string): Worker {
     const workerPath = resolve(__dirname, "SessionWorker.js");
@@ -31,25 +43,36 @@ class SessionService {
     return this.sessions.has(sessionId);
   }
 
-  getAll(): string[] {
-    return Array.from(this.sessions.keys());
+  async getAll(userId: string) {
+    return await this.mongoConnection.getSessionByUserId(userId);
   }
 
-  async connectSession(sessionId: string, hashToken: string): Promise<any> {
-    if (this.haveSession(sessionId)) return false;
-    const worker = this.createSession(sessionId);
-    return new Promise((resolve, reject) => {
-      worker.postMessage({
-        type: "initialize",
-        data: { sessionId, hashToken },
+  async connectSession({ sessionId, userId }: UserMongoProps): Promise<any> {
+    try {
+      if (this.haveSession(sessionId)) return { error: "Sessão já existe" };
+      const userSession = await this.mongoConnection.getSession({
+        sessionId,
+        userId,
       });
-      worker.on("message", (message) => {
-        if (message.type === "error") this.sessions.delete(sessionId);
-        resolve(message.data);
-      });
+      if (!userSession.allowed && userSession.exists)
+        return { error: "Usuário não autorizado" };
+      if (!userSession.exists)
+        await this.mongoConnection.addUser({ sessionId, userId });
+      const worker = this.createSession(sessionId);
+      return new Promise((resolve, reject) => {
+        worker.postMessage({
+          type: "initialize",
+          data: { sessionId },
+        });
+        worker.on("message", (message) => {
+          if (message.type === "error" || message.type === "delete")
+            this.sessions.delete(sessionId);
+          resolve(message.data);
+        });
 
-      worker.on("error", (error) => reject(error));
-    });
+        worker.on("error", (error) => reject(error));
+      });
+    } catch (error) {}
   }
 
   async getChats(sessionId: string): Promise<any | false> {
