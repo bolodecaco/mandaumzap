@@ -131,6 +131,7 @@ class MongoConnection {
       await this.users.deleteMany({ sessionId: this.sessionId });
       await this.sessions.deleteOne({ sessionId: this.sessionId });
       await this.keys.deleteMany({ sessionId: this.sessionId });
+      await this.chats.deleteOne({ sessionId: this.sessionId });
     } catch (error) {}
   }
 
@@ -301,9 +302,9 @@ class MongoConnection {
     };
   }
 
-  async getChats(): Promise<ChatProps[]> {
+  async getChats(sessionId: string): Promise<ChatProps[]> {
     const session = await this.chats.findOne({
-      sessionId: this.sessionId,
+      sessionId,
     });
     if (session && "chats" in session) {
       return session.chats as ChatProps[];

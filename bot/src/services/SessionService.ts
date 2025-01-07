@@ -4,6 +4,7 @@ import { MessageTextProps } from "../@types/MessageTextProps";
 import MongoConnection from "../adapters/MongoConnection";
 import pino from "pino";
 import { UserMongoProps } from "../@types/UserMongoProps";
+import { count } from "console";
 
 class SessionService {
   private sessions: Map<string, Worker> = new Map<string, Worker>();
@@ -47,26 +48,26 @@ class SessionService {
     return await this.mongoConnection.getSessionByUserId(userId);
   }
 
-  async connectSession({ sessionId, userId }: UserMongoProps): Promise<any> {
+  async checkSession(userSession: UserMongoProps) {
+    return await this.mongoConnection.getSession(userSession);
+  }
+
+  async connectSession(userSession: UserMongoProps): Promise<any> {
     try {
-      if (this.haveSession(sessionId)) return { error: "Sessão já existe" };
-      const userSession = await this.mongoConnection.getSession({
-        sessionId,
-        userId,
-      });
-      if (!userSession.allowed && userSession.exists)
-        return { error: "Usuário não autorizado" };
-      if (!userSession.exists)
-        await this.mongoConnection.addUser({ sessionId, userId });
-      const worker = this.createSession(sessionId);
+      if (this.haveSession(userSession.sessionId))
+        return { error: "Sessão já existe" };
+      const { allowed, exists } = await this.checkSession(userSession);
+      if (!allowed && exists) return { error: "Usuário não autorizado" };
+      if (!exists) await this.mongoConnection.addUser(userSession);
+      const worker = this.createSession(userSession.sessionId);
       return new Promise((resolve, reject) => {
         worker.postMessage({
           type: "initialize",
-          data: { sessionId },
+          data: { sessionId: userSession.sessionId },
         });
         worker.on("message", (message) => {
           if (message.type === "error" || message.type === "delete")
-            this.sessions.delete(sessionId);
+            this.sessions.delete(userSession.sessionId);
           resolve(message.data);
         });
 
@@ -75,62 +76,47 @@ class SessionService {
     } catch (error) {}
   }
 
-  async getChats(sessionId: string): Promise<any | false> {
-    const worker = this.sessions.get(sessionId);
-    if (!worker) {
-      return false;
-    }
-
-    return new Promise((resolve, reject) => {
-      worker.postMessage({ type: "getChats" });
-
-      worker.once("message", (message) => {
-        if (message.type === "chats") {
-          resolve(message.data);
-        }
-      });
-
-      worker.on("error", (error) => reject(error));
-    });
+  async getChats(userSession: UserMongoProps) {
+    const { allowed, exists } = await this.checkSession(userSession);
+    if (!exists || !allowed) return false;
+    const chats = await this.mongoConnection.getChats(userSession.sessionId);
+    return { count: chats.length, chats };
   }
 
   async sendText({
     receivers,
     text,
     sessionId,
+    userId,
   }: MessageTextProps): Promise<boolean> {
+    const { allowed, exists } = await this.checkSession({ sessionId, userId });
+    if (!exists || !allowed) return false;
     const worker = this.sessions.get(sessionId);
-    if (!worker) {
-      return false;
-    }
-
+    if (!worker) return false;
     worker.postMessage({
       type: "sendText",
       data: { receivers, text },
     });
-
     return true;
   }
 
-  async closeSession(sessionId: string): Promise<boolean> {
-    const worker = this.sessions.get(sessionId);
-    if (!worker) {
-      return false;
-    }
-
+  async closeSession(userSession: UserMongoProps): Promise<boolean> {
+    const { allowed, exists } = await this.checkSession(userSession);
+    if (!exists || !allowed) return false;
+    const worker = this.sessions.get(userSession.sessionId);
+    if (!worker) return false;
     worker.postMessage({ type: "close" });
-    this.sessions.delete(sessionId);
+    this.sessions.delete(userSession.sessionId);
     return true;
   }
 
-  async deleteSession(sessionId: string): Promise<boolean> {
-    const worker = this.sessions.get(sessionId);
-    if (!worker) {
-      return false;
-    }
-
+  async deleteSession(userSession: UserMongoProps): Promise<boolean> {
+    const { allowed, exists } = await this.checkSession(userSession);
+    if (!exists || !allowed) return false;
+    const worker = this.sessions.get(userSession.sessionId);
+    if (!worker) return false;
     worker.postMessage({ type: "delete" });
-    this.sessions.delete(sessionId);
+    this.sessions.delete(userSession.sessionId);
     return true;
   }
 }

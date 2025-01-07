@@ -39,6 +39,10 @@ const sessionRouter = (sessionService: SessionService) => {
    */
   router.get("/sessions/:userId", async (req, res): Promise<any> => {
     const { userId } = req.params;
+    if (!userId)
+      return res
+        .status(400)
+        .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
     const sessions = await sessionService.getAll(userId);
     return res.status(200).end(JSON.stringify(sessions));
   });
@@ -93,7 +97,11 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: Requisição inválida, já existe uma sessão com o ID fornecido.
    */
   router.post("/sessions", async (req, res): Promise<any> => {
-    const { sessionId, userId = null } = req.body;
+    const { sessionId, userId } = req.body;
+    if (!sessionId || !userId)
+      return res
+        .status(400)
+        .end(JSON.stringify("Parâmetros inválidos ou não existentes"));
     if (sessionService.haveSession(sessionId)) {
       return res.status(400).end(JSON.stringify("A sessão já existe"));
     }
@@ -109,7 +117,7 @@ const sessionRouter = (sessionService: SessionService) => {
 
   /**
    * @swagger
-   * /api/sessions/close/{sessionId}:
+   * /api/sessions/close/{userId}/{sessionId}:
    *   delete:
    *     tags:
    *       - Session
@@ -123,6 +131,13 @@ const sessionRouter = (sessionService: SessionService) => {
    *           default: "token"
    *         required: true
    *         description: Token para autenticação.
+   *       - in: path
+   *         name: userId
+   *         schema:
+   *           type: string
+   *           default: "userId"
+   *         required: true
+   *         description: O ID único do usuário.
    *       - in: path
    *         name: sessionId
    *         schema:
@@ -137,20 +152,24 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: A sessão não existe.
    */
   router.delete(
-    "/sessions/close/:sessionId",
+    "/sessions/close/:userId/:sessionId",
     async (req, res): Promise<any> => {
-      const { sessionId } = req.params;
+      const { sessionId, userId } = req.params;
+      if (!sessionId)
+        return res
+          .status(400)
+          .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
       if (!sessionService.haveSession(sessionId)) {
         return res.status(400).end(JSON.stringify("A sessão não existe"));
       }
-      sessionService.closeSession(sessionId);
+      sessionService.closeSession({ sessionId, userId });
       return res.status(200).end(JSON.stringify("Sessão fechada"));
     }
   );
 
   /**
    * @swagger
-   * /api/sessions/{sessionId}:
+   * /api/sessions/{userId}/{sessionId}:
    *   delete:
    *     tags:
    *       - Session
@@ -177,14 +196,21 @@ const sessionRouter = (sessionService: SessionService) => {
    *       400:
    *         description: A sessão não existe.
    */
-  router.delete("/sessions/:sessionId", async (req, res): Promise<any> => {
-    const { sessionId } = req.params;
-    if (!sessionService.haveSession(sessionId)) {
-      return res.status(400).end(JSON.stringify("A sessão não existe"));
+  router.delete(
+    "/sessions/:userId/:sessionId",
+    async (req, res): Promise<any> => {
+      const { sessionId, userId } = req.params;
+      if (!sessionId)
+        return res
+          .status(400)
+          .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
+      if (!sessionService.haveSession(sessionId)) {
+        return res.status(400).end(JSON.stringify("A sessão não existe"));
+      }
+      sessionService.deleteSession({ sessionId, userId });
+      return res.status(200).end(JSON.stringify("Sessão excluída"));
     }
-    sessionService.deleteSession(sessionId);
-    return res.status(200).end(JSON.stringify("Sessão excluída"));
-  });
+  );
 
   return router;
 };

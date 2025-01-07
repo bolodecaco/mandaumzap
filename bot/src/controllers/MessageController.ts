@@ -29,6 +29,10 @@ const messageRouter = (sessionService: SessionService) => {
    *                 type: string
    *                 example: "session"
    *                 description: O ID da sessão que será usada para enviar a mensagem.
+   *               userId:
+   *                 type: string
+   *                 example: "userId"
+   *                 description: O ID do usuário que está enviando a mensagem.
    *               text:
    *                 type: string
    *                 example: "Olá! Esta é uma mensagem de teste."
@@ -53,15 +57,18 @@ const messageRouter = (sessionService: SessionService) => {
    *        description: Erro ao enviar a mensagem
    */
   router.post("/messages/send/text", async (req, res): Promise<any> => {
-    const { sessionId, text, receivers } = req.body;
+    const { sessionId, text, receivers, userId } = req.body;
+    if (!sessionId || !text || !receivers)
+      return res.status(400).end("Parâmetros inválidos ou inexistentes");
     const result = await sessionService.sendText({
       receivers,
       text,
       sessionId,
+      userId,
     });
     return result
-      ? res.status(200).json("Enviando mensagem")
-      : res.status(400).json("Erro ao enviar a mensagem");
+      ? res.status(200).end("Enviando mensagem")
+      : res.status(400).end("Erro ao enviar a mensagem");
   });
 
   return router;

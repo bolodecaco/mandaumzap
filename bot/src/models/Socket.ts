@@ -52,7 +52,7 @@ class WASocketWrapper {
 
   async getChats(): Promise<ChatProps[]> {
     const mongoConnection = await this.getMongoConnection();
-    return await mongoConnection.getChats();
+    return await mongoConnection.getChats(this.sessionId);
   }
 
   async initialize(): Promise<void> {
