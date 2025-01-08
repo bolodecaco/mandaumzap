@@ -6,19 +6,26 @@ const sessionRouter = (sessionService: SessionService) => {
 
   /**
    * @swagger
-   * /api/sessions:
+   * /api/sessions/{userId}:
    *   get:
    *     tags: [Session]
    *     summary: Lista de sessões
    *     description: Retorna uma lista com os IDs das sessões ativas
    *     parameters:
+   *       - in: path
+   *         name: userId
+   *         schema:
+   *           type: string
+   *           example: "userId"
+   *         required: true
+   *         description: O ID único do usuário.
    *       - in: query
    *         name: token
    *         schema:
    *           type: string
-   *           default: "token"
+   *           example: "token"
    *         required: true
-   *         description: Token for authentication
+   *         description: Token para autenticação
    *     responses:
    *       200:
    *         description: Sucesso
@@ -28,11 +35,16 @@ const sessionRouter = (sessionService: SessionService) => {
    *               type: array
    *               items:
    *                 type: string
-   *                 example: "sessionId"
+   *                 example: "sessionId12345"
    */
-  router.get("/sessions", (req, res): any => {
-    const sessionsIds = Array.from(sessionService.getAll());
-    return res.status(200).end(JSON.stringify(sessionsIds));
+  router.get("/sessions/:userId", async (req, res): Promise<any> => {
+    const { userId } = req.params;
+    if (!userId)
+      return res
+        .status(400)
+        .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
+    const sessions = await sessionService.getAll(userId);
+    return res.status(200).end(JSON.stringify(sessions));
   });
 
   /**
@@ -61,9 +73,9 @@ const sessionRouter = (sessionService: SessionService) => {
    *                 type: string
    *                 example: "session"
    *                 description: O ID único para a sessão a ser criada.
-   *               hashToken:
+   *               userId:
    *                 type: string
-   *                 example: "hashToken"
+   *                 example: "userId"
    *                 description: Token de autenticação para a sessão.
    *     responses:
    *       200:
@@ -71,7 +83,7 @@ const sessionRouter = (sessionService: SessionService) => {
    *       201:
    *         description: >
    *           Session criada com sucesso
-   *           OBS: Caso seja a primeira conexão, o hashToken deve ser undefined ou null.
+   *           OBS: Caso seja a primeira conexão, o userId deve ser undefined ou null.
    *         content:
    *           application/json:
    *             schema:
@@ -85,23 +97,27 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: Requisição inválida, já existe uma sessão com o ID fornecido.
    */
   router.post("/sessions", async (req, res): Promise<any> => {
-    const { sessionId, hashToken = null } = req.body;
+    const { sessionId, userId } = req.body;
+    if (!sessionId || !userId)
+      return res
+        .status(400)
+        .end(JSON.stringify("Parâmetros inválidos ou não existentes"));
     if (sessionService.haveSession(sessionId)) {
       return res.status(400).end(JSON.stringify("A sessão já existe"));
     }
-    const { qrcode, error, token } = await sessionService.connectSession(
+    const { qrcode, error } = await sessionService.connectSession({
       sessionId,
-      hashToken
-    );
+      userId,
+    });
     if (error) return res.status(400).end(JSON.stringify(error));
     if (qrcode === "")
       return res.status(200).end(JSON.stringify("Iniciando sessão"));
-    return res.status(201).end(JSON.stringify({ qrcode, token }));
+    return res.status(201).end(JSON.stringify({ qrcode }));
   });
 
   /**
    * @swagger
-   * /api/sessions/close/{sessionId}:
+   * /api/sessions/close/{userId}/{sessionId}:
    *   delete:
    *     tags:
    *       - Session
@@ -115,6 +131,13 @@ const sessionRouter = (sessionService: SessionService) => {
    *           default: "token"
    *         required: true
    *         description: Token para autenticação.
+   *       - in: path
+   *         name: userId
+   *         schema:
+   *           type: string
+   *           default: "userId"
+   *         required: true
+   *         description: O ID único do usuário.
    *       - in: path
    *         name: sessionId
    *         schema:
@@ -129,20 +152,24 @@ const sessionRouter = (sessionService: SessionService) => {
    *         description: A sessão não existe.
    */
   router.delete(
-    "/sessions/close/:sessionId",
+    "/sessions/close/:userId/:sessionId",
     async (req, res): Promise<any> => {
-      const { sessionId } = req.params;
+      const { sessionId, userId } = req.params;
+      if (!sessionId)
+        return res
+          .status(400)
+          .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
       if (!sessionService.haveSession(sessionId)) {
         return res.status(400).end(JSON.stringify("A sessão não existe"));
       }
-      sessionService.closeSession(sessionId);
+      sessionService.closeSession({ sessionId, userId });
       return res.status(200).end(JSON.stringify("Sessão fechada"));
     }
   );
 
   /**
    * @swagger
-   * /api/sessions/{sessionId}:
+   * /api/sessions/{userId}/{sessionId}:
    *   delete:
    *     tags:
    *       - Session
@@ -169,14 +196,21 @@ const sessionRouter = (sessionService: SessionService) => {
    *       400:
    *         description: A sessão não existe.
    */
-  router.delete("/sessions/:sessionId", async (req, res): Promise<any> => {
-    const { sessionId } = req.params;
-    if (!sessionService.haveSession(sessionId)) {
-      return res.status(400).end(JSON.stringify("A sessão não existe"));
+  router.delete(
+    "/sessions/:userId/:sessionId",
+    async (req, res): Promise<any> => {
+      const { sessionId, userId } = req.params;
+      if (!sessionId)
+        return res
+          .status(400)
+          .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
+      if (!sessionService.haveSession(sessionId)) {
+        return res.status(400).end(JSON.stringify("A sessão não existe"));
+      }
+      sessionService.deleteSession({ sessionId, userId });
+      return res.status(200).end(JSON.stringify("Sessão excluída"));
     }
-    sessionService.deleteSession(sessionId);
-    return res.status(200).end(JSON.stringify("Sessão excluída"));
-  });
+  );
 
   return router;
 };

@@ -50,19 +50,9 @@ class WASocketWrapper {
     await mongoConnection.addChats(chats);
   }
 
-  async getHashToken() {
-    const mongoConnection = await this.getMongoConnection();
-    return await mongoConnection.getHashToken();
-  }
-
-  async getFirstToken() {
-    const mongoConnection = await this.getMongoConnection();
-    return await mongoConnection.getFirstToken();
-  }
-
   async getChats(): Promise<ChatProps[]> {
     const mongoConnection = await this.getMongoConnection();
-    return await mongoConnection.getChats();
+    return await mongoConnection.getChats(this.sessionId);
   }
 
   async initialize(): Promise<void> {

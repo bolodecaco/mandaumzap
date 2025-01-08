@@ -3,6 +3,7 @@ import { Boom } from "@hapi/boom";
 import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
 import { ConnectSessionProps } from "../@types/ConnectSessionProps";
+import { parentPort } from "worker_threads";
 
 class Session {
   private id: string;
@@ -24,19 +25,15 @@ class Session {
     return this.waSocket.getSocket();
   }
 
-  async getHashToken() {
-    return await this.waSocket.getHashToken();
-  }
-
-  async getFirstToken() {
-    return await this.waSocket.getFirstToken();
-  }
-
   async getChats() {
     return await this.waSocket.getChats();
   }
 
   async delete() {
+    parentPort?.postMessage({
+      type: "delete",
+      data: { sessionId: this.id, message: "Delete session" },
+    });
     await this.waSocket.removeSession();
     process.exit(0);
   }

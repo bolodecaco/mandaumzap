@@ -36,10 +36,3 @@ export async function getWhatsappSocketVersion(): Promise<
     parseInt(versionArray[2]),
   ];
 }
-
-export function generateHashToken() {
-  return crypto
-    .createHash("sha256")
-    .update(crypto.randomBytes(32))
-    .digest("hex");
-}

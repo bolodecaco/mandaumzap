@@ -9,20 +9,12 @@ let session: Session;
 
 const signalsActions: SignalsProps = {
   initialize: async (message: ParentMessageProps) => {
-    const { sessionId, hashToken } = message.data;
+    const { sessionId } = message.data;
     session = SessionRepository.createSession(sessionId);
-    const tokenSession = await session.getHashToken();
-    if (hashToken !== tokenSession) {
-      parentPort?.postMessage({
-        type: "error",
-        data: { error: "Invalid token" },
-      });
-      return;
-    }
     const { qrcode } = await session.connect();
     parentPort?.postMessage({
       type: "qrcode",
-      data: { qrcode, token: await session.getFirstToken() },
+      data: { qrcode },
     });
   },
   getChats: async () => {
@@ -50,24 +42,21 @@ const signalsActions: SignalsProps = {
     }
   },
   close: async () => {
-    if (!session) {
-      parentPort?.postMessage({
-        type: "error",
-        data: "Session not initialized",
-      });
-      return;
-    }
+    if (!session) return;
+
+    parentPort?.postMessage({
+      type: "close",
+      data: "Close session",
+    });
     session.getWASocket()?.end(new Error("Closed by user"));
     process.exit(0);
   },
   delete: async () => {
-    if (!session) {
-      parentPort?.postMessage({
-        type: "error",
-        data: "Session not initialized",
-      });
-      return;
-    }
+    if (!session) return;
+    parentPort?.postMessage({
+      type: "delete",
+      data: "Delete session",
+    });
     session.getWASocket()?.end(new Error("Closed by user"));
     await session.delete();
     process.exit(0);

@@ -5,13 +5,20 @@ const chatRouter = (sessionService: SessionService) => {
   const router = express.Router();
   /**
    * @swagger
-   * /api/chats/{sessionId}:
+   * /api/chats/{userId}/{sessionId}:
    *   get:
    *     tags:
    *       - Chat
    *     summary: Lista de sessões
    *     description: Retorna uma lista com os IDs das sessões ativas
    *     parameters:
+   *       - in: path
+   *         name: userId
+   *         schema:
+   *           type: string
+   *           default: "userId"
+   *         required: true
+   *         description: ID de um usuário
    *       - in: path
    *         name: sessionId
    *         schema:
@@ -47,11 +54,13 @@ const chatRouter = (sessionService: SessionService) => {
    *                   type: string
    *                   example: Sessão não encontrada
    */
-  router.get("/chats/:sessionId", async (req, res): Promise<any> => {
-    const { sessionId } = req.params;
-    if (!sessionService.haveSession(sessionId))
-      return res.status(404).json({ message: "Sessão não encontrada" });
-    const chats = await sessionService.getChats(sessionId);
+  router.get("/chats/:userId/:sessionId", async (req, res): Promise<any> => {
+    const { sessionId, userId } = req.params;
+    if (!sessionId || !userId)
+      return res
+        .status(400)
+        .end(JSON.stringify("Parâmetros inválidos ou inexistentes"));
+    const chats = await sessionService.getChats({ sessionId, userId });
     return res.status(200).json(chats);
   });
   return router;
