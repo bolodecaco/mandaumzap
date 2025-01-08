@@ -18,7 +18,6 @@ const signalsActions: SignalsProps = {
     });
   },
   getChats: async () => {
-    console.log("aquiiii");
     if (!session) {
       parentPort?.postMessage({
         type: "error",
