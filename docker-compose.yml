@@ -1,35 +1,23 @@
 services:
-  mongo-db:
-    container_name: mongo-db
-    image: mongo:4.2
+  mongo:
+    image: mongo
+    restart: always
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_DATABASE=auth
-      - MONGO_INITDB_ROOT_PASSWORD=pass
-    networks:
-      - mongo-compose-network
-    ports:
-      - "27017:27017"
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 1312
     volumes:
-      - ./data:/data/mongo-db
+      - /mongo-data:/data/db
 
   mongo-express:
-    container_name: mongo-db-express
     image: mongo-express
-    depends_on:
-      - mongo-db
-    networks:
-      - mongo-compose-network
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo-db
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=pass
-      - ME_CONFIG_BASICAUTH_USERNAME=admin
-      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    restart: always
     ports:
-      - "8081:8081"
-    volumes:
-      - ./data:/data/mongo-db
+      - 127.0.0.1:8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 1312
+      ME_CONFIG_MONGODB_URL: mongodb://root:1312@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
 
   postgres:
     image: postgres:13
@@ -45,7 +33,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -62,7 +50,7 @@ services:
     networks:
       - rabbitmq-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -82,7 +70,7 @@ services:
     networks:
       - minio-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
       timeout: 20s
       retries: 3
