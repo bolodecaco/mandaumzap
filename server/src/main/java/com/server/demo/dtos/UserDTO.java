@@ -1,5 +1,6 @@
 package com.server.demo.dtos;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.server.demo.enums.PlanType;
@@ -30,4 +31,6 @@ public class UserDTO {
     @Schema(name = "plan", description = "Plano do usuário", example = "FREE")
     private PlanType plan;
 
+    @Schema(name = "sessions", description = "Lista de IDs das sessões do usuário")
+    private List<UUID> sessions;
 }

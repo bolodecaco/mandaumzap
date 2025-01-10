@@ -30,6 +30,9 @@ public class BroadcastListDTO {
     @Schema(description = "ID do dono da lista de transmissão")
     private UUID owner;
 
+    @Schema(description = "ID da sessão")
+    private UUID sessionId;
+
     @Schema(description = "Lista de chats da lista de transmissão")
     private List<ChatDTO> chats;
 
@@ -42,9 +45,10 @@ public class BroadcastListDTO {
     @Schema(description = "Quantidade de mensagens enviadas")
     private int messagesSent;
 
-    public BroadcastListDTO(UUID id, UUID owner, List<Chat> chats, String title, Date lastActiveAt, int messagesSent) {
+    public BroadcastListDTO(UUID id, UUID owner, UUID sessionId, List<Chat> chats, String title, Date lastActiveAt, int messagesSent) {
         this.id = id;
         this.owner = owner;
+        this.sessionId = sessionId;
         this.title = title;
         this.lastActiveAt = lastActiveAt;
         this.messagesSent = messagesSent;

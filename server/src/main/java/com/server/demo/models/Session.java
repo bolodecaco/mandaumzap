@@ -14,28 +14,17 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "chats")
-public class Chat {
+@Table(name = "sessions")
+public class Session {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
-
-    @ManyToOne
-    @JoinColumn(name = "session_id", nullable = false)
-    private Session session;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false)
-    private String chatId;
-
-    @Column(nullable = false)
-    private String chatName;
-
-    @Column(nullable = false)
-    private boolean isGroup;
-
+    private boolean isActive;
 }

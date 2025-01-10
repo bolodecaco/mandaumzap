@@ -2,6 +2,7 @@ package com.server.demo.models;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -45,4 +46,11 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "plan_id", nullable = true) 
     private Plan plan; 
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Session> sessions = new ArrayList<>();
+
+    public List<Session> getSessions() {
+        return sessions;
+    }
 }

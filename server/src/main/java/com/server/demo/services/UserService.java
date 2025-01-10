@@ -43,15 +43,18 @@ public class UserService {
 
     public UserDTO createUser(RequestUserDTO requestedUser) {
         User user = userMapper.toEntity(requestedUser);
-        Plan freePlan = planRepository.findByType(PlanType.FREE).orElseThrow(() -> new RuntimeException("Plan not found"));
+        Plan freePlan = planRepository.findByType(PlanType.FREE).orElseThrow(() -> 
+        new RuntimeException("Plan not found"));
+        System.err.println(freePlan);
         user.setPlan(freePlan);
         User currentUser = userRepository.save(user);
         return userMapper.toDTO(currentUser);
     }
 
     public UserDTO updateUser(UUID id, RequestUserDTO userDetails) {
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
         User updatedUser = userMapper.toEntity(userDetails);
-        updatedUser.setId(id);
+        updatedUser.setId(existingUser.getId());
         updatedUser = userRepository.save(updatedUser);
         return userMapper.toDTO(updatedUser);
     }
