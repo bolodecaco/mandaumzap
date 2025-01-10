@@ -45,7 +45,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -62,7 +62,7 @@ services:
     networks:
       - rabbitmq-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -82,7 +82,7 @@ services:
     networks:
       - minio-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -101,7 +101,6 @@ services:
     networks:
       - monitoring-network
     restart: unless-stopped
-
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -119,7 +118,6 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
-
 networks:
   mongo-compose-network:
     driver: bridge
@@ -131,7 +129,6 @@ networks:
     driver: bridge
   monitoring-network:
     driver: bridge
-
 volumes:
   prometheus_data:
   grafana_data:
