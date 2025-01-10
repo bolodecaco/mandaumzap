@@ -41,7 +41,7 @@ const signalsActions: SignalsProps = {
     for (const chat of receivers) {
       const socket = session.getWASocket();
       await fakeTyping(socket, chat);
-      await session.getWASocket()?.sendMessage(chat, { text });
+      await socket?.sendMessage(chat, { text });
     }
   },
   close: async () => {
