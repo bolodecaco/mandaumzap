@@ -37,7 +37,6 @@ public class SessionMapper {
     }
 
     public List<SessionDTO> toDTOList(List<Session> sessions) {
-        // Implement this method if needed
         return null;
     }
 }
