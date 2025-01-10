@@ -1,6 +1,7 @@
 import { WaitTimeProps } from "../@types/WaitTimeProps";
 import crypto from "crypto";
 import { socketVersionPage, versionFinder, versionParser } from "./global";
+import { delay, WASocket } from "@whiskeysockets/baileys";
 
 export function getBetweenValue({
   textLength,
@@ -35,4 +36,14 @@ export async function getWhatsappSocketVersion(): Promise<
     parseInt(versionArray[1]),
     parseInt(versionArray[2]),
   ];
+}
+
+export async function fakeTyping(socket: WASocket, jid: string) {
+  await socket.sendPresenceUpdate("composing", jid);
+  await delay(generateRandomValue(3000, 5000));
+  await socket.sendPresenceUpdate("paused", jid);
+}
+
+function generateRandomValue(max: number, min: number) {
+  return Math.random() * (max - min) + min;
 }

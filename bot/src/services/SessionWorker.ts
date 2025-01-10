@@ -4,6 +4,7 @@ import Session from "../models/Session";
 import { ParentMessageProps } from "../@types/ParentMessageProps";
 import { SignalsProps } from "../@types/SignalsProps";
 import { error } from "console";
+import { fakeTyping } from "../utils/functions";
 
 let session: Session;
 
@@ -38,7 +39,9 @@ const signalsActions: SignalsProps = {
     }
     const { receivers, text } = message.data;
     for (const chat of receivers) {
-      await session.getWASocket()?.sendMessage(chat, { text });
+      const socket = session.getWASocket();
+      await fakeTyping(socket, chat);
+      await socket?.sendMessage(chat, { text });
     }
   },
   close: async () => {

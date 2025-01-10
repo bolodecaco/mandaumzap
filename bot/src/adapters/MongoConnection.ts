@@ -36,6 +36,12 @@ class MongoConnection {
     this.sessions = db.collection("sessions");
     this.chats = db.collection("chats");
     this.users = db.collection("users");
+    await Promise.all([
+      this.keys.createIndex({ sessionId: 1 }, { unique: false }),
+      this.sessions.createIndex({ sessionId: 1 }, { unique: true }),
+      this.chats.createIndex({ sessionId: 1 }, { unique: true }),
+      this.users.createIndex({ sessionId: 1, userId: 1 }, { unique: true }),
+    ]);
   }
 
   async addUser(user: UserMongoProps) {
@@ -294,6 +300,7 @@ class MongoConnection {
               await this.keys.deleteMany({ sessionId: this.sessionId });
               await this.sessions.deleteMany({ sessionId: this.sessionId });
               await this.chats.deleteMany({ sessionId: this.sessionId });
+              await this.users.deleteMany({ sessionId: this.sessionId });
             } catch (error: any) {}
           },
         },
