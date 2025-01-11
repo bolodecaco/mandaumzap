@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.server.demo.dtos.AddChatToBroadcastListDTO;
 import com.server.demo.dtos.BroadcastListDTO;
+import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.RequestBroadcastListDTO;
 import com.server.demo.dtos.RequestChatDTO;
-import com.server.demo.models.BroadcastList;
+import com.server.demo.dtos.UpdateBroadcastListDTO;
 import com.server.demo.services.BroadcastListService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +35,8 @@ public class BroadcastListController {
 
     @Operation(summary = "Retorna todas as listas de transmissão")
     @GetMapping
-    public List<BroadcastListDTO> getAllLists() {
-        return listService.getAllLists();
+    public ResponseEntity<List<BroadcastListDTO>> getAllLists() {
+        return ResponseEntity.ok(listService.getAllLists());
     }
 
     @Operation(summary = "Retorna uma lista de transmissão pelo ID")
@@ -51,27 +53,19 @@ public class BroadcastListController {
 
     @Operation(summary = "Adiciona um chat a uma lista de transmissão")
     @PostMapping("/{id}/chats")
-    public ResponseEntity<String> addChatToList(@PathVariable UUID id, @RequestBody RequestChatDTO chat) {
-        if (chat.getChatId() == null) {
-            return ResponseEntity.badRequest().body("Chat ID is required");
-        }
-        listService.addChat(id, chat.getChatId());
-        return ResponseEntity.ok("Chat added to list");
+    public ResponseEntity<BroadcastListDTO> addChatToList(@PathVariable UUID id, @RequestBody AddChatToBroadcastListDTO chatDto) {
+        return ResponseEntity.ok(listService.addChat(id, chatDto));
     }
 
     @Operation(summary = "Remove um chat de uma lista de transmissão")
     @DeleteMapping("/{id}/chats")
-    public ResponseEntity<String> removeChatFromList(@PathVariable UUID id, @RequestBody RequestChatDTO chat) {
-        if (chat.getChatId() == null) {
-            return ResponseEntity.badRequest().body("Chat ID is required");
-        }
-        listService.removeChat(id, chat.getChatId());
-        return ResponseEntity.ok("Chat removed from list");
+    public ResponseEntity<BroadcastListDTO> removeChatFromList(@PathVariable UUID id, @RequestBody AddChatToBroadcastListDTO chatDto) {
+        return ResponseEntity.ok(listService.removeChat(id, chatDto));
     }
 
     @Operation(summary = "Atualiza uma lista de transmissão")
     @PutMapping("/{id}")
-    public ResponseEntity<BroadcastListDTO> updateList(@PathVariable UUID id, @RequestBody BroadcastList listDetails) {
+    public ResponseEntity<BroadcastListDTO> updateList(@PathVariable UUID id, @RequestBody UpdateBroadcastListDTO listDetails) {
         return ResponseEntity.ok(listService.updateList(id, listDetails));
     }
 
@@ -84,8 +78,14 @@ public class BroadcastListController {
 
     @Operation(summary = "Retorna todas as listas de transmissão de um usuário")
     @GetMapping("/user/{userId}")
-    public List<BroadcastListDTO> findAllByUserId(@PathVariable UUID userId) {
-        return listService.findAllByUserId(userId);
+    public ResponseEntity<List<BroadcastListDTO>> findAllByUserId(@PathVariable UUID userId) {
+        return ResponseEntity.ok(listService.findAllByUserId(userId));
+    }
+
+    @Operation(summary = "Retorna todos os chats de uma lista de transmissão")
+    @GetMapping("/{id}/chats")
+    public ResponseEntity<List<ChatDTO>> getChatsFromList(@PathVariable UUID id) {
+        return ResponseEntity.ok(listService.getChatsFromList(id));
     }
 
 }

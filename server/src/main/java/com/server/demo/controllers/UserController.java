@@ -2,7 +2,6 @@ package com.server.demo.controllers;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,17 +31,8 @@ public class UserController {
 
     @Operation(summary = "Retorna todos os usuários")
     @GetMapping
-    public List<UserDTO> getAllUsers() {
-        return userService.getAllUsers().stream()
-                .map(user -> new UserDTO(
-                        user.getId(),
-                        user.getName(),
-                        user.getPhone(),
-                        user.getAvatar(),
-                        user.getPlan(),
-                        user.getSessions()
-                ))
-                .collect(Collectors.toList());
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Operation(summary = "Retorna um usuário pelo ID")

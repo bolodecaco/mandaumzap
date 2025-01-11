@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,20 +31,19 @@ public class NotificationController {
 
     @Operation(summary = "Retorna todas as notificações")
     @GetMapping
-    public List<NotificationDTO> getAllNotifications() {
-        return notificationService.getAllNotifications();
+    public ResponseEntity<List<NotificationDTO>> getAllNotifications() {
+        return ResponseEntity.ok(notificationService.getAllNotifications());
     }
 
     @Operation(summary = "Atualiza o status de leitura de uma notificação")
     @PatchMapping("/{id}")
-    public NotificationDTO updateRead(@PathVariable UUID id, @RequestBody UpdateNotificationReadDTO read) {
-        return notificationService.updateRead(id, read.isRead());
+    public ResponseEntity<NotificationDTO> updateRead(@PathVariable UUID id, @RequestBody UpdateNotificationReadDTO read) {
+        return ResponseEntity.ok(notificationService.updateRead(id, read.isRead()));
     }
 
     @Operation(summary = "Cria uma nova notificação")
     @PostMapping
-    public String createNotification(@RequestBody RequestNotificationDTO notification) {
-        notificationService.createNotification(notification);
-        return "Notification created";
+    public ResponseEntity<NotificationDTO> createNotification(@RequestBody RequestNotificationDTO notification) {
+        return ResponseEntity.ok(notificationService.createNotification(notification));
     }
 }

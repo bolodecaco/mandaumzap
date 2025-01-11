@@ -11,17 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "DTO para informações da Rotina", example = """
-        {
-          "id": "123e4567-e89b-12d3-a456-426614174000",
-          "ownerId": "123e4567-e89b-12d3-a456-426614174001",
-          "title": "Lembrete de Reunião Diária",
-          "messageId": "123e4567-e89b-12d3-a456-426614174002",
-          "lastActiveAt": "2024-01-20T10:30:00Z",
-          "willActiveAt": "2024-01-21T10:30:00Z",
-          "timesSent": 5
-        }
-        """)
+@Schema(description = "DTO para informações da Rotina")
 public class RoutineDTO {
     @Schema(description = "Identificador único da rotina", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;

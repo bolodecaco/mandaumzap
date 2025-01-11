@@ -2,21 +2,25 @@ package com.server.demo.mappers;
 
 import java.util.List;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 import com.server.demo.dtos.BroadcastListDTO;
 import com.server.demo.dtos.RequestBroadcastListDTO;
+import com.server.demo.dtos.UpdateBroadcastListDTO;
 import com.server.demo.models.BroadcastList;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {ChatMapper.class})
 public interface BroadcastListMapper {
 
-    @Mapping(target = "owner", ignore = true)
-    BroadcastListDTO toDTO(BroadcastList message);
+    @Mapping(target = "ownerId", source = "owner.id")
+    BroadcastListDTO toDTO(BroadcastList list);
 
-    BroadcastList toEntity(RequestBroadcastListDTO message);
+    @Mapping(target = "owner.id", source = "ownerId")
+    BroadcastList toEntity(RequestBroadcastListDTO list);
 
-    List<BroadcastListDTO> toDTOList(List<BroadcastList> messages);
+    List<BroadcastListDTO> toDTOList(List<BroadcastList> lists);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    BroadcastList updateEntityFromDTO(UpdateBroadcastListDTO dto, @MappingTarget BroadcastList list);
 }

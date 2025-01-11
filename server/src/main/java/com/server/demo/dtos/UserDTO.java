@@ -1,9 +1,7 @@
 package com.server.demo.dtos;
 
-import java.util.List;
 import java.util.UUID;
 
-import com.server.demo.enums.PlanType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -28,9 +26,6 @@ public class UserDTO {
     @Schema(name = "avatar", description = "Avatar do usuário", example = "https://www.google.com/avatar.jpg")
     private String avatar;
 
-    @Schema(name = "plan", description = "Plano do usuário", example = "FREE")
-    private PlanType plan;
-
-    @Schema(name = "sessions", description = "Lista de IDs das sessões do usuário")
-    private List<UUID> sessions;
+    @Schema(name = "plan", description = "Plano do usuário", example = "Gratuito")
+    private String plan;
 }

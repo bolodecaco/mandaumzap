@@ -2,9 +2,11 @@ package com.server.demo.dtos;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.server.demo.validations.ExclusiveFields;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,47 +15,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "DTO para requisições de mensagens")
+@ExclusiveFields(message = "Preencha apenas 'chatId' ou 'broadcastListId', não ambos.")
 public class RequestMessageDTO {
 
-    @Schema(description = "Identificador da mensagem", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
-    private UUID id;
-
     @Schema(description = "Conteúdo da mensagem", example = "Mensagem de exemplo")
+    @NotEmpty(message = "O conteúdo da mensagem não pode ser vazio")
     private String content;
 
-    @Schema(description = "Data da última vez que a mensagem foi enviada", example = "2024-02-20T10:30:00Z")
-    private String lastSent;
-
-    @Schema(description = "Número de vezes que a mensagem foi enviada", example = "0")
-    private int timesSent;
-
-    @Schema(description = "Identificador do chat", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+    @Schema(description = "Identificador do chat a ser enviado", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
     private UUID chatId;
 
     @Schema(description = "Identificador da lista de transmissão", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
     private UUID broadcastListId;
 
-    @Schema(description = "Dono da mensagem")
-    private OwnerDTO owner;
-
-    @Data
-    public static class OwnerDTO {
-
-        @Schema(description = "ID do dono da mensagem", example = "123e4567-e89b-12d3-a456-426614174000")
-        private String id;
-    }
-
-    @JsonIgnore
-    public UUID getOwnerId() {
-        return owner != null && owner.getId() != null
-                ? UUID.fromString(owner.getId())
-                : null;
-    }
-
-    public void setOwnerId(UUID requestOwnerId) {
-        if (requestOwnerId != null) {
-            this.owner = new OwnerDTO();
-            this.owner.setId(requestOwnerId.toString());
-        }
-    }
+    @Schema(description = "ID do usuário que irá enviar a mensagem", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+    @NotNull(message = "O ID do usuário não pode ser nulo")
+    private UUID ownerId;
 }

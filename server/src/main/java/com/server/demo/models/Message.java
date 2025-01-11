@@ -1,7 +1,8 @@
 package com.server.demo.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
@@ -9,8 +10,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Date;
 
-@Data
 @Entity
+@Getter
+@Setter
 @Table(name = "messages")
 public class Message {
 

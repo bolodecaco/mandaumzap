@@ -5,6 +5,7 @@ import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
+import com.server.demo.dtos.RequestRoutineDTO;
 import com.server.demo.dtos.RoutineDTO;
 import com.server.demo.models.Routine;
 
@@ -12,6 +13,8 @@ import com.server.demo.models.Routine;
 public interface RoutineMapper {
 
     RoutineDTO toDTO(Routine routine);
+
+    Routine toEntity(RequestRoutineDTO routine);
 
     List<RoutineDTO> toDTOList(List<Routine> routines);
 }

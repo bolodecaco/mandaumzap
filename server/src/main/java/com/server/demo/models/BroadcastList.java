@@ -13,14 +13,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
 @Entity
+@Getter
+@Setter
 @Table(name = "broadcast_lists")
 public class BroadcastList {
 
@@ -31,10 +32,6 @@ public class BroadcastList {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-
-    @ManyToOne
-    @JoinColumn(name = "session_id", nullable = false)
-    private Session session;
 
     @ManyToMany
     @JoinTable(
@@ -55,12 +52,5 @@ public class BroadcastList {
 
     public BroadcastList() {
         this.messagesSent = 0;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        if (lastActiveAt == null) {
-            lastActiveAt = new Date();
-        }
     }
 }
