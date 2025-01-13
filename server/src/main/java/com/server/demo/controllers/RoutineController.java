@@ -2,12 +2,8 @@ package com.server.demo.controllers;
 
 import com.server.demo.dtos.RequestRoutineDTO;
 import com.server.demo.dtos.RoutineDTO;
-import com.server.demo.models.Routine;
 import com.server.demo.services.RoutineService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
