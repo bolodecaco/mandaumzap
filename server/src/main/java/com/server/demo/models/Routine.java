@@ -36,11 +36,4 @@ public class Routine {
 
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;
-
-    @PrePersist
-    protected void onCreate() {
-        if (lastActiveAt == null) {
-            lastActiveAt = new Date();
-        }
-    }
 }
