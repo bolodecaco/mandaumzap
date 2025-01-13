@@ -33,12 +33,12 @@ public class UserService {
     }
 
     public UserDTO getUserById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Usuário com ID %s não encontrado", id)));
         return userMapper.toDTO(user);
     }
 
     public User findById(UUID id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Usuário com ID %s não encontrado", id)));
     }
 
     public UserDTO createUser(RequestUserDTO requestedUser) {
@@ -52,10 +52,9 @@ public class UserService {
     }
 
     public UserDTO updateUser(UUID id, RequestUserDTO userDetails) {
-        User existingUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
-        User updatedUser = userMapper.toEntity(userDetails);
-        updatedUser.setId(existingUser.getId());
-        updatedUser = userRepository.save(updatedUser);
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Usuário com ID %s não encontrado", id)));
+        userMapper.updateEntityFromDTO(userDetails, existingUser);
+        User updatedUser = userRepository.save(existingUser);
         return userMapper.toDTO(updatedUser);
     }
 

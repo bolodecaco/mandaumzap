@@ -1,13 +1,15 @@
 package com.server.demo.models;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 import java.util.UUID;
 
-@Data
 @Entity
+@Getter
+@Setter
 @Table(name = "routine")
 public class Routine {
 
@@ -34,11 +36,4 @@ public class Routine {
 
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;
-
-    @PrePersist
-    protected void onCreate() {
-        if (lastActiveAt == null) {
-            lastActiveAt = new Date();
-        }
-    }
 }

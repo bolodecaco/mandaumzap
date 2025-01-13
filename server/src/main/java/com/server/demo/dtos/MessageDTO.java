@@ -32,7 +32,4 @@ public class MessageDTO {
     @Schema(name = "broadcastListId", description = "ID da lista de transmissão", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID broadcastListId;
 
-    @Schema(name = "chatId", description = "ID do chat", example = "123e4567-e89b-12d3-a456-426614174000")
-    private UUID chatId;
-
 }

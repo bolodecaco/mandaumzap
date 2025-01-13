@@ -2,7 +2,6 @@ package com.server.demo.services;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.mappers.MessageMapper;
-import com.server.demo.models.Chat;
 import com.server.demo.models.Message;
 import com.server.demo.repositories.MessageRepository;
 
@@ -24,24 +22,12 @@ public class MessageService {
     @Autowired
     private MessageMapper messageMapper;
 
-    @Autowired
-    private ChatService chatService;
-
     public MessageDTO sendMessage(UUID messageId, RequestMessageDTO requestMessage) {
-        Optional<Message> messageOptional = messageRepository.findById(messageId);
-
-        if (messageOptional.isEmpty()) {
-            throw new IllegalArgumentException("Mensagem não encontrada.");
-        }
-
-        Message message = messageOptional.get();
-
-        if (message.isDeleted()) {
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException(String.format("Mensagem com id %s não encontrada", messageId)));
+        if (message.getDeletedAt() != null) {
             throw new IllegalArgumentException("Não é possível enviar uma mensagem que foi deletada.");
         }
-
-        Chat chatRecipient = chatService.getChatById(requestMessage.getChatId());
-        message.setChatRecipient(chatRecipient);
 
         message.setTimesSent(message.getTimesSent() + 1);
         message.setLastSentAt(new Date());
@@ -51,13 +37,15 @@ public class MessageService {
         return messageMapper.toDTO(currentMessage);
     }
 
-    public Optional<MessageDTO> getMessageById(UUID id) {
-        Optional<Message> currentMessage = messageRepository.findById(id);
-        return currentMessage.map(messageMapper::toDTO);
+    public MessageDTO getMessageById(UUID id) {
+        Message currentMessage = messageRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException(String.format("Mensagem com id %s não encontrada", id)));
+
+        return messageMapper.toDTO(currentMessage);
     }
 
-    public List<MessageDTO> getMessagesByOwnerId(UUID ownerId) {
-        List<Message> messages = messageRepository.findByOwnerId(ownerId);
+    public List<MessageDTO> getMessagesByUserId(UUID userId) {
+        List<Message> messages = messageRepository.findByOwnerId(userId);
         return messageMapper.toDTOList(messages);
     }
 
@@ -73,19 +61,10 @@ public class MessageService {
     }
 
     public void deleteMessage(UUID messageId) {
-        Optional<Message> messageOptional = messageRepository.findById(messageId);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException(String.format("Mensagem com id %s não encontrada", messageId)));
 
-        if (messageOptional.isEmpty()) {
-            throw new IllegalArgumentException("Mensagem não encontrada.");
-        }
-
-        Message message = messageOptional.get();
-
-        if (!message.isDeleted()) {
-            message.softDelete();
-            messageRepository.save(message);
-        } else {
-            throw new IllegalArgumentException("Mensagem já foi deletada.");
-        }
+        message.setDeletedAt(new Date());
+        messageRepository.save(message);
     }
 }

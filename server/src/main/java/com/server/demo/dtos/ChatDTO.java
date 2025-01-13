@@ -16,8 +16,8 @@ public class ChatDTO {
     @Schema(name = "id", description = "ID do chat", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;
 
-    @Schema(name = "chatId", description = "ID do chat", example = "123e4567-e89b-12d3-a456-426614174000")
-    private String chatId;
+    @Schema(name = "whatsAppId", description = "ID do chat no WhatsApp", example = "1234567890@g.us")
+    private String whatsAppId;
 
     @Schema(name = "chatName", description = "Nome do chat", example = "Chat do João")
     private String chatName;

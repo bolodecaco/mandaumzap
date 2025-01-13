@@ -49,10 +49,11 @@ public class NotificationService {
         return notificationMapper.toDTOList(notifications);
     }
 
-    public void createNotification(RequestNotificationDTO notification) {
+    public NotificationDTO createNotification(RequestNotificationDTO notification) {
         Notification newNotification = notificationMapper.toEntity(notification);
         notificationRepository.save(newNotification);
         eventPublisher.publishEvent(new NotificationEvent(this, newNotification.getReceiver().getId()));
+        return notificationMapper.toDTO(newNotification);
     }
 
     public NotificationDTO updateRead(UUID id, boolean read) {

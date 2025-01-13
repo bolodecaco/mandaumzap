@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.RequestChatDTO;
-import com.server.demo.models.Chat;
+import com.server.demo.dtos.UpdateChatDTO;
 import com.server.demo.services.ChatService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,7 +50,7 @@ public class ChatController {
 
     @Operation(summary = "Atualiza um chat pelo ID")
     @PutMapping("/{id}")
-    public ResponseEntity<ChatDTO> updateChat(@PathVariable UUID id, @RequestBody Chat chatDetails) {
+    public ResponseEntity<ChatDTO> updateChat(@PathVariable UUID id, @RequestBody UpdateChatDTO chatDetails) {
         return ResponseEntity.ok(chatService.updateChat(id, chatDetails));
     }
 

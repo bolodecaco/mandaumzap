@@ -1,7 +1,6 @@
 package com.server.demo.controllers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
-import com.server.demo.models.Message;
 import com.server.demo.services.MessageService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,14 +38,13 @@ public class MessageController {
     @Operation(summary = "Retorna uma mensagem pelo ID")
     @GetMapping("/{id}")
     public ResponseEntity<MessageDTO> getMessageById(@PathVariable UUID id) {
-        Optional<MessageDTO> message = messageService.getMessageById(id);
-        return message.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(messageService.getMessageById(id));
     }
 
-    @Operation(summary = "Retorna todas as mensagens de um dono")
-    @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<MessageDTO>> getMessagesByOwnerId(@PathVariable UUID ownerId) {
-        List<MessageDTO> messages = messageService.getMessagesByOwnerId(ownerId);
+    @Operation(summary = "Retorna todas as mensagens de um usuário")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<MessageDTO>> getMessagesByUserId(@PathVariable UUID userId) {
+        List<MessageDTO> messages = messageService.getMessagesByUserId(userId);
         return ResponseEntity.ok(messages);
     }
 
@@ -61,22 +58,13 @@ public class MessageController {
     @Operation(summary = "Envia uma mensagem")
     @PostMapping("/{id}/send")
     public ResponseEntity<MessageDTO> sendMessage(@PathVariable UUID id, @RequestBody RequestMessageDTO requestMessage) {
-        try {
-            MessageDTO updatedMessage = messageService.sendMessage(id, requestMessage);
-            return ResponseEntity.ok(updatedMessage);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+        return ResponseEntity.ok(messageService.sendMessage(id, requestMessage));
     }
 
     @Operation(summary = "Deleta uma mensagem")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteMessage(@PathVariable UUID id) {
-        try {
-            messageService.deleteMessage(id);
-            return ResponseEntity.ok("Mensagem deletada com sucesso.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).body("Mensagem não encontrada.");
-        }
+        messageService.deleteMessage(id);
+        return ResponseEntity.noContent().build();
     }
 }

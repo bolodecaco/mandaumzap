@@ -6,9 +6,13 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.server.demo.dtos.AddChatToBroadcastListDTO;
 import com.server.demo.dtos.BroadcastListDTO;
+import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.RequestBroadcastListDTO;
+import com.server.demo.dtos.UpdateBroadcastListDTO;
 import com.server.demo.mappers.BroadcastListMapper;
+import com.server.demo.mappers.ChatMapper;
 import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Chat;
 import com.server.demo.repositories.BroadcastListRepository;
@@ -26,6 +30,9 @@ public class BroadcastListService {
     @Autowired
     private BroadcastListMapper broadcastListMapper;
 
+    @Autowired
+    private ChatMapper chatMapper;
+
     public List<BroadcastListDTO> findAllByUserId(UUID userId) {
         List<BroadcastList> list = broadcastListRepository.findAllByUserId(userId);
         return broadcastListMapper.toDTOList(list);
@@ -38,7 +45,7 @@ public class BroadcastListService {
 
     public BroadcastListDTO getListById(UUID id) {
         BroadcastList list = broadcastListRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("BroadcastList not found"));
+                .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
         return broadcastListMapper.toDTO(list);
     }
 
@@ -48,56 +55,41 @@ public class BroadcastListService {
         return broadcastListMapper.toDTO(currentList);
     }
 
-    public BroadcastListDTO updateList(UUID id, BroadcastList listDetails) {
+    public BroadcastListDTO updateList(UUID id, UpdateBroadcastListDTO listDetails) {
         BroadcastList existingList = broadcastListRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("BroadcastList not found"));
-        if (listDetails.getTitle() != null) {
-            existingList.setTitle(listDetails.getTitle());
-        }
-        if (listDetails.getLastActiveAt() != null) {
-            existingList.setLastActiveAt(listDetails.getLastActiveAt());
-        }
-        if (listDetails.getMessagesSent() != null) {
-            existingList.setMessagesSent(listDetails.getMessagesSent());
-        }
-        if (listDetails.getChats() != null) {
-            existingList.setChats(listDetails.getChats());
-        }
-        BroadcastList updatedList = broadcastListRepository.save(existingList);
-        return broadcastListMapper.toDTO(updatedList);
+                .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
+        broadcastListMapper.updateEntityFromDTO(listDetails, existingList);
+        broadcastListRepository.save(existingList);
+        return broadcastListMapper.toDTO(existingList);
     }
 
     public void deleteList(UUID id) {
         broadcastListRepository.deleteById(id);
     }
 
-    public void addChat(UUID id, String chatId) {
-        if (!isValidUUID(chatId)) {
-            throw new IllegalArgumentException("Invalid UUID format");
-        }
+    public BroadcastListDTO addChat(UUID id, AddChatToBroadcastListDTO chatDto) {
         BroadcastList list = broadcastListRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("BroadcastList not found"));
-        Chat chat = chatRepository.findById(UUID.fromString(chatId))
-                .orElseThrow(() -> new RuntimeException("Chat not found"));
+                .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
+        Chat chat = chatRepository.findById((chatDto.getChatId()))
+                .orElseThrow(() -> new RuntimeException(String.format("Chat com id %s não encontrado", chatDto.getChatId())));
         list.getChats().add(chat);
         broadcastListRepository.save(list);
+        return broadcastListMapper.toDTO(list);
     }
-
-    private boolean isValidUUID(String chatId) {
-        try {
-            UUID.fromString(chatId);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public void removeChat(UUID id, String chatId) {
+    public BroadcastListDTO removeChat(UUID id, AddChatToBroadcastListDTO chatDto) {
         BroadcastList list = broadcastListRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("BroadcastList not found"));
-        Chat chat = chatRepository.findById(UUID.fromString(chatId))
-                .orElseThrow(() -> new RuntimeException("Chat not found"));
+                .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
+        Chat chat = chatRepository.findById((chatDto.getChatId()))
+                .orElseThrow(() -> new RuntimeException(String.format("Chat com id %s não encontrado", chatDto.getChatId())));
         list.getChats().remove(chat);
         broadcastListRepository.save(list);
+        return broadcastListMapper.toDTO(list);
     }
-}
+
+    public List<ChatDTO> getChatsFromList(UUID id) {
+        BroadcastList list = broadcastListRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
+   
+        return chatMapper.toDTOList(list.getChats());
+    }
+}  

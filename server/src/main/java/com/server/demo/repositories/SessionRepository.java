@@ -13,6 +13,7 @@ import com.server.demo.models.User;
 @Repository
 public interface SessionRepository extends JpaRepository<Session, UUID> {
     List<Session> findByUser(User user);
+    List<Session> findByUserId(UUID userId);
     List<Session> findByIsActive(boolean isActive);
     Optional<Session> findByUserAndIsActive(User user, boolean isActive);
     boolean existsByUserAndIsActive(User user, boolean isActive);
