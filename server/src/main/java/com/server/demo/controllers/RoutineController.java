@@ -5,6 +5,7 @@ import com.server.demo.dtos.RoutineDTO;
 import com.server.demo.services.RoutineService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class RoutineController {
 
     @Operation(summary = "Cria uma nova rotina")
     @PostMapping
-    public ResponseEntity<RoutineDTO> createRoutine(@RequestBody RequestRoutineDTO routine) {
+    public ResponseEntity<RoutineDTO> createRoutine(@Valid @RequestBody RequestRoutineDTO routine) {
         return ResponseEntity.ok(routineService.createRoutine(routine));
     }
 
