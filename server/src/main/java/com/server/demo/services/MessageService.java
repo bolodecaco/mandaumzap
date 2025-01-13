@@ -2,7 +2,6 @@ package com.server.demo.services;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,7 @@ public class MessageService {
 
     public MessageDTO sendMessage(UUID messageId, RequestMessageDTO requestMessage) {
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", messageId)));
+            .orElseThrow(() -> new RuntimeException(String.format("Mensagem com id %s não encontrada", messageId)));
         if (message.getDeletedAt() != null) {
             throw new IllegalArgumentException("Não é possível enviar uma mensagem que foi deletada.");
         }
@@ -38,13 +37,15 @@ public class MessageService {
         return messageMapper.toDTO(currentMessage);
     }
 
-    public Optional<MessageDTO> getMessageById(UUID id) {
-        Optional<Message> currentMessage = messageRepository.findById(id);
-        return currentMessage.map(messageMapper::toDTO);
+    public MessageDTO getMessageById(UUID id) {
+        Message currentMessage = messageRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException(String.format("Mensagem com id %s não encontrada", id)));
+
+        return messageMapper.toDTO(currentMessage);
     }
 
-    public List<MessageDTO> getMessagesByOwnerId(UUID ownerId) {
-        List<Message> messages = messageRepository.findByOwnerId(ownerId);
+    public List<MessageDTO> getMessagesByUserId(UUID userId) {
+        List<Message> messages = messageRepository.findByOwnerId(userId);
         return messageMapper.toDTOList(messages);
     }
 
@@ -61,13 +62,9 @@ public class MessageService {
 
     public void deleteMessage(UUID messageId) {
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", messageId)));
+            .orElseThrow(() -> new RuntimeException(String.format("Mensagem com id %s não encontrada", messageId)));
 
-        if (message.getDeletedAt() != null) {
-            message.setDeletedAt(new Date());
-            messageRepository.save(message);
-        } else {
-            throw new IllegalArgumentException("Mensagem já foi deletada.");
-        }
+        message.setDeletedAt(new Date());
+        messageRepository.save(message);
     }
 }

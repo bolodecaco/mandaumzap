@@ -40,12 +40,4 @@ public class Message {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt; 
-
-    @PrePersist
-    protected void onCreate() {
-        if (firstSentAt == null) {
-            firstSentAt = new Date();
-            lastSentAt = firstSentAt; 
-        }
-    }
 }
