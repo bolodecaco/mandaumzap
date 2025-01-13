@@ -173,7 +173,7 @@ const sessionRouter = (sessionService: SessionService) => {
    *   delete:
    *     tags:
    *       - Session
-   *     summary: Fecha uma sessão
+   *     summary: Deleta e fecha uma sessão
    *     description: Fecha uma sessão ativa.
    *     parameters:
    *       - in: path

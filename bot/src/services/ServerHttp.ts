@@ -1,5 +1,4 @@
 import express, { Request, Response, NextFunction } from "express";
-import timeout from "connect-timeout";
 import dotenv from "dotenv";
 import sessionRouter from "../controllers/SessionController";
 import chatRouter from "../controllers/ChatController";
@@ -28,7 +27,16 @@ app.use((req: Request, res: Response, next: NextFunction): any => {
 
 app.use(express.json());
 
-app.use(timeout("3s"));
+app.use((req: Request, res: Response, next: NextFunction): void => {
+  const timer = setTimeout(() => {
+    if (!res.headersSent) {
+      res.status(503).json({ error: "Request timed out" });
+    }
+  }, 40 * 1000);
+  res.on("finish", () => clearTimeout(timer));
+  res.on("close", () => clearTimeout(timer));
+  next();
+});
 
 app.use("/api", sessionRouter(sessionService));
 app.use("/api", chatRouter(sessionService));
