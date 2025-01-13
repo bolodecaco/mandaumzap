@@ -3,14 +3,37 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node main.js",
-    "dev": "nodemon main.js"
+    "start": "node ./lib/main.js",
+    "build": "npx tsc",
+    "dev": "npm run build && node ./lib/main.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "@types/connect-timeout": "^0.0.39",
+    "@types/express": "^5.0.0",
+    "@types/qrcode-terminal": "^0.12.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
+    "@types/ws": "^8.5.13",
+    "nodemon": "^3.1.7",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
+    "cache-manager": "^6.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "link-preview-js": "^3.0.13",
+    "long": "^5.2.0",
+    "lru-cache": "^11.0.2",
+    "mongodb": "^6.11.0",
+    "pino": "^9.5.0",
+    "qrcode-terminal": "^0.12.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "ts-node": "^10.9.2"
   }
 }

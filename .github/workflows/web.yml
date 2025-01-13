@@ -1,0 +1,40 @@
+name: Frontend Validation
+
+on:
+  pull_request:
+    paths:
+      - 'web/**' # Executa a ação apenas se houver mudanças na pasta 'web'
+
+jobs:
+  validate:
+    name: Validate Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Configura o repositório
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Configura o Node.js
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    # 3. Instalar as dependências
+    - name: Install dependencies
+      run: |
+        cd web
+        npm ci --legacy-peer-deps
+
+    # 4. Rodar o ESLint
+    - name: Run ESLint
+      run: |
+        cd web
+        npm run lint
+
+    # 5. Tentar buildar a aplicação
+    - name: Build application
+      run: |
+        cd web
+        npm run build

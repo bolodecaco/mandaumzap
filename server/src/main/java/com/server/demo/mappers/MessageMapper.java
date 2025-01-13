@@ -1,0 +1,31 @@
+package com.server.demo.mappers;
+
+import java.util.List;
+
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
+import com.server.demo.dtos.MessageDTO;
+import com.server.demo.dtos.RequestMessageDTO;
+import com.server.demo.models.Message;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface MessageMapper {
+    
+    @Mapping(target = "ownerId", source = "owner.id")
+    @Mapping(target = "broadcastListId", source = "broadcastList.id")
+    MessageDTO toDTO(Message message);
+    
+    @Mapping(target = "owner.id", source = "ownerId")
+    @Mapping(target = "broadcastList.id", source = "broadcastListId")
+    Message toEntity(RequestMessageDTO messageDTO);
+    
+    RequestMessageDTO toRequestDTO(MessageDTO messageDTO);
+    
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    List<MessageDTO> toDTOList(List<Message> messages);
+}

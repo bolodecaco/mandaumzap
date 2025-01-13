@@ -1,5 +1,4 @@
-import { Container } from '@/lib/styled/global'
-
-export default function Page() {
-  return <Container>Teste</Container>
+import { Page } from '@/lib/styled/global'
+export default function Home() {
+  return <Page>Hello world</Page>
 }
