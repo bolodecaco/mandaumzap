@@ -65,7 +65,7 @@ public class BroadcastListController {
 
     @Operation(summary = "Atualiza uma lista de transmissão")
     @PutMapping("/{id}")
-    public ResponseEntity<BroadcastListDTO> updateList(@PathVariable UUID id, @RequestBody UpdateBroadcastListDTO listDetails) {
+    public ResponseEntity<BroadcastListDTO> updateList(@Valid @PathVariable UUID id, @RequestBody UpdateBroadcastListDTO listDetails) {
         return ResponseEntity.ok(listService.updateList(id, listDetails));
     }
 

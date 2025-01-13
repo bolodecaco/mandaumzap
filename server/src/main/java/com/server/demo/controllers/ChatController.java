@@ -21,6 +21,7 @@ import com.server.demo.services.ChatService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/chats")
@@ -44,7 +45,7 @@ public class ChatController {
 
     @Operation(summary = "Cria um novo chat")
     @PostMapping
-    public ResponseEntity<ChatDTO> createChat(@RequestBody RequestChatDTO chat) {
+    public ResponseEntity<ChatDTO> createChat(@Valid @RequestBody RequestChatDTO chat) {
         return ResponseEntity.ok(chatService.createChat(chat));
     }
 
