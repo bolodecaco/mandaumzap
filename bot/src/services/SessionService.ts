@@ -14,8 +14,8 @@ class SessionService {
   });
 
   constructor() {
-    this.mongoConnection.connectToMongo();
     this.mongoConnection.init();
+    this.mongoConnection.connectToMongo();
   }
 
   private createSession(sessionId: string): Worker {
