@@ -6,8 +6,6 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.Date;
 
 @Entity
@@ -23,17 +21,13 @@ public class Message {
     @Column(nullable = false)
     private String content;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "broadcast_list_id", nullable = true)
     private BroadcastList broadcastList;  
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = true)
-    private Chat chatRecipient; 
 
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;
@@ -54,18 +48,4 @@ public class Message {
             lastSentAt = firstSentAt; 
         }
     }
-
-    public void softDelete() {
-        if (deletedAt == null) {
-            this.deletedAt = new Date(); 
-        } else {
-            throw new IllegalStateException("A mensagem já foi deletada.");
-        }
-    }
-
-    @JsonIgnore
-    public boolean isDeleted() {
-        return deletedAt != null;
-}
-
 }

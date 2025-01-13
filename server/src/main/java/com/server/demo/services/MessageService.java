@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.mappers.MessageMapper;
-import com.server.demo.models.Chat;
 import com.server.demo.models.Message;
 import com.server.demo.repositories.MessageRepository;
 
@@ -24,24 +23,12 @@ public class MessageService {
     @Autowired
     private MessageMapper messageMapper;
 
-    @Autowired
-    private ChatService chatService;
-
     public MessageDTO sendMessage(UUID messageId, RequestMessageDTO requestMessage) {
-        Optional<Message> messageOptional = messageRepository.findById(messageId);
-
-        if (messageOptional.isEmpty()) {
-            throw new IllegalArgumentException("Mensagem não encontrada.");
-        }
-
-        Message message = messageOptional.get();
-
-        if (message.isDeleted()) {
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", messageId)));
+        if (message.getDeletedAt() != null) {
             throw new IllegalArgumentException("Não é possível enviar uma mensagem que foi deletada.");
         }
-
-        Chat chatRecipient = chatService.getChatById(requestMessage.getChatId());
-        message.setChatRecipient(chatRecipient);
 
         message.setTimesSent(message.getTimesSent() + 1);
         message.setLastSentAt(new Date());
@@ -73,16 +60,11 @@ public class MessageService {
     }
 
     public void deleteMessage(UUID messageId) {
-        Optional<Message> messageOptional = messageRepository.findById(messageId);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", messageId)));
 
-        if (messageOptional.isEmpty()) {
-            throw new IllegalArgumentException("Mensagem não encontrada.");
-        }
-
-        Message message = messageOptional.get();
-
-        if (!message.isDeleted()) {
-            message.softDelete();
+        if (message.getDeletedAt() != null) {
+            message.setDeletedAt(new Date());
             messageRepository.save(message);
         } else {
             throw new IllegalArgumentException("Mensagem já foi deletada.");

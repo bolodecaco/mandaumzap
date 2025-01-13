@@ -8,23 +8,12 @@ import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.RequestRoutineDTO;
 import com.server.demo.dtos.RoutineDTO;
-import com.server.demo.mappers.MessageMapper;
 import com.server.demo.mappers.RoutineMapper;
 import com.server.demo.models.Routine;
 import com.server.demo.repositories.RoutineRepository;
-import com.server.demo.repositories.UserRepository;
 
 @Service
 public class RoutineService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private MessageService messageService;
-
-    @Autowired
-    private MessageMapper messageMapper;
 
     @Autowired
     private RoutineRepository routineRepository;
