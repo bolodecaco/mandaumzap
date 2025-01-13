@@ -20,6 +20,7 @@ import com.server.demo.services.NotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -37,13 +38,13 @@ public class NotificationController {
 
     @Operation(summary = "Atualiza o status de leitura de uma notificação")
     @PatchMapping("/{id}")
-    public ResponseEntity<NotificationDTO> updateRead(@PathVariable UUID id, @RequestBody UpdateNotificationReadDTO read) {
+    public ResponseEntity<NotificationDTO> updateRead(@Valid @PathVariable UUID id, @RequestBody UpdateNotificationReadDTO read) {
         return ResponseEntity.ok(notificationService.updateRead(id, read.isRead()));
     }
 
     @Operation(summary = "Cria uma nova notificação")
     @PostMapping
-    public ResponseEntity<NotificationDTO> createNotification(@RequestBody RequestNotificationDTO notification) {
+    public ResponseEntity<NotificationDTO> createNotification(@Valid @RequestBody RequestNotificationDTO notification) {
         return ResponseEntity.ok(notificationService.createNotification(notification));
     }
 }
