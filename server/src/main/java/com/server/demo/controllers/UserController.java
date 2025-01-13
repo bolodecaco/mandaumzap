@@ -35,24 +35,23 @@ public class UserController {
     public List<UserDTO> getAllUsers() {
         return userService.getAllUsers().stream()
                 .map(user -> new UserDTO(
-                user.getId(),
-                user.getName(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getPlan()
-        ))
+                        user.getId(),
+                        user.getName(),
+                        user.getPhone(),
+                        user.getAvatar(),
+                        user.getPlan(),
+                        user.getSessions()
+                ))
                 .collect(Collectors.toList());
     }
 
     @Operation(summary = "Retorna um usuário pelo ID")
-
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @Operation(summary = "Cria um novo usuário")
-
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody RequestUserDTO user) {
         return ResponseEntity.ok(userService.createUser(user));
@@ -65,7 +64,6 @@ public class UserController {
     }
 
     @Operation(summary = "Deleta um usuário")
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);

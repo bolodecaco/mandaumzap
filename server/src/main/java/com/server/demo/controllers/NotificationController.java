@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.server.demo.dtos.NotificationDTO;
 import com.server.demo.dtos.RequestNotificationDTO;
 import com.server.demo.dtos.UpdateNotificationReadDTO;
-import com.server.demo.models.Notification;
 import com.server.demo.services.NotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/notifications")
-@Tag(name = "Notifications", description = "Notification API")
+@Tag(name = "Notificações", description = "Notification API")
 public class NotificationController {
 
     @Autowired
