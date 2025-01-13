@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
-import com.server.demo.models.Message;
 import com.server.demo.services.MessageService;
 
 import io.swagger.v3.oas.annotations.Operation;

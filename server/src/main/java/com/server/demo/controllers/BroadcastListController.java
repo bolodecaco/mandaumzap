@@ -18,7 +18,6 @@ import com.server.demo.dtos.AddChatToBroadcastListDTO;
 import com.server.demo.dtos.BroadcastListDTO;
 import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.RequestBroadcastListDTO;
-import com.server.demo.dtos.RequestChatDTO;
 import com.server.demo.dtos.UpdateBroadcastListDTO;
 import com.server.demo.services.BroadcastListService;
 

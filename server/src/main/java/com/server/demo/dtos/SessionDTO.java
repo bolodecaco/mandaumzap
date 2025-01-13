@@ -10,13 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(description = "DTO para retorno das sessões", example = """
-    {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
-      "userId": "123e4567-e89b-12d3-a456-426614174001",
-      "isActive": true
-    }
-    """)
+@Schema(description = "DTO para retorno das sessões")
 public class SessionDTO {
 
     @Schema(name = "id", description = "Identificador da sessão", example = "123e4567-e89b-12d3-a456-426614174000")
