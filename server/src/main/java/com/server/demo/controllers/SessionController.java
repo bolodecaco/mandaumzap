@@ -21,6 +21,7 @@ import com.server.demo.services.SessionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/sessions")
@@ -44,13 +45,13 @@ public class SessionController {
 
     @Operation(summary = "Cria uma nova sessão")
     @PostMapping
-    public ResponseEntity<SessionDTO> createSession(@RequestBody RequestSessionDTO session) {
+    public ResponseEntity<SessionDTO> createSession(@Valid @RequestBody RequestSessionDTO session) {
         return ResponseEntity.ok(sessionService.createSession(session));
     }
 
     @Operation(summary = "Atualiza a atividade de uma sessão")
     @PatchMapping("/{id}")
-    public ResponseEntity<SessionDTO> updateSessionActivity(@PathVariable UUID id, @RequestBody UpdateSessionDTO updateSessionDTO) {
+    public ResponseEntity<SessionDTO> updateSessionActivity(@PathVariable UUID id, @Valid @RequestBody UpdateSessionDTO updateSessionDTO) {
         return ResponseEntity.ok(sessionService.updateSessionActivity(id, updateSessionDTO));
     }
 

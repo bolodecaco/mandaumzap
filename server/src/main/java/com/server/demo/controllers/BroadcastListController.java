@@ -23,6 +23,7 @@ import com.server.demo.services.BroadcastListService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/lists")
@@ -46,7 +47,7 @@ public class BroadcastListController {
 
     @Operation(summary = "Cria uma nova lista de transmissão")
     @PostMapping
-    public ResponseEntity<BroadcastListDTO> createList(@RequestBody RequestBroadcastListDTO list) {
+    public ResponseEntity<BroadcastListDTO> createList(@Valid @RequestBody RequestBroadcastListDTO list) {
         return ResponseEntity.ok(listService.createList(list));
     }
 
@@ -64,7 +65,7 @@ public class BroadcastListController {
 
     @Operation(summary = "Atualiza uma lista de transmissão")
     @PutMapping("/{id}")
-    public ResponseEntity<BroadcastListDTO> updateList(@PathVariable UUID id, @RequestBody UpdateBroadcastListDTO listDetails) {
+    public ResponseEntity<BroadcastListDTO> updateList(@Valid @PathVariable UUID id, @RequestBody UpdateBroadcastListDTO listDetails) {
         return ResponseEntity.ok(listService.updateList(id, listDetails));
     }
 

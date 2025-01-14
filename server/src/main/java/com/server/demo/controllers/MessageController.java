@@ -19,6 +19,7 @@ import com.server.demo.services.MessageService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -50,7 +51,7 @@ public class MessageController {
 
     @Operation(summary = "Cria uma nova mensagem")
     @PostMapping
-    public ResponseEntity<MessageDTO> createMessage(@RequestBody RequestMessageDTO message) {
+    public ResponseEntity<MessageDTO> createMessage(@Valid @RequestBody RequestMessageDTO message) {
         MessageDTO createdMessage = messageService.saveMessage(message);
         return ResponseEntity.ok(createdMessage);
     }
