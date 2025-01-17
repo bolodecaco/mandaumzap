@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.server.demo.dtos.BotQrCodeResponseDTO;
 import com.server.demo.dtos.RequestSessionDTO;
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.dtos.UpdateSessionDTO;
@@ -45,7 +46,7 @@ public class SessionController {
 
     @Operation(summary = "Cria uma nova sessão")
     @PostMapping
-    public ResponseEntity<SessionDTO> createSession(@Valid @RequestBody RequestSessionDTO session) {
+    public ResponseEntity<BotQrCodeResponseDTO> createSession(@Valid @RequestBody RequestSessionDTO session) {
         return ResponseEntity.ok(sessionService.createSession(session));
     }
 
