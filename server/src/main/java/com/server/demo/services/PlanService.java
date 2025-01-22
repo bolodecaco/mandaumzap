@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.PlanDTO;
+import com.server.demo.dtos.RequestPlanDTO;
 import com.server.demo.enums.PlanType;
 import com.server.demo.mappers.PlanMapper;
 import com.server.demo.models.Plan;
@@ -50,8 +51,9 @@ public class PlanService {
         return planMapper.toDTO(plan);
     }
 
-    public PlanDTO createPlan(Plan plan) {
-        Plan currentPlan = planRepository.save(plan);
+    public PlanDTO createPlan(RequestPlanDTO plan) {
+        Plan currentPlan = planMapper.toEntityByRequestPlan(plan);
+        planRepository.save(currentPlan);
         return planMapper.toDTO(currentPlan);
     }
 
