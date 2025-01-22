@@ -39,6 +39,8 @@ class MessageServiceTest {
     @DisplayName("Save message")
     void saveMessage() {
         RequestMessageDTO requestMessageDTO = new RequestMessageDTO();
+        requestMessageDTO.setContent("Hello, world!");
+        requestMessageDTO.setBroadcastListId(UUID.randomUUID());
         Message message = new Message();
         when(messageMapper.toEntity(requestMessageDTO)).thenReturn(message);
         messageService.saveMessage(requestMessageDTO);

@@ -38,6 +38,8 @@ class ChatServiceTest {
     @DisplayName("Create chat")
     void createChat() {
         RequestChatDTO requestChatDTO = new RequestChatDTO();
+        requestChatDTO.setChatName("Meu chat");
+        requestChatDTO.setWhatsAppId("123456789");
         Chat chat = new Chat();
         when(chatMapper.toEntity(requestChatDTO)).thenReturn(chat);
         chatService.createChat(requestChatDTO);
