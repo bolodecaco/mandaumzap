@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +33,23 @@ class PlanServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    @DisplayName("Listar planos válidos")
+    void listAllPlans() {
+        Plan plan = Instancio.create(Plan.class);
+        List<Plan> plans = List.of(plan);
+        List<PlanDTO> responseDTOs = List.of(Instancio.create(PlanDTO.class));
+
+        when(planRepository.findAll()).thenReturn(plans);
+        when(planMapper.toDTOList(plans)).thenReturn(responseDTOs);
+
+        List<PlanDTO> result = planService.getAllPlans();
+
+        assertEquals(1, result.size());
+        verify(planRepository).findAll();
+        verify(planMapper).toDTOList(plans);
     }
 
     @Test
@@ -70,6 +88,8 @@ class PlanServiceTest {
         verify(planMapper).toDTO(plan);
     }
 
+
+
     @Test
     @DisplayName("Buscar plano por tipo com tipo inválido deve falhar")
     void getPlanByTypeWithInvalidType() {
@@ -99,6 +119,20 @@ class PlanServiceTest {
     }
 
     @Test
+    @DisplayName("Atualizar plano com ID inválido deve falhar")
+    void updatePlanWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        Plan updateDetails = Instancio.create(Plan.class);
+
+        when(planRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> planService.updatePlan(id, updateDetails));
+        verify(planRepository).findById(id);
+        verifyNoMoreInteractions(planRepository);
+        verifyNoInteractions(planMapper);
+    }
+
+    @Test
     @DisplayName("Deletar plano com ID válido")
     void deletePlanWithValidId() {
         UUID id = UUID.randomUUID();
@@ -107,5 +141,34 @@ class PlanServiceTest {
         planService.deletePlan(id);
 
         verify(planRepository).deleteById(id);
+    }
+
+    @Test
+    @DisplayName("Buscar plano por ID com ID válido")
+    void getPlanByIdWithValidId() {
+        UUID id = UUID.randomUUID();
+        Plan plan = Instancio.create(Plan.class);
+        PlanDTO expectedDTO = Instancio.create(PlanDTO.class);
+
+        when(planRepository.findById(id)).thenReturn(Optional.of(plan));
+        when(planMapper.toDTO(plan)).thenReturn(expectedDTO);
+
+        PlanDTO result = planService.getPlanById(id);
+
+        assertEquals(expectedDTO, result);
+        verify(planRepository).findById(id);
+        verify(planMapper).toDTO(plan);
+    }
+
+    @Test
+    @DisplayName("Buscar plano por ID com ID inválido deve falhar")
+    void getPlanByIdWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        
+        when(planRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> planService.getPlanById(id));
+        verify(planRepository).findById(id);
+        verifyNoInteractions(planMapper);
     }
 }
