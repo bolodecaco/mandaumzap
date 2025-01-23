@@ -1,23 +1,28 @@
 package com.server.demo.services;
 
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static org.instancio.Select.field;
+
+import com.server.demo.dtos.MessageDTO;
+import com.server.demo.dtos.RequestMessageDTO;
+import com.server.demo.models.Message;
+import com.server.demo.mappers.MessageMapper;
+import com.server.demo.repositories.MessageRepository;
+
+import org.instancio.Instancio;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-import com.server.demo.dtos.RequestMessageDTO;
-import com.server.demo.mappers.MessageMapper;
-import com.server.demo.models.Message;
-import com.server.demo.repositories.MessageRepository;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class MessageServiceTest {
 
@@ -36,62 +41,77 @@ class MessageServiceTest {
     }
 
     @Test
-    @DisplayName("Save message")
-    void saveMessage() {
-        RequestMessageDTO requestMessageDTO = new RequestMessageDTO();
-        requestMessageDTO.setContent("Hello, world!");
-        requestMessageDTO.setBroadcastListId(UUID.randomUUID());
-        Message message = new Message();
-        when(messageMapper.toEntity(requestMessageDTO)).thenReturn(message);
-        messageService.saveMessage(requestMessageDTO);
-        assertNotNull(message);
-    }
-
-    @Test
-    @DisplayName("Get message by id")
-    void getMessageById() {
-        UUID id = UUID.randomUUID();
-        when(messageRepository.findById(id)).thenReturn(java.util.Optional.of(new Message()));
-        messageService.getMessageById(id);
-        verify(messageRepository, times(1)).findById(id);
-    }
-
-    @Test
-    @DisplayName("Send message")
-    void sendMessage() {
+    @DisplayName("Enviar mensagem com ID válido")
+    void sendMessageWithValidId() {
         UUID messageId = UUID.randomUUID();
-        Message message = new Message();
-        when(messageRepository.findById(messageId)).thenReturn(java.util.Optional.of(message));
-        messageService.sendMessage(messageId, new RequestMessageDTO());
-        assertTrue(message.getTimesSent() >= 1, "O número de vezes que a mensagem foi enviada deve ser maior ou igual a 1");
+        
+        Message message = Instancio.of(Message.class)
+                .set(field(Message::getDeletedAt), null)
+                .set(field(Message::getTimesSent), 0)
+                .create();        
+        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
+        MessageDTO responseDTO = Instancio.create(MessageDTO.class);
+        
+        when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+        when(messageRepository.save(message)).thenReturn(message);
+        when(messageMapper.toDTO(message)).thenReturn(responseDTO);
+
+        MessageDTO data = messageService.sendMessage(messageId, requestDTO);
+
+        assertEquals(responseDTO, data);
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository).save(message);
+        assertTrue(message.getTimesSent() == 1);
+        assertNotNull(message.getLastSentAt());
     }
 
     @Test
-    @DisplayName("Get message by user id")
-    void getMessagesByUserId() {
-        UUID userId = UUID.randomUUID();
-        Message message = new Message();
-        when(messageRepository.findByOwnerId(userId)).thenReturn(java.util.Arrays.asList(message));
-        messageService.getMessagesByUserId(userId);
-        verify(messageRepository, times(1)).findByOwnerId(userId);
+    @DisplayName("Enviar mensagem deletada deve falhar")
+    void sendMessageWithDeletedAt() {
+        UUID messageId = UUID.randomUUID();
+        Message message = Instancio.create(Message.class);
+        message.setDeletedAt(new Date());
+        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
+
+        when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+
+        assertThrows(IllegalArgumentException.class, 
+            () -> messageService.sendMessage(messageId, requestDTO));
+        
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Get active messages")
+    @DisplayName("Buscar mensagens ativas")
     void getActiveMessages() {
-        Message message = new Message();
-        when(messageRepository.findByDeletedAtIsNull()).thenReturn(java.util.Arrays.asList(message));
-        messageService.getActiveMessages();
-        verify(messageRepository, times(1)).findByDeletedAtIsNull();
+        List<Message> messages = List.of(Instancio.create(Message.class));
+        List<MessageDTO> responseDTOs = List.of(Instancio.create(MessageDTO.class));
+
+        when(messageRepository.findByDeletedAtIsNull()).thenReturn(messages);
+        when(messageMapper.toDTOList(messages)).thenReturn(responseDTOs);
+
+        List<MessageDTO> data = messageService.getActiveMessages();
+
+        assertEquals(responseDTOs, data);
+        verify(messageRepository).findByDeletedAtIsNull();
+        verify(messageMapper).toDTOList(messages);
     }
 
     @Test
-    @DisplayName("Delete message")
-    void deleteMessage() {
+    @DisplayName("Deletar mensagem com ID válido")
+    void deleteMessageWithValidId() {
         UUID messageId = UUID.randomUUID();
-        Message message = new Message();
-        when(messageRepository.findById(messageId)).thenReturn(java.util.Optional.of(message));
+        
+        Message message = Instancio.create(Message.class);
+
+        when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+        when(messageRepository.save(message)).thenReturn(message);
+
         messageService.deleteMessage(messageId);
-        assertTrue(message.getDeletedAt() != null, "A mensagem deve ser deletada");
+
+        assertNotNull(message.getDeletedAt());
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository).save(message);
     }
 }

@@ -1,34 +1,33 @@
 package com.server.demo.services;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import com.server.demo.dtos.PlanDTO;
+import com.server.demo.dtos.RequestPlanDTO;
+import com.server.demo.models.Plan;
+import com.server.demo.mappers.PlanMapper;
+import com.server.demo.repositories.PlanRepository;
+import com.server.demo.enums.PlanType;
+import org.instancio.Instancio;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-import com.server.demo.dtos.RequestPlanDTO;
-import com.server.demo.enums.PlanType;
-import com.server.demo.mappers.PlanMapper;
-import com.server.demo.models.Plan;
-import com.server.demo.repositories.PlanRepository;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class PlanServiceTest {
 
     @Mock
-    PlanRepository planRepository;
+    private PlanRepository planRepository;
 
     @Mock
-    PlanMapper planMapper;
+    private PlanMapper planMapper;
 
     @InjectMocks
-    PlanService planService;
+    private PlanService planService;
 
     @BeforeEach
     void setUp() {
@@ -36,56 +35,77 @@ class PlanServiceTest {
     }
 
     @Test
-    @DisplayName("Test createPlan")
-    void createPlan() {
-        RequestPlanDTO requestPlanDTO = new RequestPlanDTO();
-        requestPlanDTO.setName("Free Plan");
-        requestPlanDTO.setPrice(0.0);
-        requestPlanDTO.setType(PlanType.FREE);
-        Plan plan = new Plan();
-        when(planMapper.toEntityByRequestPlan(requestPlanDTO)).thenReturn(plan);
-        planService.createPlan(requestPlanDTO);
-        assertNotNull(plan, "O plano não pode ser nulo");
-    }
+    @DisplayName("Criar plano com dados válidos")
+    void createPlanWithValidData() {
+        RequestPlanDTO requestDTO = Instancio.create(RequestPlanDTO.class);
+        Plan plan = Instancio.create(Plan.class);
+        PlanDTO responseDTO = Instancio.create(PlanDTO.class);
 
-    @Test
-    @DisplayName("Test get plan by type")
-    void getPlanByType() {
-        Plan plan = new Plan();
-        plan.setType(PlanType.FREE);
-        when(planRepository.findByType(PlanType.FREE)).thenReturn(java.util.Optional.of(plan));
-        assertNotNull(plan, "O plano não pode ser nulo");
-    }
-
-    @Test
-    @DisplayName("Test get plan by id")
-    void getPlanById() {
-        Plan plan = new Plan();
-        when(planRepository.findById(plan.getId())).thenReturn(java.util.Optional.of(plan));
-        assertNotNull(plan, "O plano não pode ser nulo");
-    }
-
-    @Test
-    @DisplayName("Update plan")
-    void updateChat() {
-        UUID id = UUID.randomUUID();
-        Plan plan = new Plan();
-        plan.setId(id);
-        when(planRepository.findById(id)).thenReturn(java.util.Optional.of(plan));
+        when(planMapper.toEntityByRequestPlan(requestDTO)).thenReturn(plan);
         when(planRepository.save(plan)).thenReturn(plan);
-        plan.setType(PlanType.FREE);
-        planService.updatePlan(id, plan);
-        verify(planRepository, times(1)).save(plan);
+        when(planMapper.toDTO(plan)).thenReturn(responseDTO);
+
+        PlanDTO data = planService.createPlan(requestDTO);
+
+        assertEquals(responseDTO, data);
+        verify(planMapper).toEntityByRequestPlan(requestDTO);
+        verify(planRepository).save(plan);
+        verify(planMapper).toDTO(plan);
     }
 
     @Test
-    @DisplayName("Test delete plan")
-    void deletePlan() {
-        UUID id = UUID.randomUUID();
-        Plan plan = new Plan();
-        when(planRepository.findById(id)).thenReturn(java.util.Optional.of(plan));
-        planService.deletePlan(id);
-        verify(planRepository, times(1)).deleteById(id);
+    @DisplayName("Buscar plano por tipo com tipo válido")
+    void getPlanByTypeWithValidType() {
+        String type = "FREE";
+        Plan plan = Instancio.create(Plan.class);
+        PlanDTO responseDTO = Instancio.create(PlanDTO.class);
+
+        when(planRepository.findByType(PlanType.FREE)).thenReturn(Optional.of(plan));
+        when(planMapper.toDTO(plan)).thenReturn(responseDTO);
+
+        PlanDTO data = planService.getPlanByType(type);
+
+        assertEquals(responseDTO, data);
+        verify(planRepository).findByType(PlanType.FREE);
+        verify(planMapper).toDTO(plan);
     }
 
+    @Test
+    @DisplayName("Buscar plano por tipo com tipo inválido deve falhar")
+    void getPlanByTypeWithInvalidType() {
+        String invalidType = "INVALID_TYPE";
+
+        assertThrows(RuntimeException.class, () -> planService.getPlanByType(invalidType));
+    }
+
+    @Test
+    @DisplayName("Atualizar plano com dados válidos")
+    void updatePlanWithValidData() {
+        UUID id = UUID.randomUUID();
+        Plan existingPlan = Instancio.create(Plan.class);
+        Plan updateDetails = Instancio.create(Plan.class);
+        PlanDTO responseDTO = Instancio.create(PlanDTO.class);
+
+        when(planRepository.findById(id)).thenReturn(Optional.of(existingPlan));
+        when(planRepository.save(existingPlan)).thenReturn(existingPlan);
+        when(planMapper.toDTO(existingPlan)).thenReturn(responseDTO);
+
+        PlanDTO data = planService.updatePlan(id, updateDetails);
+
+        assertEquals(responseDTO, data);
+        verify(planRepository).findById(id);
+        verify(planRepository).save(existingPlan);
+        verify(planMapper).toDTO(existingPlan);
+    }
+
+    @Test
+    @DisplayName("Deletar plano com ID válido")
+    void deletePlanWithValidId() {
+        UUID id = UUID.randomUUID();
+        doNothing().when(planRepository).deleteById(id);
+
+        planService.deletePlan(id);
+
+        verify(planRepository).deleteById(id);
+    }
 }
