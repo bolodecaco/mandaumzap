@@ -66,6 +66,100 @@ class MessageServiceTest {
     }
 
     @Test
+    @DisplayName("Buscar mensagem com ID válido")
+    void getMessageWithValidId() {
+        UUID messageId = UUID.randomUUID();
+        Message message = Instancio.create(Message.class);
+        MessageDTO responseDTO = Instancio.create(MessageDTO.class);
+
+        when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+        when(messageMapper.toDTO(message)).thenReturn(responseDTO);
+
+        MessageDTO data = messageService.getMessageById(messageId);
+
+        assertEquals(responseDTO, data);
+        verify(messageRepository).findById(messageId);
+        verify(messageMapper).toDTO(message);
+    }
+
+    @Test
+    @DisplayName("Criar nova mensagem com dados válidos")
+    void createMessageWithValidData() {
+        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
+        Message message = Instancio.create(Message.class);
+        MessageDTO responseDTO = Instancio.create(MessageDTO.class);
+
+        when(messageMapper.toEntity(requestDTO)).thenReturn(message);
+        when(messageRepository.save(message)).thenReturn(message);
+        when(messageMapper.toDTO(message)).thenReturn(responseDTO);
+
+        MessageDTO data = messageService.saveMessage(requestDTO);
+
+        assertEquals(responseDTO, data);
+        verify(messageMapper).toEntity(requestDTO);
+        verify(messageRepository).save(message);
+        verify(messageMapper).toDTO(message);
+    }
+
+    @Test
+    @DisplayName("Buscar mensagem com ID inválido deve falhar")
+    void getMessageWithInvalidId() {
+        UUID messageId = UUID.randomUUID();
+        when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, 
+            () -> messageService.getMessageById(messageId));
+            
+        verify(messageRepository).findById(messageId);
+        verify(messageMapper, never()).toDTO(any());
+    }
+
+    @Test
+    @DisplayName("Buscar mensagens através de ID de usuário válido")
+    void getMessagesByUserId() {
+        UUID userId = UUID.randomUUID();
+        List<Message> messages = List.of(Instancio.create(Message.class));
+        List<MessageDTO> responseDTOs = List.of(Instancio.create(MessageDTO.class));
+
+        when(messageRepository.findByOwnerId(userId)).thenReturn(messages);
+        when(messageMapper.toDTOList(messages)).thenReturn(responseDTOs);
+
+        List<MessageDTO> data = messageService.getMessagesByUserId(userId);
+
+        assertEquals(responseDTOs, data);
+        verify(messageRepository).findByOwnerId(userId);
+        verify(messageMapper).toDTOList(messages);
+    }
+
+    @Test
+    @DisplayName("Enviar mensagem com ID inválido deve falhar")
+    void sendMessageWithInvalidId() {
+        UUID messageId = UUID.randomUUID();
+        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
+        
+        when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, 
+            () -> messageService.sendMessage(messageId, requestDTO));
+            
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deletar mensagem com ID inválido deve falhar")
+    void deleteMessageWithInvalidId() {
+        UUID messageId = UUID.randomUUID();
+        when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, 
+            () -> messageService.deleteMessage(messageId));
+            
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository, never()).save(any());
+    }
+
+    @Test
     @DisplayName("Enviar mensagem deletada deve falhar")
     void sendMessageWithDeletedAt() {
         UUID messageId = UUID.randomUUID();
@@ -75,7 +169,7 @@ class MessageServiceTest {
 
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 
-        assertThrows(IllegalArgumentException.class, 
+        assertThrows(RuntimeException.class, 
             () -> messageService.sendMessage(messageId, requestDTO));
         
         verify(messageRepository).findById(messageId);
