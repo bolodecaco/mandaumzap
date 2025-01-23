@@ -22,4 +22,5 @@ public interface RoutineMapper {
     Routine toEntity(RequestRoutineDTO routine);
 
     List<RoutineDTO> toDTOList(List<Routine> routines);
+
 }

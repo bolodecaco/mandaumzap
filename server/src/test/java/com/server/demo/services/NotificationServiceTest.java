@@ -86,6 +86,22 @@ class NotificationServiceTest {
     }
 
     @Test
+    @DisplayName("Atualizar status de leitura com ID inválido deve falhar")
+    void updateReadWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        
+        when(notificationRepository.findById(id)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> notificationService.updateRead(id, true));
+        
+        assertEquals("Notification not found", exception.getMessage());
+        verify(notificationRepository).findById(id);
+        verify(notificationRepository, never()).save(any());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
     @DisplayName("Buscar notificações por ID do receptor")
     void getUserNotifications() {
         UUID receiverId = UUID.randomUUID();
@@ -101,4 +117,71 @@ class NotificationServiceTest {
         verify(notificationRepository).findByReceiverId(receiverId);
         verify(notificationMapper).toDTOList(notifications);
     }
+
+    @Test
+    @DisplayName("Buscar todas as notificações")
+    void getAllNotifications() {
+        List<Notification> notifications = List.of(Instancio.create(Notification.class));
+        List<NotificationDTO> responseDTOs = List.of(Instancio.create(NotificationDTO.class));
+
+        when(notificationRepository.findAll()).thenReturn(notifications);
+        when(notificationMapper.toDTOList(notifications)).thenReturn(responseDTOs);
+
+        List<NotificationDTO> data = notificationService.getAllNotifications();
+
+        assertEquals(responseDTOs, data);
+        verify(notificationRepository).findAll();
+        verify(notificationMapper).toDTOList(notifications);
+    }
+
+    @Test
+    @DisplayName("Buscar notificações não lidas")
+    void getUnreadNotifications() {
+        UUID receiverId = UUID.randomUUID();
+        List<Notification> notifications = List.of(Instancio.create(Notification.class));
+        List<NotificationDTO> responseDTOs = List.of(Instancio.create(NotificationDTO.class));
+
+        when(notificationRepository.findUnreadNotificationsByReceiverId(receiverId)).thenReturn(notifications);
+        when(notificationMapper.toDTOList(notifications)).thenReturn(responseDTOs);
+
+        List<NotificationDTO> data = notificationService.getUnreadNotifications(receiverId);
+
+        assertEquals(responseDTOs, data);
+        verify(notificationRepository).findUnreadNotificationsByReceiverId(receiverId);
+        verify(notificationMapper).toDTOList(notifications);
+    }
+
+    @Test
+    @DisplayName("Deletar notificação existente")
+    void deleteNotification() {
+        UUID id = UUID.randomUUID();
+        Notification notification = Instancio.create(Notification.class);
+
+        when(notificationRepository.findById(id)).thenReturn(Optional.of(notification));
+        doNothing().when(notificationRepository).delete(notification);
+        doNothing().when(eventPublisher).publishEvent(any(NotificationEvent.class));
+
+        assertDoesNotThrow(() -> notificationService.deleteNotification(id));
+
+        verify(notificationRepository).findById(id);
+        verify(notificationRepository).delete(notification);
+        verify(eventPublisher).publishEvent(any(NotificationEvent.class));
+    }
+
+    @Test
+    @DisplayName("Deletar notificação com ID inválido deve falhar")
+    void deleteNotificationWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        
+        when(notificationRepository.findById(id)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> notificationService.deleteNotification(id));
+        
+        assertEquals("Notification not found", exception.getMessage());
+        verify(notificationRepository).findById(id);
+        verify(notificationRepository, never()).delete(any());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
 }

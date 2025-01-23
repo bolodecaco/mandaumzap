@@ -99,4 +99,33 @@ class RoutineServiceTest {
 
         verify(routineRepository).deleteById(id);
     }
+
+    @Test
+    @DisplayName("Buscar todas as rotinas")
+    void getAllRoutines() {
+        List<Routine> routines = List.of(Instancio.create(Routine.class));
+        List<RoutineDTO> responseDTOs = List.of(Instancio.create(RoutineDTO.class));
+
+        when(routineRepository.findAll()).thenReturn(routines);
+        when(routineMapper.toDTOList(routines)).thenReturn(responseDTOs);
+
+        List<RoutineDTO> data = routineService.getAllRoutines();
+
+        assertEquals(responseDTOs, data);
+        verify(routineRepository).findAll();
+        verify(routineMapper).toDTOList(routines);
+    }
+
+    @Test
+    @DisplayName("Buscar rotina com ID inválido deve falhar")
+    void getRoutineByIdWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        
+        when(routineRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> routineService.getRoutineById(id));
+        verify(routineRepository).findById(id);
+        verifyNoMoreInteractions(routineRepository);
+        verifyNoInteractions(routineMapper);
+    }
 }

@@ -14,8 +14,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ChatServiceTest {
@@ -90,6 +92,20 @@ class ChatServiceTest {
     }
 
     @Test
+    @DisplayName("Atualizar chat com ID inválido deve falhar")
+    void updateChatWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        UpdateChatDTO updateChatDTO = Instancio.create(UpdateChatDTO.class);
+        
+        when(chatRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> chatService.updateChat(id, updateChatDTO));
+        verify(chatRepository).findById(id);
+        verifyNoMoreInteractions(chatRepository);
+        verifyNoInteractions(chatMapper);
+    }
+
+    @Test
     @DisplayName("Deletar chat com ID válido")
     void deleteChatWithValidId() {
         UUID id = UUID.randomUUID();
@@ -100,5 +116,61 @@ class ChatServiceTest {
         chatService.deleteChat(id);
 
         verify(chatRepository).deleteById(id);
+    }
+
+    @Test
+    @DisplayName("Listar todos os chats")
+    void getAllChats() {
+        List<Chat> chats = List.of(Instancio.create(Chat.class));
+        List<ChatDTO> responseDTOs = List.of(Instancio.create(ChatDTO.class));
+
+        when(chatRepository.findAll()).thenReturn(chats);
+        when(chatMapper.toDTOList(chats)).thenReturn(responseDTOs);
+
+        List<ChatDTO> result = chatService.getAllChats();
+
+        assertEquals(responseDTOs.size(), result.size());
+        verify(chatRepository).findAll();
+        verify(chatMapper).toDTOList(chats);
+    }
+
+    @Test
+    @DisplayName("Buscar chat por ID com ID inválido deve falhar")
+    void getChatByIdWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        
+        when(chatRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> chatService.getChatById(id));
+        verify(chatRepository).findById(id);
+    }
+
+    @Test
+    @DisplayName("Buscar chat por ID com ID válido retorna entidade")
+    void getChatByIdReturnsEntity() {
+        UUID id = UUID.randomUUID();
+        Chat expectedChat = Instancio.create(Chat.class);
+
+        when(chatRepository.findById(id)).thenReturn(Optional.of(expectedChat));
+
+        Chat result = chatService.getChatById(id);
+
+        assertEquals(expectedChat, result);
+        verify(chatRepository).findById(id);
+    }
+
+    @Test
+    @DisplayName("Buscar chat DTO por ID com ID inválido deve falhar")
+    void getChatDTOByIdWithInvalidId() {
+        UUID id = UUID.randomUUID();
+        
+        when(chatRepository.findById(id)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+            () -> chatService.getChatDTOById(id));
+        
+        assertEquals(String.format("Chat com id %s não encontrado", id), exception.getMessage());
+        verify(chatRepository).findById(id);
+        verify(chatMapper, never()).toDTO(any());
     }
 }

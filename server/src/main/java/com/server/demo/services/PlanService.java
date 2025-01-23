@@ -29,10 +29,7 @@ public class PlanService {
     }
 
     private PlanDTO getPlanByType(PlanType type) {
-        Plan plan = planRepository.findByType(type).orElseThrow(() -> new RuntimeException("Plan not found"));
-        if (plan == null) {
-            throw new RuntimeException("Plan not found for type: " + type);
-        }
+        Plan plan = planRepository.findByType(type).orElseThrow(() -> new RuntimeException(String.format("Plano de tipo %s não encontrado.", type)));
         return planMapper.toDTO(plan);
     }
 

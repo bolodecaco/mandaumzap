@@ -48,6 +48,7 @@ public class RoutineService {
         return routineMapper.toDTO(newRoutine);
     }
 
+
     public RoutineDTO updateRoutine(UUID id, Routine updatedRoutine) {
         return routineRepository.findById(id).map(routine -> {
             routine.setTitle(updatedRoutine.getTitle());
