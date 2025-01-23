@@ -38,6 +38,6 @@ public class Message {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSentAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = true)
     private Date deletedAt; 
 }

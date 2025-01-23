@@ -1,18 +1,5 @@
 package com.server.demo.services;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.MockitoAnnotations;
-
 import com.server.demo.dtos.RequestSessionDTO;
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.mappers.SessionMapper;
@@ -20,76 +7,108 @@ import com.server.demo.models.Session;
 import com.server.demo.models.User;
 import com.server.demo.repositories.SessionRepository;
 import com.server.demo.repositories.UserRepository;
+import org.instancio.Instancio;
+import org.junit.jupiter.api.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class SessionServiceTest {
 
     @Mock
-    SessionRepository sessionRepository;
+    private SessionRepository sessionRepository;
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    SessionMapper sessionMapper;
+    private SessionMapper sessionMapper;
+
+    private AutoCloseable closeable;
 
     @InjectMocks
-    SessionService sessionService;
+    private SessionService sessionService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void destroy() throws Exception {
+        closeable.close();
     }
 
     @Test
-    @DisplayName("Test Session service")
-    void createSession() {
-        RequestSessionDTO requestSessionDTO = new RequestSessionDTO();
-        requestSessionDTO.setActive(true);
-        Session session = new Session();
-        when(sessionMapper.toEntity(requestSessionDTO)).thenReturn(session);
-        sessionService.createSession(requestSessionDTO);
-        assertNotNull(session, "Session cannot be null");
+    @DisplayName("Criar sessão com dados válidos")
+    void createSessionWithValidData() {
+        RequestSessionDTO requestDTO = Instancio.create(RequestSessionDTO.class);
+        Session session = Instancio.create(Session.class);
+        SessionDTO responseDTO = Instancio.create(SessionDTO.class);
+
+        when(sessionMapper.toEntity(requestDTO)).thenReturn(session);
+        when(sessionRepository.save(session)).thenReturn(session);
+        when(sessionMapper.toDTO(session)).thenReturn(responseDTO);
+
+        SessionDTO data = sessionService.createSession(requestDTO);
+
+        assertEquals(responseDTO, data);
+        verify(sessionMapper).toEntity(requestDTO);
+        verify(sessionRepository).save(session);
+        verify(sessionMapper).toDTO(session);
     }
 
     @Test
-    @DisplayName("get session by id")
-    void getSessionById() {
+    @DisplayName("Buscar sessão por ID com ID válido")
+    void getSessionByIdWithValidId() {
         UUID id = UUID.randomUUID();
-        Session session = new Session();
-        session.setId(id);
-        SessionDTO sessionDTO = new SessionDTO();
-        sessionDTO.setId(id);
-        when(sessionRepository.findById(id)).thenReturn(java.util.Optional.of(session));
-        when(sessionMapper.toDTO(session)).thenReturn(sessionDTO);
-        SessionDTO result = sessionService.getSessionById(id);
-        assertNotNull(result, "Session cannot be null");
+        Session session = Instancio.create(Session.class);
+        SessionDTO responseDTO = Instancio.create(SessionDTO.class);
+
+        when(sessionRepository.findById(id)).thenReturn(Optional.of(session));
+        when(sessionMapper.toDTO(session)).thenReturn(responseDTO);
+
+        SessionDTO data = sessionService.getSessionById(id);
+
+        assertEquals(responseDTO, data);
+        verify(sessionRepository).findById(id);
+        verify(sessionMapper).toDTO(session);
     }
 
     @Test
-    @DisplayName("get users sessions")
-    void getUserSessions() {
+    @DisplayName("Buscar sessões de usuário")
+    void getUsersSessions() {
         UUID userId = UUID.randomUUID();
-        User mockUser = new User();
-        mockUser.setId(userId);
-        Session session = new Session();
-        session.setId(UUID.randomUUID());
-        SessionDTO sessionDTO = new SessionDTO();
-        sessionDTO.setId(session.getId());
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(mockUser));
-        when(sessionRepository.findByUserId(userId)).thenReturn(java.util.List.of(session));
-        when(sessionMapper.toDTO(session)).thenReturn(sessionDTO);
-        sessionService.getUserSessions(userId);
-        assertNotNull(session, "Session cannot be null");
+        User user = Instancio.create(User.class);
+        List<Session> sessions = List.of(Instancio.create(Session.class));
+        List<SessionDTO> responseDTOs = List.of(Instancio.create(SessionDTO.class));
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(sessionRepository.findByUser(user)).thenReturn(sessions);
+        when(sessionMapper.toDTOList(sessions)).thenReturn(responseDTOs);
+
+        List<SessionDTO> data = sessionService.getUserSessions(userId);
+
+        assertEquals(responseDTOs, data);
+        verify(userRepository).findById(userId);
+        verify(sessionRepository).findByUser(user);
+        verify(sessionMapper).toDTOList(sessions);
     }
 
     @Test
-    @DisplayName("delete session")
-    void deleteSession() {
+    @DisplayName("Deletar sessão com ID válido")
+    void deleteSessionWithValidId() {
         UUID id = UUID.randomUUID();
-        Session session = new Session();
-        when(sessionRepository.findById(id)).thenReturn(java.util.Optional.of(session));
-        sessionService.deleteSession(id);
-        verify(sessionRepository, times(1)).deleteById(id);
-    }
 
+        sessionService.deleteSession(id);
+
+        verify(sessionRepository).deleteById(id);
+    }
 }

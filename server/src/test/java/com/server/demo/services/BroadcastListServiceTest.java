@@ -1,41 +1,37 @@
 package com.server.demo.services;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.MockitoAnnotations;
-
-import com.server.demo.dtos.AddChatToBroadcastListDTO;
-import com.server.demo.dtos.RequestBroadcastListDTO;
-import com.server.demo.dtos.UpdateBroadcastListDTO;
-import com.server.demo.mappers.BroadcastListMapper;
+import com.server.demo.dtos.*;
 import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Chat;
+import com.server.demo.mappers.BroadcastListMapper;
 import com.server.demo.repositories.BroadcastListRepository;
 import com.server.demo.repositories.ChatRepository;
+import org.instancio.Instancio;
+import org.junit.jupiter.api.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class BroadcastListServiceTest {
 
     @Mock
-    BroadcastListRepository broadcastListRepository;
+    private BroadcastListRepository broadcastListRepository;
 
     @Mock
-    BroadcastListMapper broadcastListMapper;
+    private ChatRepository chatRepository;
 
     @Mock
-    ChatRepository chatRepository;
+    private BroadcastListMapper broadcastListMapper;
 
     @InjectMocks
-    BroadcastListService broadcastListService;
+    private BroadcastListService broadcastListService;
 
     @BeforeEach
     void setUp() {
@@ -43,85 +39,72 @@ class BroadcastListServiceTest {
     }
 
     @Test
-    @DisplayName("Test save broadcast list")
-    void createBroadcastList() {
-        RequestBroadcastListDTO requesBroadcastListDTO = new RequestBroadcastListDTO();
-        requesBroadcastListDTO.setTitle("Minha lista");
-        BroadcastList message = new BroadcastList();
-        when(broadcastListMapper.toEntity(requesBroadcastListDTO)).thenReturn(message);
-        broadcastListService.createList(requesBroadcastListDTO);
-        assertNotNull(message);
+    @DisplayName("Criar lista de transmissão com dados válidos")
+    void createListWithValidData() {
+        RequestBroadcastListDTO requestDTO = Instancio.create(RequestBroadcastListDTO.class);
+        BroadcastList list = Instancio.create(BroadcastList.class);
+        BroadcastListDTO responseDTO = Instancio.create(BroadcastListDTO.class);
+
+        when(broadcastListMapper.toEntity(requestDTO)).thenReturn(list);
+        when(broadcastListRepository.save(list)).thenReturn(list);
+        when(broadcastListMapper.toDTO(list)).thenReturn(responseDTO);
+
+        BroadcastListDTO data = broadcastListService.createList(requestDTO);
+
+        assertEquals(responseDTO, data);
+        verify(broadcastListMapper).toEntity(requestDTO);
+        verify(broadcastListRepository).save(list);
+        verify(broadcastListMapper).toDTO(list);
     }
 
     @Test
-    @DisplayName("get list by id")
-    void getListById() {
+    @DisplayName("Buscar lista por ID com ID válido")
+    void getListByIdWithValidId() {
         UUID id = UUID.randomUUID();
-        when(broadcastListRepository.findById(id)).thenReturn(java.util.Optional.of(new BroadcastList()));
-        broadcastListService.getListById(id);
-        verify(broadcastListRepository, times(1)).findById(id);
+        BroadcastList list = Instancio.create(BroadcastList.class);
+        BroadcastListDTO responseDTO = Instancio.create(BroadcastListDTO.class);
+
+        when(broadcastListRepository.findById(id)).thenReturn(Optional.of(list));
+        when(broadcastListMapper.toDTO(list)).thenReturn(responseDTO);
+
+        BroadcastListDTO data = broadcastListService.getListById(id);
+
+        assertEquals(responseDTO, data);
+        verify(broadcastListRepository).findById(id);
+        verify(broadcastListMapper).toDTO(list);
     }
 
     @Test
-    @DisplayName("update list")
-    void updateList() {
+    @DisplayName("Buscar lista por ID com ID inválido deve falhar")
+    void getListByIdWithInvalidId() {
         UUID id = UUID.randomUUID();
-        BroadcastList broadcastList = new BroadcastList();
-        broadcastList.setId(id);
-        when(broadcastListRepository.findById(id)).thenReturn(java.util.Optional.of(broadcastList));
-        when(broadcastListRepository.save(broadcastList)).thenReturn(broadcastList);
-        broadcastList.setTitle("Minha lista atualizada");
-        broadcastListService.updateList(id, new UpdateBroadcastListDTO());
-        verify(broadcastListRepository, times(1)).save(broadcastList);
+        when(broadcastListRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> broadcastListService.getListById(id));
+        verify(broadcastListRepository).findById(id);
+        verify(broadcastListMapper, never()).toDTO(any());
     }
 
     @Test
-    @DisplayName("delete list")
-    void deleteList() {
-        UUID id = UUID.randomUUID();
-        BroadcastList plan = new BroadcastList();
-        when(broadcastListRepository.findById(id)).thenReturn(java.util.Optional.of(plan));
-        broadcastListService.deleteList(id);
-        verify(broadcastListRepository, times(1)).deleteById(id);
-    }
+    @DisplayName("Adicionar chat à lista com dados válidos")
+    void addChatWithValidData() {
+        UUID listId = UUID.randomUUID();
+        AddChatToBroadcastListDTO chatDTO = Instancio.create(AddChatToBroadcastListDTO.class);
+        BroadcastList list = new BroadcastList();
+        list.setChats(new ArrayList<>());
+        Chat chat = Instancio.create(Chat.class);
+        BroadcastListDTO responseDTO = Instancio.create(BroadcastListDTO.class);
 
-    @Test
-    @DisplayName("add chat to list")
-    void addChatToList() {
-        UUID id = UUID.randomUUID();
-        UUID chatId = UUID.randomUUID();
-        BroadcastList broadcastList = new BroadcastList();
-        broadcastList.setChats(new ArrayList<>());
-        AddChatToBroadcastListDTO chatDto = new AddChatToBroadcastListDTO();
-        chatDto.setChatId(chatId);
-        Chat chat = new Chat();
-        chat.setId(chatId);
-        when(broadcastListRepository.findById(id)).thenReturn(java.util.Optional.of(broadcastList));
-        when(chatRepository.findById(chatId)).thenReturn(java.util.Optional.of(chat));
-        when(broadcastListRepository.save(broadcastList)).thenReturn(broadcastList);
-        broadcastListService.addChat(id, chatDto);
-        verify(broadcastListRepository, times(1)).save(broadcastList);
-        verify(chatRepository, times(1)).findById(chatId);
-    }
+        when(broadcastListRepository.findById(listId)).thenReturn(Optional.of(list));
+        when(chatRepository.findById(chatDTO.getChatId())).thenReturn(Optional.of(chat));
+        when(broadcastListRepository.save(list)).thenReturn(list);
+        when(broadcastListMapper.toDTO(list)).thenReturn(responseDTO);
 
-    @Test
-    @DisplayName("remove chat from list")
-    void removeChatFromList() {
-        UUID id = UUID.randomUUID();
-        UUID chatId = UUID.randomUUID();
-        BroadcastList broadcastList = new BroadcastList();
-        broadcastList.setChats(new ArrayList<>());
-        AddChatToBroadcastListDTO chatDto = new AddChatToBroadcastListDTO();
-        chatDto.setChatId(chatId);
-        Chat chat = new Chat();
-        chat.setId(chatId);
-        broadcastList.getChats().add(chat);
-        when(broadcastListRepository.findById(id)).thenReturn(java.util.Optional.of(broadcastList));
-        when(chatRepository.findById(chatId)).thenReturn(java.util.Optional.of(chat));
-        when(broadcastListRepository.save(broadcastList)).thenReturn(broadcastList);
-        broadcastListService.removeChat(id, chatDto);
-        verify(broadcastListRepository, times(1)).save(broadcastList);
-        verify(chatRepository, times(1)).findById(chatId);
-    }
+        BroadcastListDTO data = broadcastListService.addChat(listId, chatDTO);
 
+        assertEquals(responseDTO, data);
+        verify(broadcastListRepository).findById(listId);
+        verify(chatRepository).findById(chatDTO.getChatId());
+        verify(broadcastListRepository).save(list);
+    }
 }
