@@ -6,6 +6,8 @@ import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
+import com.server.demo.dtos.MessageSentToBotDTO;
+
 @Service
 public class MessageProducer {
 
@@ -20,7 +22,7 @@ public class MessageProducer {
                 MessageBuilder.withPayload(message).build());
     }
 
-    public void sendObject(Object object) {
-        queueMessagingTemplate.convertAndSend(queueUrl, object);
+    public void sendObject(MessageSentToBotDTO messageSentToBotDTO) {
+        queueMessagingTemplate.convertAndSend(queueUrl, messageSentToBotDTO);
     }
 }
