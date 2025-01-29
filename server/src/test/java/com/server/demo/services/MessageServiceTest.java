@@ -1,28 +1,32 @@
 package com.server.demo.services;
 
-
-import static org.instancio.Select.field;
-
-import com.server.demo.dtos.MessageDTO;
-import com.server.demo.dtos.RequestMessageDTO;
-import com.server.demo.models.Message;
-import com.server.demo.mappers.MessageMapper;
-import com.server.demo.repositories.MessageRepository;
-
-import org.instancio.Instancio;
-import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.instancio.Instancio;
+import static org.instancio.Select.field;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+
+import com.server.demo.dtos.MessageDTO;
+import com.server.demo.dtos.RequestMessageDTO;
+import com.server.demo.mappers.MessageMapper;
+import com.server.demo.models.Message;
+import com.server.demo.repositories.MessageRepository;
 
 class MessageServiceTest {
 
@@ -44,19 +48,18 @@ class MessageServiceTest {
     @DisplayName("Enviar mensagem com ID válido")
     void sendMessageWithValidId() {
         UUID messageId = UUID.randomUUID();
-        
+
         Message message = Instancio.of(Message.class)
                 .set(field(Message::getDeletedAt), null)
                 .set(field(Message::getTimesSent), 0)
-                .create();        
-        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
+                .create();
         MessageDTO responseDTO = Instancio.create(MessageDTO.class);
-        
+
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
         when(messageRepository.save(message)).thenReturn(message);
         when(messageMapper.toDTO(message)).thenReturn(responseDTO);
 
-        MessageDTO data = messageService.sendMessage(messageId, requestDTO);
+        MessageDTO data = messageService.sendMessage(messageId);
 
         assertEquals(responseDTO, data);
         verify(messageRepository).findById(messageId);
@@ -107,9 +110,9 @@ class MessageServiceTest {
         UUID messageId = UUID.randomUUID();
         when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, 
-            () -> messageService.getMessageById(messageId));
-            
+        assertThrows(RuntimeException.class,
+                () -> messageService.getMessageById(messageId));
+
         verify(messageRepository).findById(messageId);
         verify(messageMapper, never()).toDTO(any());
     }
@@ -136,12 +139,12 @@ class MessageServiceTest {
     void sendMessageWithInvalidId() {
         UUID messageId = UUID.randomUUID();
         RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
-        
+
         when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, 
-            () -> messageService.sendMessage(messageId, requestDTO));
-            
+        assertThrows(RuntimeException.class,
+                () -> messageService.sendMessage(messageId));
+
         verify(messageRepository).findById(messageId);
         verify(messageRepository, never()).save(any());
     }
@@ -152,9 +155,9 @@ class MessageServiceTest {
         UUID messageId = UUID.randomUUID();
         when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, 
-            () -> messageService.deleteMessage(messageId));
-            
+        assertThrows(RuntimeException.class,
+                () -> messageService.deleteMessage(messageId));
+
         verify(messageRepository).findById(messageId);
         verify(messageRepository, never()).save(any());
     }
@@ -165,13 +168,12 @@ class MessageServiceTest {
         UUID messageId = UUID.randomUUID();
         Message message = Instancio.create(Message.class);
         message.setDeletedAt(new Date());
-        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
 
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
 
-        assertThrows(RuntimeException.class, 
-            () -> messageService.sendMessage(messageId, requestDTO));
-        
+        assertThrows(RuntimeException.class,
+                () -> messageService.sendMessage(messageId));
+
         verify(messageRepository).findById(messageId);
         verify(messageRepository, never()).save(any());
     }
@@ -196,7 +198,7 @@ class MessageServiceTest {
     @DisplayName("Deletar mensagem com ID válido")
     void deleteMessageWithValidId() {
         UUID messageId = UUID.randomUUID();
-        
+
         Message message = Instancio.create(Message.class);
 
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));

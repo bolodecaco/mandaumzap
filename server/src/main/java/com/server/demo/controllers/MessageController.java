@@ -58,8 +58,8 @@ public class MessageController {
 
     @Operation(summary = "Envia uma mensagem")
     @PostMapping("/{id}/send")
-    public ResponseEntity<MessageDTO> sendMessage(@PathVariable UUID id, @RequestBody RequestMessageDTO requestMessage) {
-        return ResponseEntity.ok(messageService.sendMessage(id, requestMessage));
+    public ResponseEntity<MessageDTO> sendMessage(@PathVariable UUID id) {
+        return ResponseEntity.ok(messageService.sendMessage(id));
     }
 
     @Operation(summary = "Deleta uma mensagem")
