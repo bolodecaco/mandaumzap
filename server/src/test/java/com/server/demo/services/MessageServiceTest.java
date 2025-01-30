@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
+import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.mappers.MessageMapper;
@@ -40,6 +41,9 @@ class MessageServiceTest {
     @Mock
     private MessageProducer messageProducer;
 
+    @Mock
+    private BroadcastListService broadcastListService;
+
     @InjectMocks
     private MessageService messageService;
 
@@ -53,16 +57,19 @@ class MessageServiceTest {
     @DisplayName("Enviar mensagem com ID válido")
     void sendMessageWithValidId() {
         UUID messageId = UUID.randomUUID();
+        UUID listId = UUID.randomUUID();
 
         Message message = Instancio.of(Message.class)
                 .set(field(Message::getDeletedAt), null)
                 .set(field(Message::getTimesSent), 0)
                 .create();
+        List<ChatDTO> chats = List.of(Instancio.create(ChatDTO.class));
         MessageDTO responseDTO = Instancio.create(MessageDTO.class);
 
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
         when(messageRepository.save(message)).thenReturn(message);
         when(messageMapper.toDTO(message)).thenReturn(responseDTO);
+        when(broadcastListService.getChatsFromList(listId)).thenReturn(chats);
 
         MessageDTO data = messageService.sendMessage(messageId);
 
@@ -123,19 +130,19 @@ class MessageServiceTest {
     }
 
     @Test
-    @DisplayName("Buscar mensagens através de ID de usuário válido")
+    @DisplayName("Buscar mensagens através de ID de sessão válido")
     void getMessagesByUserId() {
-        UUID userId = UUID.randomUUID();
+        UUID sessionId = UUID.randomUUID();
         List<Message> messages = List.of(Instancio.create(Message.class));
         List<MessageDTO> responseDTOs = List.of(Instancio.create(MessageDTO.class));
 
-        when(messageRepository.findByOwnerId(userId)).thenReturn(messages);
+        when(messageRepository.findBySessionId(sessionId)).thenReturn(messages);
         when(messageMapper.toDTOList(messages)).thenReturn(responseDTOs);
 
-        List<MessageDTO> data = messageService.getMessagesByUserId(userId);
+        List<MessageDTO> data = messageService.getMessagesBySessionId(sessionId);
 
         assertEquals(responseDTOs, data);
-        verify(messageRepository).findByOwnerId(userId);
+        verify(messageRepository).findBySessionId(sessionId);
         verify(messageMapper).toDTOList(messages);
     }
 

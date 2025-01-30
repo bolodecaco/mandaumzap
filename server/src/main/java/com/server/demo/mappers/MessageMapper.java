@@ -15,11 +15,11 @@ import com.server.demo.models.Message;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MessageMapper {
     
-    @Mapping(target = "ownerId", source = "owner.id")
+    @Mapping(target = "sessionId", source = "session.id")
     @Mapping(target = "broadcastListId", source = "broadcastList.id")
     MessageDTO toDTO(Message message);
     
-    @Mapping(target = "owner.id", source = "ownerId")
+    @Mapping(target = "session.id", source = "sessionId")
     @Mapping(target = "broadcastList.id", source = "broadcastListId")
     Message toEntity(RequestMessageDTO messageDTO);
     

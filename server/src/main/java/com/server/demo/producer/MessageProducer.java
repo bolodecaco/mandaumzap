@@ -10,7 +10,7 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.demo.dtos.MessageDTO;
+import com.server.demo.dtos.MessageSentToBotDTO;
 
 @Service
 public class MessageProducer {
@@ -33,13 +33,13 @@ public class MessageProducer {
         amazonSQS.sendMessage(sendMessageRequest);
     }
 
-    public void sendObject(MessageDTO messageSentToBotDTO) {
+    public void sendObject(MessageSentToBotDTO messageToBeSent) {
         try {
-            String jsonMessage = objectMapper.writeValueAsString(messageSentToBotDTO);
+            String jsonMessage = objectMapper.writeValueAsString(messageToBeSent);
             SendMessageRequest sendMessageRequest = new SendMessageRequest()
                     .withQueueUrl(queueUrl)
                     .withMessageBody(jsonMessage)
-                    .withMessageGroupId(messageSentToBotDTO.getId().toString())
+                    .withMessageGroupId(messageToBeSent.getSessionId().toString())
                     .withMessageDeduplicationId(UUID.randomUUID().toString());
             amazonSQS.sendMessage(sendMessageRequest);
         } catch (JsonProcessingException e) {

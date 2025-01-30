@@ -42,10 +42,10 @@ public class MessageController {
         return ResponseEntity.ok(messageService.getMessageById(id));
     }
 
-    @Operation(summary = "Retorna todas as mensagens de um usuário")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<MessageDTO>> getMessagesByUserId(@PathVariable UUID userId) {
-        List<MessageDTO> messages = messageService.getMessagesByUserId(userId);
+    @Operation(summary = "Retorna todas as mensagens de uma sessão")
+    @GetMapping("/user/{sessionId}")
+    public ResponseEntity<List<MessageDTO>> getMessagesBySessionId(@PathVariable UUID sessionId) {
+        List<MessageDTO> messages = messageService.getMessagesBySessionId(sessionId);
         return ResponseEntity.ok(messages);
     }
 
