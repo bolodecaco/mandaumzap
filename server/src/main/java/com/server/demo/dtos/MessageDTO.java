@@ -26,8 +26,8 @@ public class MessageDTO {
     @Schema(name = "timesSent", description = "Número de vezes que a mensagem foi enviada", example = "1")
     private int timesSent;
 
-    @Schema(name = "ownerId", description = "ID do dono da mensagem", example = "123e4567-e89b-12d3-a456-426614174000")
-    private UUID ownerId;
+    @Schema(name = "sessionId", description = "ID da sessão da mensagem enviada", example = "123e4567-e89b-12d3-a456-426614174000")
+    private UUID sessionId;
 
     @Schema(name = "broadcastListId", description = "ID da lista de transmissão", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID broadcastListId;
