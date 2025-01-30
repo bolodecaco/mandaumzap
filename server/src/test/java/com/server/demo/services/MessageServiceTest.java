@@ -26,6 +26,7 @@ import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
 import com.server.demo.mappers.MessageMapper;
 import com.server.demo.models.Message;
+import com.server.demo.producer.MessageProducer;
 import com.server.demo.repositories.MessageRepository;
 
 class MessageServiceTest {
@@ -36,8 +37,12 @@ class MessageServiceTest {
     @Mock
     private MessageMapper messageMapper;
 
+    @Mock
+    private MessageProducer messageProducer;
+
     @InjectMocks
     private MessageService messageService;
+
 
     @BeforeEach
     void setUp() {
