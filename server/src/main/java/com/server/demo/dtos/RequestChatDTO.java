@@ -20,7 +20,10 @@ public class RequestChatDTO {
 
     @Schema(description = "ID do chat do WhatsApp", example = "123456789@g.us")
     @NotBlank(message = "É preciso informar o id do chat do WhatsApp")
-    @Pattern(regexp = "^[0-9]{1,15}@[a-z]+\\.us$", message = "O ID do WhatsApp deve estar no formato correto, ex: 123456789@g.us")
+    @Pattern(
+            regexp = "^[0-9]{1,30}@(g\\.us|s\\.whatsapp\\.net)$",
+            message = "O ID do WhatsApp deve estar no formato correto, ex: 123456789@g.us ou 558496462611@s.whatsapp.net"
+    )
     private String whatsAppId;
 
     @Schema(description = "ID do dono do chat")
