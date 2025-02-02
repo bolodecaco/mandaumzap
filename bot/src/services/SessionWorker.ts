@@ -3,10 +3,13 @@ import SessionRepository from "../repository/SessionRepository";
 import Session from "../models/Session";
 import { ParentMessageProps } from "../@types/ParentMessageProps";
 import { SignalsProps } from "../@types/SignalsProps";
-import { error } from "console";
 import { fakeTyping } from "../utils/functions";
+import MessageProducer from "../producer/MessageProducer";
 
 let session: Session;
+const Producer = new MessageProducer();
+
+type MessageToBeSent = { receivers: string[]; text: string };
 
 const signalsActions: SignalsProps = {
   initialize: async (message: ParentMessageProps) => {
@@ -37,11 +40,21 @@ const signalsActions: SignalsProps = {
       });
       return;
     }
-    const { receivers, text } = message.data;
+    const { receivers, text }: MessageToBeSent = message.data;
+    const totalChats = receivers.length;
+    let sentChats = 0;
     for (const chat of receivers) {
-      const socket = session.getWASocket();
-      await fakeTyping(socket, chat);
-      await socket?.sendMessage(chat, { text });
+      try {
+        const socket = session.getWASocket();
+        await fakeTyping(socket, chat);
+        await socket?.sendMessage(chat, { text });
+        sentChats++;
+        Producer.sendProgress({
+          body: { totalChats, sentChats },
+          messageGroupId: crypto.randomUUID(),
+          type: "progress",
+        });
+      } catch (error) {}
     }
   },
   close: async () => {

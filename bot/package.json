@@ -23,8 +23,9 @@
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.9",
+    "aws-sdk": "^2.1692.0",
     "cache-manager": "^6.3.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "link-preview-js": "^3.0.13",
     "long": "^5.2.0",

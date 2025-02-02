@@ -3,4 +3,5 @@ export interface MessageTextProps {
   text: string;
   sessionId: string;
   userId: string;
+  type?: string;
 }
