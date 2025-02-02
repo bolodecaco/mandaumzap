@@ -63,6 +63,13 @@ public class BroadcastListService {
         return broadcastListMapper.toDTO(existingList);
     }
 
+    public void incrementMessageSent(UUID id) {
+        BroadcastList list = broadcastListRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
+        list.setMessagesSent(list.getMessagesSent() + 1);
+        broadcastListRepository.save(list);
+    }
+
     public void deleteList(UUID id) {
         broadcastListRepository.deleteById(id);
     }
@@ -76,6 +83,7 @@ public class BroadcastListService {
         broadcastListRepository.save(list);
         return broadcastListMapper.toDTO(list);
     }
+
     public BroadcastListDTO removeChat(UUID id, AddChatToBroadcastListDTO chatDto) {
         BroadcastList list = broadcastListRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
@@ -89,7 +97,7 @@ public class BroadcastListService {
     public List<ChatDTO> getChatsFromList(UUID id) {
         BroadcastList list = broadcastListRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(String.format("Lista de transmissão com id %s não encontrada", id)));
-   
+
         return chatMapper.toDTOList(list.getChats());
     }
-}  
+}

@@ -59,6 +59,7 @@ public class MessageService {
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
         
         messageProducer.sendObject(messageToBeSent);
+        broadcastListService.incrementMessageSent(message.getBroadcastList().getId());
     
         return messageDTO;
     }

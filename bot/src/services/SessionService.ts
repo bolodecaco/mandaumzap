@@ -4,7 +4,7 @@ import { MessageTextProps } from "../@types/MessageTextProps";
 import MongoConnection from "../adapters/MongoConnection";
 import pino from "pino";
 import { UserMongoProps } from "../@types/UserMongoProps";
-import { count } from "console";
+import MessageConsumer from "../consumer/MessageConsumer";
 
 class SessionService {
   private sessions: Map<string, Worker> = new Map<string, Worker>();
@@ -12,10 +12,13 @@ class SessionService {
     logger: pino({ level: "fatal" }),
     sessionId: "main",
   });
+  private messageConsumer: MessageConsumer;
 
   constructor() {
     this.mongoConnection.init();
     this.mongoConnection.connectToMongo();
+    this.messageConsumer = new MessageConsumer(this.processMessage.bind(this));
+    this.messageConsumer.startPolling();
   }
 
   private createSession(sessionId: string): Worker {
@@ -24,20 +27,25 @@ class SessionService {
       workerData: { sessionId },
     });
 
-    worker.on("error", (err) => {
-      console.error(`Worker error in session ${sessionId}:`, err);
-    });
+    worker.on("error", (err) => {});
 
     worker.on("exit", (code) => {
-      if (code !== 0) {
-        console.error(
-          `Worker for session ${sessionId} stopped with exit code ${code}`
-        );
-      }
+      console.error(
+        `Worker for session ${sessionId} stopped with exit code ${code}`
+      );
     });
 
     this.sessions.set(sessionId, worker);
     return worker;
+  }
+
+  private async processMessage(message: AWS.SQS.Message) {
+    if (!message.Body) return;
+    const parsedMessage: MessageTextProps = JSON.parse(message.Body);
+    if (parsedMessage.type === "progress") return;
+    try {
+      await this.sendText(parsedMessage);
+    } catch (error) {}
   }
 
   haveSession(sessionId: string): boolean {
@@ -70,34 +78,9 @@ class SessionService {
             this.sessions.delete(userSession.sessionId);
           resolve(message.data);
         });
-
         worker.on("error", (error) => reject(error));
       });
     } catch (error) {}
-  }
-
-  async getChats(userSession: UserMongoProps) {
-    const { allowed, exists } = await this.checkSession(userSession);
-    if (!exists || !allowed) return false;
-    const chats = await this.mongoConnection.getChats(userSession.sessionId);
-    return { count: chats.length, chats };
-  }
-
-  async sendText({
-    receivers,
-    text,
-    sessionId,
-    userId,
-  }: MessageTextProps): Promise<boolean> {
-    const { allowed, exists } = await this.checkSession({ sessionId, userId });
-    if (!exists || !allowed) return false;
-    const worker = this.sessions.get(sessionId);
-    if (!worker) return false;
-    worker.postMessage({
-      type: "sendText",
-      data: { receivers, text },
-    });
-    return true;
   }
 
   async closeSession(userSession: UserMongoProps): Promise<boolean> {
@@ -118,6 +101,30 @@ class SessionService {
     worker.postMessage({ type: "delete" });
     this.sessions.delete(userSession.sessionId);
     return true;
+  }
+
+  async sendText({
+    receivers,
+    text,
+    sessionId,
+    userId,
+  }: MessageTextProps): Promise<boolean> {
+    const { allowed, exists } = await this.checkSession({ sessionId, userId });
+    if (!exists || !allowed) return false;
+    const worker = this.sessions.get(sessionId);
+    if (!worker) return false;
+    worker.postMessage({
+      type: "sendText",
+      data: { receivers, text },
+    });
+    return true;
+  }
+
+  async getChats(userSession: UserMongoProps) {
+    const { allowed, exists } = await this.checkSession(userSession);
+    if (!exists || !allowed) return false;
+    const chats = await this.mongoConnection.getChats(userSession.sessionId);
+    return { count: chats.length, chats };
   }
 }
 
