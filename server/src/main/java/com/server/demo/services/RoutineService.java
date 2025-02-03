@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.RequestRoutineDTO;
 import com.server.demo.dtos.RoutineDTO;
+import com.server.demo.dtos.UpdateRoutineCronDTO;
+import com.server.demo.exception.BusinessException;
 import com.server.demo.mappers.RoutineMapper;
 import com.server.demo.models.Routine;
 import com.server.demo.repositories.RoutineRepository;
@@ -48,17 +50,21 @@ public class RoutineService {
         return routineMapper.toDTO(newRoutine);
     }
 
+    public RoutineDTO updateRoutineCron(UpdateRoutineCronDTO updateRoutineDTO) {
+        Routine routine = routineRepository.findById(updateRoutineDTO.getRoutineId()).orElseThrow(() -> new BusinessException(String.format("Rotina com ID %s não encontrada", updateRoutineDTO.getRoutineId())));
+        routine.setCron(updateRoutineDTO.getCron());
+        Routine savedRoutine = routineRepository.save(routine);
+        return routineMapper.toDTO(savedRoutine);
+    }
 
     public RoutineDTO updateRoutine(UUID id, Routine updatedRoutine) {
-        return routineRepository.findById(id).map(routine -> {
-            routine.setTitle(updatedRoutine.getTitle());
-            routine.setMessage(updatedRoutine.getMessage());
-            routine.setWillActiveAt(updatedRoutine.getWillActiveAt());
-            routine.setLastActiveAt(updatedRoutine.getLastActiveAt());
-            routine.setTimesSent(updatedRoutine.getTimesSent());
-            Routine savedRoutine = routineRepository.save(routine);
-            return routineMapper.toDTO(savedRoutine);
-        }).orElseThrow(() -> new RuntimeException(String.format("Rotina com ID %s não encontrada", id)));
+        Routine routine = routineRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("Rotina com ID %s não encontrada", id)));
+        routine.setTitle(updatedRoutine.getTitle());
+        routine.setMessage(updatedRoutine.getMessage());
+        routine.setLastActiveAt(updatedRoutine.getLastActiveAt());
+        routine.setTimesSent(updatedRoutine.getTimesSent());
+        Routine savedRoutine = routineRepository.save(routine);
+        return routineMapper.toDTO(savedRoutine);
     }
 
     public void deleteRoutine(UUID id) {
