@@ -1,5 +1,6 @@
 package com.server.demo.services;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +46,9 @@ public class RoutineService {
     }
 
     public RoutineDTO createRoutine(RequestRoutineDTO routine) {
+        String cronExpression = getCronExpression(routine);
         Routine newRoutine = routineMapper.toEntity(routine);
+        newRoutine.setCron(cronExpression);
         routineRepository.save(newRoutine);
         return routineMapper.toDTO(newRoutine);
     }
@@ -69,5 +72,27 @@ public class RoutineService {
 
     public void deleteRoutine(UUID id) {
         routineRepository.deleteById(id);
+    }
+
+    private String getCronExpression(RequestRoutineDTO routine) {
+        LocalTime time = routine.getExecutionDateTime().toLocalTime();
+        int minute = time.getMinute();
+        int hour = time.getHour();
+        switch (routine.getFrequency()) {
+            case DAILY:
+                return String.format("%d %d * * *", minute, hour);
+            case WEEKLY:
+                if (routine.getDaysOfWeek() == null || routine.getDaysOfWeek().isEmpty()) {
+                    throw new BusinessException("Para frequência semanal, os dias da semana devem ser informados!");
+                }
+                return String.format("%d %d * * %s", minute, hour, routine.getDaysOfWeek());
+            case MONTHLY:
+                if (routine.getDayOfMonth() == null || routine.getDayOfMonth() < 1 || routine.getDayOfMonth() > 31) {
+                    throw new BusinessException("Para frequência mensal, um dia válido do mês deve ser informado!");
+                }
+                return String.format("%d %d %d * *", minute, hour, routine.getDayOfMonth());
+            default:
+                throw new BusinessException("Frequência inválida!");
+        }
     }
 }
