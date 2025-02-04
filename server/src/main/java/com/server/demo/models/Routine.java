@@ -1,16 +1,25 @@
 package com.server.demo.models;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.Date;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "routine")
+@Table(name = "schedules")
 public class Routine {
 
     @Id
@@ -31,8 +40,8 @@ public class Routine {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastActiveAt;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date willActiveAt;
+    @Column(nullable = true)
+    private String cron;
 
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;

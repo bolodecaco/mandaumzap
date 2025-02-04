@@ -17,6 +17,8 @@ import com.server.demo.models.Message;
 import com.server.demo.producer.MessageProducer;
 import com.server.demo.repositories.MessageRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class MessageService {
 
@@ -32,21 +34,19 @@ public class MessageService {
     @Autowired
     private BroadcastListService broadcastListService;
 
+    @Transactional
     public MessageDTO sendMessage(UUID messageId) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new BusinessException(String.format("Mensagem com id %s não encontrada", messageId)));
-    
         if (message.getDeletedAt() != null) {
             throw new BusinessException("Não é possível enviar uma mensagem que foi deletada.");
         }
-    
         message.setTimesSent(message.getTimesSent() + 1);
         message.setLastSentAt(new Date());
-
         List<String> receiverIds = broadcastListService.getChatsFromList(message.getBroadcastList().getId())
-        .stream()
-        .map(ChatDTO::getWhatsAppId)
-        .toList();   
+                .stream()
+                .map(ChatDTO::getWhatsAppId)
+                .toList();
 
         MessageSentToBotDTO messageToBeSent = MessageSentToBotDTO.builder()
                 .sessionId(message.getSession().getId())
@@ -54,13 +54,10 @@ public class MessageService {
                 .text(message.getContent())
                 .receivers(receiverIds)
                 .build();
-    
         Message currentMessage = messageRepository.save(message);
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
-        
         messageProducer.sendObject(messageToBeSent);
         broadcastListService.incrementMessageSent(message.getBroadcastList().getId());
-    
         return messageDTO;
     }
 
