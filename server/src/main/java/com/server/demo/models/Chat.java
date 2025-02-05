@@ -23,9 +23,8 @@ public class Chat {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @Column(nullable = false)
+    private String userId;
 
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)

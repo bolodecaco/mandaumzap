@@ -1,4 +1,4 @@
-package com.server.demo.controllers;
+package com.server.demo.controllers.user;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.MessageDTO;
 import com.server.demo.dtos.RequestMessageDTO;
+import com.server.demo.services.JwtService;
 import com.server.demo.services.MessageService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,50 +23,50 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/api/user/messages")
 @Tag(name = "Mensagens", description = "API de mensagens")
 public class MessageController {
 
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Operation(summary = "Retorna todas as mensagens")
     @GetMapping
     public ResponseEntity<List<MessageDTO>> getAllMessages() {
-        List<MessageDTO> messages = (List<MessageDTO>) messageService.getActiveMessages();
-        return ResponseEntity.ok(messages);
+        return ResponseEntity.ok(messageService.getActiveMessages(jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Retorna uma mensagem pelo ID")
     @GetMapping("/{id}")
     public ResponseEntity<MessageDTO> getMessageById(@PathVariable UUID id) {
-        return ResponseEntity.ok(messageService.getMessageById(id));
+        return ResponseEntity.ok(messageService.getMessageById(id, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Retorna todas as mensagens de uma sessão")
     @GetMapping("/user/{sessionId}")
     public ResponseEntity<List<MessageDTO>> getMessagesBySessionId(@PathVariable UUID sessionId) {
-        List<MessageDTO> messages = messageService.getMessagesBySessionId(sessionId);
-        return ResponseEntity.ok(messages);
+        return ResponseEntity.ok(messageService.getMessagesBySessionId(sessionId, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Cria uma nova mensagem")
     @PostMapping
     public ResponseEntity<MessageDTO> createMessage(@Valid @RequestBody RequestMessageDTO message) {
-        MessageDTO createdMessage = messageService.saveMessage(message);
-        return ResponseEntity.ok(createdMessage);
+        return ResponseEntity.ok(messageService.saveMessage(message, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Envia uma mensagem")
     @PostMapping("/{id}/send")
     public ResponseEntity<MessageDTO> sendMessage(@PathVariable UUID id) {
-        return ResponseEntity.ok(messageService.sendMessage(id));
+        return ResponseEntity.ok(messageService.sendMessage(id, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Deleta uma mensagem")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteMessage(@PathVariable UUID id) {
-        messageService.deleteMessage(id);
+        messageService.deleteMessage(id, jwtService.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 }

@@ -20,6 +20,9 @@ public class Message {
 
     @Column(nullable = false)
     private String content;
+
+    @Column(nullable = false)
+    private String userId;
     
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)

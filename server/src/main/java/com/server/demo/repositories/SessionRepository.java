@@ -8,14 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.server.demo.models.Session;
-import com.server.demo.models.User;
 
 @Repository
 public interface SessionRepository extends JpaRepository<Session, UUID> {
-    List<Session> findByUser(User user);
-    List<Session> findByUserId(UUID userId);
+    List<Session> findByUserId(String userId);
     List<Session> findByIsActive(boolean isActive);
-    Optional<Session> findByUserAndIsActive(User user, boolean isActive);
-    boolean existsByUserAndIsActive(User user, boolean isActive);
-    void deleteByUser(User user);
+    Optional<Session> findByIdAndUserId(UUID id, String userId);
 }

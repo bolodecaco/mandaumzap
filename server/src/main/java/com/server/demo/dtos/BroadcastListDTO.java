@@ -20,9 +20,6 @@ public class BroadcastListDTO {
     @Schema(description = "Título da lista de transmissão")
     private String title;
 
-    @Schema(description = "ID do dono da lista de transmissão")
-    private UUID ownerId;
-
     @Schema(description = "A última mensagem enviada foi em")
     private Date lastActiveAt;
 

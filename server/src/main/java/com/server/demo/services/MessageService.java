@@ -41,51 +41,55 @@ public class MessageService {
         if (message.getDeletedAt() != null) {
             throw new BusinessException("Não é possível enviar uma mensagem que foi deletada.");
         }
+        String userId = message.getUserId();
         message.setTimesSent(message.getTimesSent() + 1);
         message.setLastSentAt(new Date());
-        List<String> receiverIds = broadcastListService.getChatsFromList(message.getBroadcastList().getId())
-                .stream()
-                .map(ChatDTO::getWhatsAppId)
-                .toList();
+
+        List<String> receiverIds = broadcastListService.getChatsFromList(message.getBroadcastList().getId(), userId)
+        .stream()
+        .map(ChatDTO::getWhatsAppId)
+        .toList();   
 
         MessageSentToBotDTO messageToBeSent = MessageSentToBotDTO.builder()
                 .sessionId(message.getSession().getId())
-                .userId(message.getSession().getUser().getId())
+                .userId(userId)
                 .text(message.getContent())
                 .receivers(receiverIds)
                 .build();
         Message currentMessage = messageRepository.save(message);
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
         messageProducer.sendObject(messageToBeSent);
-        broadcastListService.incrementMessageSent(message.getBroadcastList().getId());
+        broadcastListService.incrementMessageSent(message.getBroadcastList().getId(), userId);
+    
         return messageDTO;
     }
 
-    public MessageDTO getMessageById(UUID id) {
-        Message currentMessage = messageRepository.findById(id)
+    public MessageDTO getMessageById(UUID id, String userId) {
+        Message currentMessage = messageRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Mensagem com id %s não encontrada", id)));
 
         return messageMapper.toDTO(currentMessage);
     }
 
-    public List<MessageDTO> getMessagesBySessionId(UUID userId) {
-        List<Message> messages = messageRepository.findBySessionId(userId);
+    public List<MessageDTO> getMessagesBySessionId(UUID sessionId, String userId) {
+        List<Message> messages = messageRepository.findBySessionIdAndUserId(sessionId, userId);
         return messageMapper.toDTOList(messages);
     }
 
-    public MessageDTO saveMessage(RequestMessageDTO message) {
+    public MessageDTO saveMessage(RequestMessageDTO message, String userId) {
         Message currentMessage = messageMapper.toEntity(message);
+        currentMessage.setUserId(userId);
         messageRepository.save(currentMessage);
         return messageMapper.toDTO(currentMessage);
     }
 
-    public List<MessageDTO> getActiveMessages() {
-        List<Message> messages = messageRepository.findByDeletedAtIsNull();
+    public List<MessageDTO> getActiveMessages(String userId) {
+        List<Message> messages = messageRepository.findByDeletedAtIsNullAndUserId(userId);
         return messageMapper.toDTOList(messages);
     }
 
-    public void deleteMessage(UUID messageId) {
-        Message message = messageRepository.findById(messageId)
+    public void deleteMessage(UUID messageId, String userId) {
+        Message message = messageRepository.findByIdAndUserId(messageId, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Mensagem com id %s não encontrada", messageId)));
 
         message.setDeletedAt(new Date());

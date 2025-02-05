@@ -26,10 +26,6 @@ public class RequestChatDTO {
     )
     private String whatsAppId;
 
-    @Schema(description = "ID do dono do chat")
-    @NotNull(message = "É preciso informar o ID do dono do chat")
-    private UUID ownerId;
-
     @Schema(description = "ID da sessão do chat")
     @NotNull(message = "É preciso informar o ID da sessão do chat")
     private UUID sessionId;

@@ -3,7 +3,6 @@ package com.server.demo.handlers;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,7 @@ import com.server.demo.events.ConnectionEstablishedEvent;
 @Component
 public class NotificationHandler extends TextWebSocketHandler {
 
-    private final Map<UUID, WebSocketSession> sessionMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, WebSocketSession> sessionMap = Collections.synchronizedMap(new HashMap<>());
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -33,11 +32,10 @@ public class NotificationHandler extends TextWebSocketHandler {
             for (String param : params) {
                 if (param.startsWith("receiverId=")) {
                     String receiverId = param.split("=")[1];
-                    UUID uuid = UUID.fromString(receiverId);
                     session.getAttributes().put("receiverId", receiverId);
-                    sessionMap.put(uuid, session);
+                    sessionMap.put(receiverId, session);
 
-                    eventPublisher.publishEvent(new ConnectionEstablishedEvent(this, uuid));
+                    eventPublisher.publishEvent(new ConnectionEstablishedEvent(this, receiverId));
                     break;
                 }
             }
@@ -50,7 +48,7 @@ public class NotificationHandler extends TextWebSocketHandler {
         sessionMap.values().remove(session);
     }
 
-    public WebSocketSession getSession(UUID receiverId) {
+    public WebSocketSession getSession(String receiverId) {
         return sessionMap.get(receiverId);
     }
 }
