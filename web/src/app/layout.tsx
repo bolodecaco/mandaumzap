@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
 import { StyledProvider } from '@/lib/styled'
+import { SessionProvider } from 'next-auth/react'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -20,9 +21,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <StyledProvider>
-        <body className={inter.className}>{children}</body>
-      </StyledProvider>
+      <SessionProvider>
+        <StyledProvider>
+          <body className={inter.className}>{children}</body>
+        </StyledProvider>
+      </SessionProvider>
     </html>
   )
 }

@@ -13,6 +13,7 @@ import com.server.demo.dtos.NotificationDTO;
 import com.server.demo.dtos.RequestNotificationDTO;
 import com.server.demo.events.ConnectionEstablishedEvent;
 import com.server.demo.events.NotificationEvent;
+import com.server.demo.exception.BusinessException;
 import com.server.demo.handlers.NotificationHandler;
 import com.server.demo.mappers.NotificationMapper;
 import com.server.demo.models.Notification;
@@ -35,7 +36,7 @@ public class NotificationService {
 
     @EventListener
     public void onConnectionEstablished(ConnectionEstablishedEvent event) {
-        UUID receiverId = event.getReceiverId();
+        String receiverId = event.getReceiverId();
         sendUnreadNotifications(receiverId);
     }
 
@@ -44,7 +45,7 @@ public class NotificationService {
         return notificationMapper.toDTOList(notifications);
     }
 
-    public List<NotificationDTO> getNotificationByReceiverId(UUID receiverId) {
+    public List<NotificationDTO> getNotificationByReceiverId(String receiverId) {
         List<Notification> notifications = notificationRepository.findByReceiverId(receiverId);
         return notificationMapper.toDTOList(notifications);
     }
@@ -52,33 +53,33 @@ public class NotificationService {
     public NotificationDTO createNotification(RequestNotificationDTO notification) {
         Notification newNotification = notificationMapper.toEntity(notification);
         notificationRepository.save(newNotification);
-        eventPublisher.publishEvent(new NotificationEvent(this, newNotification.getReceiver().getId()));
+        eventPublisher.publishEvent(new NotificationEvent(this, newNotification.getReceiverId()));
         return notificationMapper.toDTO(newNotification);
     }
 
-    public NotificationDTO updateRead(UUID id, boolean read) {
-        Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+    public NotificationDTO updateRead(UUID id, boolean read, String receiverId) {
+        Notification notification = notificationRepository.findByIdAndReceiverId(id, receiverId)
+                .orElseThrow(() -> new BusinessException(String.format("Notificação com id %s não encontrada.", id)));
         notification.setRead(read);
         Notification updatedNotification = notificationRepository.save(notification);
-        eventPublisher.publishEvent(new NotificationEvent(this, updatedNotification.getReceiver().getId()));
+        eventPublisher.publishEvent(new NotificationEvent(this, updatedNotification.getReceiverId()));
         return notificationMapper.toDTO(updatedNotification);
     }
 
     public NotificationDTO deleteNotification(UUID id) {
         Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new BusinessException(String.format("Notificação com id %s não encontrada.", id)));
         notificationRepository.delete(notification);
-        eventPublisher.publishEvent(new NotificationEvent(this, notification.getReceiver().getId()));
+        eventPublisher.publishEvent(new NotificationEvent(this, notification.getReceiverId()));
         return notificationMapper.toDTO(notification);
     }
 
-    public List<NotificationDTO> getUnreadNotifications(UUID receiverId) {
+    public List<NotificationDTO> getUnreadNotifications(String receiverId) {
         List<Notification> notifications = notificationRepository.findUnreadNotificationsByReceiverId(receiverId);
         return notificationMapper.toDTOList(notifications);
     }
 
-    private void sendUnreadNotifications(UUID receiverId) {
+    private void sendUnreadNotifications(String receiverId) {
         List<NotificationDTO> unreadNotifications = getUnreadNotifications(receiverId);
 
         try {

@@ -1,4 +1,4 @@
-package com.server.demo.controllers;
+package com.server.demo.controllers.user;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.server.demo.dtos.RequestSessionDTO;
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.dtos.UpdateSessionDTO;
+import com.server.demo.services.JwtService;
 import com.server.demo.services.SessionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,47 +25,44 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/sessions")
+@RequestMapping("/api/user/sessions")
 @Tag(name = "Sessões", description = "API de sessões")
 public class SessionController {
 
     @Autowired
     private SessionService sessionService;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Operation(summary = "Retorna todas as sessões")
     @GetMapping
     public List<SessionDTO> getAllSessions() {
-        return sessionService.getAllSessions();
+        return sessionService.getAllSessions(jwtService.getCurrentUserId());
     }
 
     @Operation(summary = "Retorna uma sessão pelo ID")
     @GetMapping("/{id}")
     public ResponseEntity<SessionDTO> getSessionById(@PathVariable UUID id) {
-        return ResponseEntity.ok(sessionService.getSessionById(id));
+        return ResponseEntity.ok(sessionService.getSessionById(id, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Cria uma nova sessão")
     @PostMapping
     public ResponseEntity<SessionDTO> createSession(@Valid @RequestBody RequestSessionDTO session) {
-        return ResponseEntity.ok(sessionService.createSession(session));
+        return ResponseEntity.ok(sessionService.createSession(session, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Atualiza a atividade de uma sessão")
     @PatchMapping("/{id}")
     public ResponseEntity<SessionDTO> updateSessionActivity(@PathVariable UUID id, @Valid @RequestBody UpdateSessionDTO updateSessionDTO) {
-        return ResponseEntity.ok(sessionService.updateSessionActivity(id, updateSessionDTO));
-    }
-
-    @Operation(summary = "Retorna todas as sessões de um usuário")
-    @GetMapping("/user/{userId}")
-    public List<SessionDTO> getUserSessions(@PathVariable UUID userId) {
-        return sessionService.getUserSessions(userId);
+        return ResponseEntity.ok(sessionService.updateSessionActivity(id, updateSessionDTO, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Deleta uma sessão")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable UUID id) {
-        sessionService.deleteSession(id);
+        sessionService.deleteSession(id, jwtService.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 }

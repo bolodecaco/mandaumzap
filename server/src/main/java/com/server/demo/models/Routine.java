@@ -17,9 +17,8 @@ public class Routine {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    @Column(nullable = false)
+    private String userId;
 
     @Column(nullable = false)
     private String title;

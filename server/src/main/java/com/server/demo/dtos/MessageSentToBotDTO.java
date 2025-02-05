@@ -16,7 +16,7 @@ public class MessageSentToBotDTO {
     private UUID sessionId;
 
     @Schema(description = "Identificador do usuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
-    private UUID userId;
+    private String userId;
 
     @Schema(description = "Texto da mensagem", example = "Mensagem de exemplo")
     private String text;

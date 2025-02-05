@@ -16,9 +16,6 @@ public class RoutineDTO {
     @Schema(description = "Identificador único da rotina", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;
         
-    @Schema(description = "ID do proprietário da rotina", example = "123e4567-e89b-12d3-a456-426614174001")
-    private UUID ownerId;
-        
     @Schema(description = "Título da rotina", example = "Lembrete Diário")
     private String title;
         

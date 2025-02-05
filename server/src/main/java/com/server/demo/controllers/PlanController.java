@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/plans")
+@RequestMapping("/api/public/plans")
 @Tag(name = "Plano", description = "As APIs de planos")
 public class PlanController {
 
