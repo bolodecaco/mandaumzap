@@ -61,15 +61,57 @@ const messageRouter = (sessionService: SessionService) => {
     if (!sessionId || !text || !receivers)
       return res.status(400).end("Parâmetros inválidos ou inexistentes");
     const result = await sessionService.sendText({
-      receivers,
+      header: { receivers, sessionId, userId },
       text,
-      sessionId,
-      userId,
     });
     return result
       ? res.status(200).end("Enviando mensagem")
       : res.status(400).end("Erro ao enviar a mensagem");
   });
+
+  router.post("/messages/send/image", async (req, res): Promise<any> => {
+    const { sessionId, url, receivers, userId, text } = req.body;
+    if (!sessionId || !url || !receivers)
+      return res.status(400).end("Parâmetros inválidos ou inexistentes");
+    const result = await sessionService.sendImage({
+      header: { receivers, sessionId, userId },
+      url,
+      text: text || "",
+    });
+    return result
+      ? res.status(200).end("Enviando mensagem")
+      : res.status(400).end("Erro ao enviar a mensagem");
+  });
+
+  router.post("/messages/send/video", async (req, res): Promise<any> => {
+    const { sessionId, url, receivers, userId, text } = req.body;
+    if (!sessionId || !url || !receivers)
+      return res.status(400).end("Parâmetros inválidos ou inexistentes");
+    const result = await sessionService.sendVideo({
+      header: { receivers, sessionId, userId },
+      url,
+      text: text || "",
+    });
+    return result
+      ? res.status(200).end("Enviando mensagem")
+      : res.status(400).end("Erro ao enviar a mensagem");
+  });
+
+  router.post("/messages/send/poll", async (req, res): Promise<any> => {
+    const { sessionId, name, values, selectableCount, receivers, userId } = req.body;
+    if (!sessionId || !name || !values || !receivers)
+      return res.status(400).end("Parâmetros inválidos ou inexistentes");
+    const result = await sessionService.sendPoll({
+      header: { receivers, sessionId, userId },
+      name,
+      values,
+      selectableCount,
+    });
+    return result
+      ? res.status(200).end("Enviando mensagem")
+      : res.status(400).end("Erro ao enviar a mensagem");
+  });
+
 
   return router;
 };
