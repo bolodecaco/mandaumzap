@@ -6,6 +6,8 @@ export interface ParentMessageProps {
 export type TypeMessageProps =
   | "initialize"
   | "sendText"
+  | "sendMedia"
+  | "sendPoll"
   | "getChats"
   | "close"
   | "delete";

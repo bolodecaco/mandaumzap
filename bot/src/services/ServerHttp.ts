@@ -49,4 +49,13 @@ app.all("*", (req: Request, res: Response): any => {
   return res.status(404).json({ error: "Not Found" });
 });
 
+// Error-handling middleware
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Internal Server Error",
+    details: err.details || "An unexpected error occurred"
+  });
+});
+
 export default app;

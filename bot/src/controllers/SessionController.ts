@@ -5,98 +5,114 @@ import { GlobalException } from "../exception/GlobalException";
 const sessionRouter = (sessionService: SessionService) => {
   const router = express.Router();
 
-  router.get("/sessions/:userId", async (req, res): Promise<any> => {
+  router.get("/sessions/:userId", async (req, res, next): Promise<any> => {
     const { userId } = req.params;
     if (!userId) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Parâmetro inválido",
         statusCode: 400,
         details: "ID do usuário é obrigatório"
-      });
+      }));
     }
-    const sessions = await sessionService.getAll(userId);
-    return res.status(200).json(sessions);
+    try {
+      const sessions = await sessionService.getAll(userId);
+      return res.status(200).json(sessions);
+    } catch (error) {
+      next(error);
+    }
   });
 
-  router.post("/sessions", async (req, res): Promise<any> => {
+  router.post("/sessions", async (req, res, next): Promise<any> => {
     const { sessionId, userId } = req.body;
     if (!sessionId || !userId) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Parâmetros inválidos",
         statusCode: 400,
         details: "ID da sessão e ID do usuário são obrigatórios"
-      });
+      }));
     }
     
     if (sessionService.haveSession(sessionId)) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Sessão já existe",
         statusCode: 400,
         details: "Já existe uma sessão com este ID"
+      }));
+    }
+
+    try {
+      const { qrcode, error } = await sessionService.connectSession({
+        sessionId,
+        userId,
       });
-    }
 
-    const { qrcode, error } = await sessionService.connectSession({
-      sessionId,
-      userId,
-    });
+      if (error) {
+        return next(new GlobalException({
+          message: "Erro na conexão",
+          statusCode: 400,
+          details: error
+        }));
+      }
 
-    if (error) {
-      throw new GlobalException({
-        message: "Erro na conexão",
-        statusCode: 400,
-        details: error
-      });
+      if (qrcode === "") {
+        return res.status(200).json({ message: "Iniciando sessão" });
+      }
+      return res.status(201).json({ qrcode });
+    } catch (error) {
+      next(error);
     }
-
-    if (qrcode === "") {
-      return res.status(200).json({ message: "Iniciando sessão" });
-    }
-    return res.status(201).json({ qrcode });
   });
 
-  router.delete("/sessions/close/:userId/:sessionId", async (req, res): Promise<any> => {
+  router.delete("/sessions/close/:userId/:sessionId", async (req, res, next): Promise<any> => {
     const { sessionId, userId } = req.params;
     if (!sessionId) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Parâmetro inválido",
         statusCode: 400,
         details: "ID da sessão é obrigatório"
-      });
+      }));
     }
 
     if (!sessionService.haveSession(sessionId)) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Sessão não encontrada",
         statusCode: 400,
         details: "Não existe uma sessão com este ID"
-      });
+      }));
     }
 
-    sessionService.closeSession({ sessionId, userId });
-    return res.status(200).json({ message: "Sessão fechada" });
+    try {
+      sessionService.closeSession({ sessionId, userId });
+      return res.status(200).json({ message: "Sessão fechada" });
+    } catch (error) {
+      next(error);
+    }
   });
 
-  router.delete("/sessions/:userId/:sessionId", async (req, res): Promise<any> => {
+  router.delete("/sessions/:userId/:sessionId", async (req, res, next): Promise<any> => {
     const { sessionId, userId } = req.params;
     if (!sessionId) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Parâmetro inválido",
         statusCode: 400,
         details: "ID da sessão é obrigatório"
-      });
+      }));
     }
 
     if (!sessionService.haveSession(sessionId)) {
-      throw new GlobalException({
+      return next(new GlobalException({
         message: "Sessão não encontrada",
         statusCode: 400,
         details: "Não existe uma sessão com este ID"
-      });
+      }));
     }
 
-    sessionService.deleteSession({ sessionId, userId });
-    return res.status(200).json({ message: "Sessão excluída" });
+    try {
+      sessionService.deleteSession({ sessionId, userId });
+      return res.status(200).json({ message: "Sessão excluída" });
+    } catch (error) {
+      next(error);
+    }
   });
 
   return router;
