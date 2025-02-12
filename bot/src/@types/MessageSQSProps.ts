@@ -6,5 +6,6 @@ export interface MessageToBeSentSQSProps {
 
 type MessageSQS = {
   sentChats: number;
+  unsentChats: number;
   totalChats: number;
 };

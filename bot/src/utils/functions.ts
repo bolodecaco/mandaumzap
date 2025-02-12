@@ -25,17 +25,10 @@ export async function getWhatsappSocketVersion(): Promise<
   const versionMatch = versionFinder.exec(siteHtml);
   if (!versionMatch) throw new Error("Version not found in the HTML");
   const versionString = versionMatch[0];
-  const versionParse = versionParser.exec(versionString);
-  if (!versionParse) throw new Error("Failed to parse version");
-  const versionArray = versionParse[0].split(".");
-  if (versionArray.length !== 3) {
-    throw new Error("Version must have exactly 3 parts");
-  }
-  return [
-    parseInt(versionArray[0]),
-    parseInt(versionArray[1]),
-    parseInt(versionArray[2]),
-  ];
+  const versionArray = versionString
+    .split(".")
+    .map((n) => Number(n.replace(/\D/g, "")));
+  return [versionArray[0], versionArray[1], versionArray[2]];
 }
 
 export async function fakeTyping(socket: WASocket, jid: string) {
