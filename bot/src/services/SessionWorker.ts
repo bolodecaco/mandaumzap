@@ -5,18 +5,20 @@ import { ParentMessageProps } from "../@types/ParentMessageProps";
 import { SignalsProps } from "../@types/SignalsProps";
 import { fakeTyping } from "../utils/functions";
 import MessageProducer from "../producer/MessageProducer";
-import { MessageMediaProps, MessagePollProps } from "../@types/MessageSendProps";
+import { MessageMediaProps, MessagePollProps, MessageTextProps } from "../@types/MessageSendProps";
 
 let session: Session;
 const Producer = new MessageProducer();
 
-type MessageToBeSent = { receivers: string[]; text: string };
-
 const formatMessage = {
   text: (text: string) => ({ text }),
-  media: ({ url, text }: MessageMediaProps) => ({
-    url,
-    text,
+  image: ({ url, text }: MessageMediaProps) => ({
+    image: { url },
+    caption: text,
+  }),
+  video: ({ url, text }: MessageMediaProps) => ({
+    video: { url },
+    caption: text,
   }),
   poll: ({ name, values, selectableCount }: MessagePollProps) => ({
     poll: { name, values, selectableCount },
@@ -79,18 +81,23 @@ const signalsActions: SignalsProps = {
     const chats = await session.getChats();
     parentPort?.postMessage({ type: "chats", data: chats });
   },
-  sendText: async (message: ParentMessageProps) => {
-      const { receivers, text } = message.data;
-      await genericSend(receivers, text, formatMessage["text"]);
+  sendText: async ({header, text}: MessageTextProps) => {
+
+      await genericSend(header.receivers, text, formatMessage["text"]);
     },
-  sendMedia: async (message: ParentMessageProps) => {
-    const { receivers, url, text, header } = message.data;
-    await genericSend(receivers, { url, text, header }, formatMessage["media"]);
+  sendImage: async (
+    { header, url, text }: MessageMediaProps
+  ) => {
+    await genericSend(header.receivers, { url, text, header }, formatMessage["image"]);
   },
-  sendPoll: async (message: ParentMessageProps) => {
-    const { receivers, name, values, selectableCount, header } = message.data;
+  sendVideo: async (
+    { header, url, text }: MessageMediaProps
+  ) => {
+    await genericSend(header.receivers, { url, text, header }, formatMessage["video"]);
+  },
+  sendPoll: async ({header, name, selectableCount, values}: MessagePollProps) => {
     await genericSend(
-      receivers!,
+      header.receivers!,
       { name, values, selectableCount, header },
       formatMessage["poll"]
     );
