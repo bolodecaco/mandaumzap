@@ -1,4 +1,4 @@
-import { parentPort, workerData } from "worker_threads";
+import { parentPort } from "worker_threads";
 import SessionRepository from "../repository/SessionRepository";
 import Session from "../models/Session";
 import { ParentMessageProps } from "../@types/ParentMessageProps";
@@ -124,9 +124,13 @@ const signalsActions: SignalsProps = {
 };
 
 parentPort?.on("message", async (message: ParentMessageProps) => {
-  if (signalsActions[message.type]) {
-    signalsActions[message.type](message.data);
-  } else {
-    parentPort?.postMessage({ type: "error", data: "Unknown message type" });
+  try{
+    if (signalsActions[message.type]) {
+      signalsActions[message.type](message.data);
+    } else {
+      parentPort?.postMessage({ type: "error", data: "Unknown message type" });
+    }
+  }catch(error: any){
+    parentPort?.postMessage({ type: "error", data: error.message });
   }
 });

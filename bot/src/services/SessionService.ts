@@ -113,7 +113,7 @@ class SessionService {
     if (!worker) return false;
     worker.postMessage({
       type: "sendText",
-      data: { receivers, text },
+      data: { header: { receivers }, text },
     });
     return true;
   }
@@ -129,7 +129,7 @@ class SessionService {
     if (!worker) return false;
     worker.postMessage({
       type: "sendImage",
-      data: { receivers, url, text },
+      data: { header: { receivers }, url, text },
     });
     return true;
   }
@@ -146,7 +146,7 @@ class SessionService {
     if (!worker) return false;
     worker.postMessage({
       type: "sendPoll",
-      data: { receivers, name, values, selectableCount },
+      data: { header: { receivers }, name, values, selectableCount },
     });
     return true;
   }
@@ -162,7 +162,7 @@ class SessionService {
     if (!worker) return false;
     worker.postMessage({
       type: "sendVideo",
-      data: { receivers, url, text },
+      data: { header: { receivers }, url, text },
     });
     return true;
   }
