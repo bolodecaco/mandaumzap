@@ -12,6 +12,12 @@ export const Page = styled.main`
   background-color: ${({ theme }) => theme.colors.background};
 `
 
+export const Row = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+`
+
 export const Main = styled.main`
   box-sizing: border-box;
   display: flex;
@@ -19,4 +25,25 @@ export const Main = styled.main`
   width: 100%;
   max-width: 100%;
   gap: 1rem;
+`
+
+export const Title = styled.h2`
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.05px;
+  color: ${({ theme }) => theme.colors.title};
+`
+
+export const Wrapper = styled.div`
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding-block: 1rem;
+  padding-inline: 1.5rem;
+  gap: 1rem;
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
 `

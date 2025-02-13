@@ -2,14 +2,21 @@
 
 import { Container } from '@/components/container'
 import { Header } from '@/components/header'
-import { Main } from '@/lib/styled/global'
+import { Main, Row, Title, Wrapper } from '@/lib/styled/global'
 
 export const Content = () => {
   return (
     <Container>
       <Main>
         <Header pageTitle="Meu histórico" />
-        <h1>Content</h1>
+        <Row style={{ height: '100%' }}>
+          <Wrapper style={{ flex: 2 }}>
+            <Title>Histórico de mensagens</Title>
+          </Wrapper>
+          <Wrapper style={{ flex: 1 }}>
+            <Title>Histórico de dispositivos</Title>
+          </Wrapper>
+        </Row>
       </Main>
     </Container>
   )
