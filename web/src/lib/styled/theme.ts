@@ -23,5 +23,21 @@ export const THEME = {
         'border-color': '#28B0BA',
       },
     },
+    button: {
+      primary: {
+        color: '#FFFFFF',
+        backgroundColor: '#075E54',
+        borderColor: '#0D8B7D',
+        hover: {
+          backgroundColor: '#0A7669',
+        },
+        active: {
+          backgroundColor: '#07584F',
+        },
+      },
+      ghost: {
+        backgroundColor: 'transparent',
+      },
+    },
   },
 }

@@ -16,6 +16,7 @@ export const Row = styled.div`
   display: flex;
   flex-direction: row;
   gap: 1rem;
+  width: 100%;
 `
 
 export const Main = styled.main`
