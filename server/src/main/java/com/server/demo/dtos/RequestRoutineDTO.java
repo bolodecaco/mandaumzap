@@ -15,11 +15,6 @@ import lombok.Data;
 @Data
 @Schema(description = "DTO para requisições das rotinas")
 public class RequestRoutineDTO {
-
-    @Schema(description = "ID do usuário", example = "123e4567-e89b-12d3-a456-426614174000")
-    @NotNull(message = "É preciso informar o ID do dono da rotina")
-    private UUID ownerId;
-
     @Schema(description = "ID da mensagem", example = "123e4567-e89b-12d3-a456-426614174000")
     @NotNull(message = "É preciso informar o ID da mensagem da rotina")
     private UUID messageId;

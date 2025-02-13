@@ -1,19 +1,18 @@
 package com.server.demo.events;
 
-import java.util.UUID;
 
 import org.springframework.context.ApplicationEvent;
 
 public class NotificationEvent extends ApplicationEvent {
 
-    private final UUID receiverId;
+    private final String receiverId;
 
-    public NotificationEvent(Object source, UUID receiverId) {
+    public NotificationEvent(Object source, String receiverId) {
         super(source);
         this.receiverId = receiverId;
     }
 
-    public UUID getReceiverId() {
+    public String getReceiverId() {
         return receiverId;
     }
 }

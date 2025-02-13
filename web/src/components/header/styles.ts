@@ -1,6 +1,7 @@
 import { styled } from 'styled-components'
 
 export const Wrapper = styled.header`
+  box-sizing: border-box;
   background-color: white;
   border-radius: 0.75rem;
   border: 1px solid ${({ theme }) => theme.colors.border};

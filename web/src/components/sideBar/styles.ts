@@ -1,13 +1,15 @@
 import { css, styled } from 'styled-components'
 
 export const Wrapper = styled.div`
+  box-sizing: border-box;
   border-radius: 0.75rem;
   ${({ theme }) => css`
-    background-color: ${theme.colors.background};
+    background-color: white;
     border: 1px solid ${theme.colors.border};
   `}
   padding: 1.5rem 1rem;
   height: 100%;
+  max-height: 100%;
   max-width: 4rem;
   display: flex;
   flex-direction: column;

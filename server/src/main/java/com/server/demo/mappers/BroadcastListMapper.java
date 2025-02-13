@@ -12,10 +12,8 @@ import com.server.demo.models.BroadcastList;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = {ChatMapper.class})
 public interface BroadcastListMapper {
 
-    @Mapping(target = "ownerId", source = "owner.id")
     BroadcastListDTO toDTO(BroadcastList list);
 
-    @Mapping(target = "owner.id", source = "ownerId")
     BroadcastList toEntity(RequestBroadcastListDTO list);
 
     List<BroadcastListDTO> toDTOList(List<BroadcastList> lists);

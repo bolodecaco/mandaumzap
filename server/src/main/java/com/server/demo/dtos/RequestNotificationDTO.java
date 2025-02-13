@@ -1,7 +1,5 @@
 package com.server.demo.dtos;
 
-import java.util.UUID;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,6 +21,6 @@ public class RequestNotificationDTO {
 
     @Schema(description = "ID do destinatário", example = "123e4567-e89b-12d3-a456-426614174000")
     @NotNull(message = "É preciso informar o ID do destinatário da notificação")
-    private UUID receiverId;
+    private String receiverId;
     
 }

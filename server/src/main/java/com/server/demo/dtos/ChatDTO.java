@@ -21,10 +21,7 @@ public class ChatDTO {
 
     @Schema(name = "chatName", description = "Nome do chat", example = "Chat do João")
     private String chatName;
-
-    @Schema(name = "ownerId", description = "ID do dono do chat", example = "123e4567-e89b-12d3-a456-426614174000")
-    private UUID ownerId;
-
+    
     @Schema(name = "sessionId", description = "Identificador da sessão", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID sessionId;
 }

@@ -10,6 +10,7 @@ import com.server.demo.dtos.RequestRoutineDTO;
 import com.server.demo.dtos.RoutineDTO;
 import com.server.demo.dtos.UpdateRoutineCronDTO;
 import com.server.demo.exception.BusinessException;
+import com.server.demo.dtos.UpdateRoutineDTO;
 import com.server.demo.mappers.RoutineMapper;
 import com.server.demo.models.Routine;
 import com.server.demo.repositories.RoutineRepository;
@@ -33,21 +34,22 @@ public class RoutineService {
         return routineMapper.toDTOList(routines);
     }
 
-    public RoutineDTO getRoutineById(UUID id) {
-        Routine routine = routineRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(String.format("Rotina com ID %s não encontrada", id)));
-        return routineMapper.toDTO(routine);
-    }
-
-    public List<RoutineDTO> getRoutinesByOwnerId(UUID ownerId) {
-        List<Routine> routines = routineRepository.findByOwnerId(ownerId);
+    public List<RoutineDTO> getAllRoutines(String userId) {
+        List<Routine> routines = routineRepository.findAllByUserId(userId);
         return routineMapper.toDTOList(routines);
     }
 
-    public RoutineDTO createRoutine(RequestRoutineDTO routine) {
+    public RoutineDTO getRoutineById(UUID id, String userId) {
+        Routine routine = routineRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new BusinessException(String.format("Rotina com ID %s não encontrada", id)));
+        return routineMapper.toDTO(routine);
+    }
+
+    public RoutineDTO createRoutine(RequestRoutineDTO routine, String userId) {
         String cronExpression = getCronExpression(routine);
         Routine newRoutine = routineMapper.toEntity(routine);
         newRoutine.setCron(cronExpression);
+        newRoutine.setUserId(userId);
         routineRepository.save(newRoutine);
         return routineMapper.toDTO(newRoutine);
     }
@@ -59,14 +61,12 @@ public class RoutineService {
         return routineMapper.toDTO(savedRoutine);
     }
 
-    public RoutineDTO updateRoutine(UUID id, Routine updatedRoutine) {
-        Routine routine = routineRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("Rotina com ID %s não encontrada", id)));
-        routine.setTitle(updatedRoutine.getTitle());
-        routine.setMessage(updatedRoutine.getMessage());
-        routine.setLastActiveAt(updatedRoutine.getLastActiveAt());
-        routine.setTimesSent(updatedRoutine.getTimesSent());
-        Routine savedRoutine = routineRepository.save(routine);
-        return routineMapper.toDTO(savedRoutine);
+    public RoutineDTO updateRoutine(UUID id, UpdateRoutineDTO updatedRoutine, String userId) {
+        Routine existingRoutine = routineRepository.findByIdAndUserId(id, userId)
+            .orElseThrow(() -> new BusinessException(String.format("Rotina com ID %s não encontrada", id)));
+        routineMapper.updateEntityFromDTO(updatedRoutine, existingRoutine);
+        routineRepository.save(existingRoutine);
+        return routineMapper.toDTO(existingRoutine);
     }
 
     public void deleteRoutine(UUID id) {
