@@ -11,3 +11,12 @@ export const Page = styled.main`
   padding: 1.5rem 1rem;
   background-color: ${({ theme }) => theme.colors.background};
 `
+
+export const Main = styled.main`
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  gap: 1rem;
+`

@@ -3,14 +3,13 @@
 import { Container } from '@/components/container'
 import { Header } from '@/components/header'
 import { Main } from '@/lib/styled/global'
-import { signOut } from 'next-auth/react'
 
-export function Content() {
+export const Content = () => {
   return (
     <Container>
       <Main>
-        <Header pageTitle="Dashboard" />
-        <button onClick={() => signOut()}>Logout</button>
+        <Header pageTitle="Meu histórico" />
+        <h1>Content</h1>
       </Main>
     </Container>
   )
