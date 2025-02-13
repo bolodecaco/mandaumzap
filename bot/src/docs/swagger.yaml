@@ -1,0 +1,420 @@
+openapi: 3.0.0
+info:
+  title: Mandaumzap API
+  version: 1.0.0
+  description: APIs direcionadas para o bot do whatsapp Mandaumzap, com endpoints para gerenciar as sessões e enviar mensagens.
+components:
+  schemas:
+    Session:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          example: "sessionId12345"
+        userId:
+          type: string
+          example: "userId"
+    Message:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          example: "session"
+        userId:
+          type: string
+          example: "userId"
+        text:
+          type: string
+          example: "Olá! Esta é uma mensagem de teste."
+        receivers:
+          type: array
+          items:
+            type: string
+          example:
+            - "5511999999999@s.whatsapp.net"
+            - "31636136171888171313@g.us"
+tags:
+  - name: Session
+    description: Endpoints to manage session information
+  - name: Message
+    description: Endpoints to manage messages
+  - name: Chat
+    description: Endpoints to manage chats
+paths:
+  /api/sessions/{userId}:
+    get:
+      tags: [Session]
+      summary: Lista de sessões
+      description: Retorna uma lista com os IDs das sessões ativas
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+            example: "userId"
+          required: true
+          description: O ID único do usuário.
+        - in: query
+          name: token
+          schema:
+            type: string
+            example: "token"
+          required: true
+          description: Token para autenticação
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  example: "sessionId12345"
+  /api/sessions:
+    post:
+      tags: [Session]
+      summary: Cria ou inicializa uma sessão
+      description: Cria uma nova sessão e retorna o QR Code para conexão.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                  example: "session"
+                userId:
+                  type: string
+                  example: "userId"
+      responses:
+        200:
+          description: Sessão já existe e será inicializada
+        201:
+          description: >
+            Session criada com sucesso
+            OBS: Caso seja a primeira conexão, o userId deve ser undefined ou null.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  qrcode:
+                    type: string
+                    example: "https://example.com/qrcode.png"
+        400:
+          description: Requisição inválida, já existe uma sessão com o ID fornecido.
+  /api/sessions/close/{userId}/{sessionId}:
+    delete:
+      tags: [Session]
+      summary: Fecha uma sessão
+      description: Fecha uma sessão ativa.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+        - in: path
+          name: userId
+          schema:
+            type: string
+            default: "userId"
+          required: true
+          description: O ID único do usuário.
+        - in: path
+          name: sessionId
+          schema:
+            type: string
+            default: "session"
+          required: true
+          description: O ID único da sessão a ser fechada.
+      responses:
+        200:
+          description: Sessão fechada com sucesso.
+        400:
+          description: A sessão não existe.
+  /api/sessions/{userId}/{sessionId}:
+    delete:
+      tags: [Session]
+      summary: Deleta e fecha uma sessão
+      description: Fecha uma sessão ativa.
+      parameters:
+        - in: path
+          name: sessionId
+          schema:
+            type: string
+            default: "session"
+          required: true
+          description: O ID único da sessão a ser fechada.
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      responses:
+        200:
+          description: Sessão fechada com sucesso.
+        400:
+          description: A sessão não existe.
+  /api/messages/send/text:
+    post:
+      tags: [Message]
+      summary: Envia mensagens de texto
+      description: Envia uma mensagem de texto para os destinatários especificados usando uma sessão ativa.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                  example: "session"
+                userId:
+                  type: string
+                  example: "userId"
+                text:
+                  type: string
+                  example: "Olá! Esta é uma mensagem de teste."
+                receivers:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "5511999999999@s.whatsapp.net"
+                    - "31636136171888171313@g.us"
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Enviando mensagem"
+        400:
+          description: Erro ao enviar a mensagem
+  /api/messages/send/image:
+    post:
+      tags: [Message]
+      summary: Envia mensagens de imagem
+      description: Envia uma mensagem de imagem para os destinatários especificados usando uma sessão ativa.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                  example: "session"
+                userId:
+                  type: string
+                  example: "userId"
+                url:
+                  type: string
+                  example: "https://example.com/image.png"
+                text:
+                  type: string
+                  example: "Esta é uma imagem de teste."
+                receivers:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "5511999999999@s.whatsapp.net"
+                    - "31636136171888171313@g.us"
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Enviando mensagem"
+        400:
+          description: Erro ao enviar a mensagem
+  /api/messages/send/video:
+    post:
+      tags: [Message]
+      summary: Envia mensagens de vídeo
+      description: Envia uma mensagem de vídeo para os destinatários especificados usando uma sessão ativa.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                  example: "session"
+                userId:
+                  type: string
+                  example: "userId"
+                url:
+                  type: string
+                  example: "https://example.com/video.mp4"
+                text:
+                  type: string
+                  example: "Este é um vídeo de teste."
+                receivers:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "5511999999999@s.whatsapp.net"
+                    - "31636136171888171313@g.us"
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Enviando mensagem"
+        400:
+          description: Erro ao enviar a mensagem
+  /api/messages/send/poll:
+    post:
+      tags: [Message]
+      summary: Envia enquetes
+      description: Envia uma enquete para os destinatários especificados usando uma sessão ativa.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                  example: "session"
+                userId:
+                  type: string
+                  example: "userId"
+                name:
+                  type: string
+                  example: "Enquete de teste"
+                values:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "Opção 1"
+                    - "Opção 2"
+                selectableCount:
+                  type: integer
+                  example: 1
+                receivers:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "5511999999999@s.whatsapp.net"
+                    - "31636136171888171313@g.us"
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Enviando mensagem"
+        400:
+          description: Erro ao enviar a mensagem
+  /api/chats/{userId}/{sessionId}:
+    get:
+      tags: [Chat]
+      summary: Lista de sessões
+      description: Retorna uma lista com os IDs das sessões ativas
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+            default: "userId"
+          required: true
+          description: ID de um usuário
+        - in: path
+          name: sessionId
+          schema:
+            type: string
+            default: "session"
+          required: true
+          description: ID da sessão
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  example: sessionId
+        404:
+          description: Sessão não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Sessão não encontrada
