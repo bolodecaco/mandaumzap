@@ -13,11 +13,9 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
-      // Initial sign in
       if (account && profile) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
-        token.idToken = account.id_token
         token.uuid = profile.sub
       }
       return token
@@ -25,7 +23,6 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
     async session({ session, token }) {
       session.accessToken = token.accessToken
       session.refreshToken = token.refreshToken
-      session.idToken = token.idToken
       session.uuid = token.uuid
       return session
     },
