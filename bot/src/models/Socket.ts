@@ -55,7 +55,7 @@ class WASocketWrapper {
     return await mongoConnection.getChats(this.sessionId);
   }
 
-  async initialize(): Promise<void> {
+  async start(): Promise<void> {
     const mongoConnection = await this.getMongoConnection();
     const authState = await mongoConnection.useAuthState();
     this.socketInstance = makeWASocket({

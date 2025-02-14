@@ -39,7 +39,7 @@ class Session {
   }
 
   async connect(): Promise<ConnectSessionProps> {
-    await this.waSocket.initialize();
+    await this.waSocket.start();
     this.socketClient = this.waSocket.getSocket();
     return new Promise((resolve, reject) => {
       this.socketClient!.ev.on("connection.update", async (update) => {
@@ -48,12 +48,20 @@ class Session {
         const { connection, qr } = update;
         if (connection === "open") {
           this.isConnected = true;
-          return resolve({ qrcode: "", socket: this.socketClient! });
+          return resolve({
+            qrcode: "",
+            socket: this.socketClient!,
+            status: "open",
+          });
         }
         if (connection === "close") {
-          if (DisconnectReason.restartRequired == statusCode) {
+          if (DisconnectReason.restartRequired == statusCode)
             return this.connect();
-          }
+          resolve({
+            socket: this.socketClient!,
+            qrcode: "",
+            status: "close",
+          });
           this.delete();
         }
         if (qr && this.id) {
@@ -61,7 +69,11 @@ class Session {
           setTimeout(() => {
             if (!this.isConnected) this.delete();
           }, 50 * 1000); //50 seconds
-          resolve({ socket: this.socketClient!, qrcode: qr });
+          resolve({
+            socket: this.socketClient!,
+            qrcode: qr,
+            status: "pending",
+          });
         }
       });
       this.socketClient!.ev.on("messaging-history.set", ({ contacts }) => {

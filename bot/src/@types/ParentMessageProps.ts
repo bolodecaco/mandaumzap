@@ -4,7 +4,7 @@ export interface ParentMessageProps {
 }
 
 export type TypeMessageProps =
-  | "initialize"
+  | "start"
   | "sendText"
   | "sendImage"
   | "sendVideo"
