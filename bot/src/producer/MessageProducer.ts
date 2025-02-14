@@ -2,9 +2,11 @@ import { SQS } from "aws-sdk";
 import crypto from "crypto";
 import { MessageToBeSentSQSProps } from "../@types/MessageSQSProps";
 import SQSClient from "../adapters/SqsClient";
+import { Logger } from "../logger/Logger";
 
 class MessageProducer {
   private sqsClient: SQSClient;
+  private logger = new Logger();
 
   constructor() {
     this.sqsClient = new SQSClient();
@@ -19,7 +21,9 @@ class MessageProducer {
         MessageBody: JSON.stringify(message),
       };
       await this.sqsClient.sqs.sendMessage(params).promise();
-    } catch (error) {}
+    } catch (error: any) {
+      this.logger.writeLog(`Error sending SQS message: ${error?.message}`);
+    }
   }
 }
 

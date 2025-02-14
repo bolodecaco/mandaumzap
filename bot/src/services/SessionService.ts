@@ -1,12 +1,20 @@
 import { Worker } from "worker_threads";
 import { resolve } from "path";
-import { MessageMediaProps, MessagePollProps, MessageRecieveProps, MessageTextProps } from "../@types/MessageSendProps";
+import {
+  MessageMediaProps,
+  MessagePollProps,
+  MessageRecieveProps,
+  MessageTextProps,
+} from "../@types/MessageSendProps";
 import MongoConnection from "../adapters/MongoConnection";
 import pino from "pino";
 import { UserMongoProps } from "../@types/UserMongoProps";
 import MessageConsumer from "../consumer/MessageConsumer";
+import { ConnectionStatus } from "../@types/ConnectionStatus";
+import { Logger } from "../logger/Logger";
 
 class SessionService {
+  private logger: Logger;
   private sessions: Map<string, Worker> = new Map<string, Worker>();
   private mongoConnection: MongoConnection = new MongoConnection({
     logger: pino({ level: "fatal" }),
@@ -19,6 +27,25 @@ class SessionService {
     this.mongoConnection.connectToMongo();
     this.messageConsumer = new MessageConsumer(this.processMessage.bind(this));
     this.messageConsumer.startPolling();
+    this.logger = new Logger();
+  }
+
+  private startSession(
+    sessionId: string
+  ): Promise<{ qrcode: string; status: ConnectionStatus }> {
+    const worker = this.createSession(sessionId);
+    return new Promise((resolve, reject) => {
+      worker.postMessage({
+        type: "start",
+        data: { sessionId: sessionId },
+      });
+      worker.on("message", (message) => {
+        if (message.type === "error" || message.type === "delete")
+          this.sessions.delete(sessionId);
+        resolve(message.data);
+      });
+      worker.on("error", (error) => reject(error));
+    });
   }
 
   private createSession(sessionId: string): Worker {
@@ -26,26 +53,26 @@ class SessionService {
     const worker = new Worker(workerPath, {
       workerData: { sessionId },
     });
-
     worker.on("error", (err) => {});
-
     worker.on("exit", (code) => {
-      console.error(
-        `Worker for session ${sessionId} stopped with exit code ${code}`
-      );
+      this.sessions.delete(sessionId);
+      this.logger.writeLog(`Session ${sessionId} exited with code ${code}`);
     });
-
     this.sessions.set(sessionId, worker);
     return worker;
   }
 
   private async processMessage(message: AWS.SQS.Message) {
     if (!message.Body) return;
-    const parsedMessage: MessageRecieveProps = JSON.parse(message.Body);
-    if (parsedMessage.type === "progress") return;
+    const { sessionId, userId, text, receivers, type } = JSON.parse(
+      message.Body
+    );
+    if (type === "progress") return;
     try {
-      await this.sendText(parsedMessage);
-    } catch (error) {}
+      await this.sendText({ header: { receivers, sessionId, userId }, text });
+    } catch (error: any) {
+      this.logger.writeLog(`Error processing message: ${error.message}`);
+    }
   }
 
   haveSession(sessionId: string): boolean {
@@ -67,20 +94,10 @@ class SessionService {
       const { allowed, exists } = await this.checkSession(userSession);
       if (!allowed && exists) return { error: "Usuário não autorizado" };
       if (!exists) await this.mongoConnection.addUser(userSession);
-      const worker = this.createSession(userSession.sessionId);
-      return new Promise((resolve, reject) => {
-        worker.postMessage({
-          type: "initialize",
-          data: { sessionId: userSession.sessionId },
-        });
-        worker.on("message", (message) => {
-          if (message.type === "error" || message.type === "delete")
-            this.sessions.delete(userSession.sessionId);
-          resolve(message.data);
-        });
-        worker.on("error", (error) => reject(error));
-      });
-    } catch (error) {}
+      return await this.startSession(userSession.sessionId);
+    } catch (error: any) {
+      this.logger.writeLog(`Error connecting session: ${error.message}`);
+    }
   }
 
   async closeSession(userSession: UserMongoProps): Promise<boolean> {
@@ -109,9 +126,10 @@ class SessionService {
   }: MessageTextProps): Promise<boolean> {
     const { allowed, exists } = await this.checkSession({ sessionId, userId });
     if (!exists || !allowed) return false;
-    const worker = this.sessions.get(sessionId);
-    if (!worker) return false;
-    worker.postMessage({
+    let worker = this.sessions.get(sessionId);
+    if (!worker && exists) await this.startSession(sessionId);
+    worker = this.sessions.get(sessionId);
+    worker!.postMessage({
       type: "sendText",
       data: { header: { receivers }, text },
     });
@@ -125,9 +143,10 @@ class SessionService {
   }: MessageMediaProps): Promise<boolean> {
     const { allowed, exists } = await this.checkSession({ sessionId, userId });
     if (!exists || !allowed) return false;
-    const worker = this.sessions.get(sessionId);
-    if (!worker) return false;
-    worker.postMessage({
+    let worker = this.sessions.get(sessionId);
+    if (!worker && exists) await this.startSession(sessionId);
+    worker = this.sessions.get(sessionId);
+    worker!.postMessage({
       type: "sendImage",
       data: { header: { receivers }, url, text },
     });
@@ -142,9 +161,10 @@ class SessionService {
   }: MessagePollProps): Promise<boolean> {
     const { allowed, exists } = await this.checkSession({ sessionId, userId });
     if (!exists || !allowed) return false;
-    const worker = this.sessions.get(sessionId);
-    if (!worker) return false;
-    worker.postMessage({
+    let worker = this.sessions.get(sessionId);
+    if (!worker && exists) await this.startSession(sessionId);
+    worker = this.sessions.get(sessionId);
+    worker!.postMessage({
       type: "sendPoll",
       data: { header: { receivers }, name, values, selectableCount },
     });
@@ -158,15 +178,15 @@ class SessionService {
   }: MessageMediaProps): Promise<boolean> {
     const { allowed, exists } = await this.checkSession({ sessionId, userId });
     if (!exists || !allowed) return false;
-    const worker = this.sessions.get(sessionId);
-    if (!worker) return false;
-    worker.postMessage({
+    let worker = this.sessions.get(sessionId);
+    if (!worker && exists) await this.startSession(sessionId);
+    worker = this.sessions.get(sessionId);
+    worker!.postMessage({
       type: "sendVideo",
       data: { header: { receivers }, url, text },
     });
     return true;
   }
-
 
   async getChats(userSession: UserMongoProps) {
     const { allowed, exists } = await this.checkSession(userSession);

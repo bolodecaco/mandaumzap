@@ -5,7 +5,11 @@ import { ParentMessageProps } from "../@types/ParentMessageProps";
 import { SignalsProps } from "../@types/SignalsProps";
 import { fakeTyping } from "../utils/functions";
 import MessageProducer from "../producer/MessageProducer";
-import { MessageMediaProps, MessagePollProps, MessageTextProps } from "../@types/MessageSendProps";
+import {
+  MessageMediaProps,
+  MessagePollProps,
+  MessageTextProps,
+} from "../@types/MessageSendProps";
 
 let session: Session;
 const Producer = new MessageProducer();
@@ -60,14 +64,13 @@ async function genericSend<T>(
   }
 }
 
-
 const signalsActions: SignalsProps = {
-  initialize: async ({ sessionId }) => {
+  start: async ({ sessionId }) => {
     session = SessionRepository.createSession(sessionId);
-    const { qrcode } = await session.connect();
+    const { qrcode, status } = await session.connect();
     parentPort?.postMessage({
       type: "qrcode",
-      data: { qrcode },
+      data: { qrcode, status },
     });
   },
   getChats: async () => {
@@ -81,21 +84,29 @@ const signalsActions: SignalsProps = {
     const chats = await session.getChats();
     parentPort?.postMessage({ type: "chats", data: chats });
   },
-  sendText: async ({header, text}: MessageTextProps) => {
-
-      await genericSend(header.receivers, text, formatMessage["text"]);
-    },
-  sendImage: async (
-    { header, url, text }: MessageMediaProps
-  ) => {
-    await genericSend(header.receivers, { url, text, header }, formatMessage["image"]);
+  sendText: async ({ header, text }: MessageTextProps) => {
+    await genericSend(header.receivers, text, formatMessage["text"]);
   },
-  sendVideo: async (
-    { header, url, text }: MessageMediaProps
-  ) => {
-    await genericSend(header.receivers, { url, text, header }, formatMessage["video"]);
+  sendImage: async ({ header, url, text }: MessageMediaProps) => {
+    await genericSend(
+      header.receivers,
+      { url, text, header },
+      formatMessage["image"]
+    );
   },
-  sendPoll: async ({header, name, selectableCount, values}: MessagePollProps) => {
+  sendVideo: async ({ header, url, text }: MessageMediaProps) => {
+    await genericSend(
+      header.receivers,
+      { url, text, header },
+      formatMessage["video"]
+    );
+  },
+  sendPoll: async ({
+    header,
+    name,
+    selectableCount,
+    values,
+  }: MessagePollProps) => {
     await genericSend(
       header.receivers!,
       { name, values, selectableCount, header },
@@ -124,13 +135,13 @@ const signalsActions: SignalsProps = {
 };
 
 parentPort?.on("message", async (message: ParentMessageProps) => {
-  try{
+  try {
     if (signalsActions[message.type]) {
       signalsActions[message.type](message.data);
     } else {
       parentPort?.postMessage({ type: "error", data: "Unknown message type" });
     }
-  }catch(error: any){
+  } catch (error: any) {
     parentPort?.postMessage({ type: "error", data: error.message });
   }
 });

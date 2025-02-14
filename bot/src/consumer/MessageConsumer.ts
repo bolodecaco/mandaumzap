@@ -1,10 +1,12 @@
 import { SQS } from "aws-sdk";
 import SQSClient from "../adapters/SqsClient";
+import { Logger } from "../logger/Logger";
 
 class MessageConsumer {
   private sqsClient: SQSClient;
   private params: SQS.Types.ReceiveMessageRequest;
   private processMessageCallback: (message: SQS.Message) => void;
+  private logger = new Logger();
 
   constructor(processMessageCallback: (message: SQS.Message) => void) {
     this.sqsClient = new SQSClient();
@@ -30,7 +32,9 @@ class MessageConsumer {
           this.deleteMessages(data.Messages);
         }
       });
-    } catch (error) {}
+    } catch (error: any) {
+      this.logger.writeLog(`Error receiving SQS messages: ${error.message}`);
+    }
   }
 
   private async deleteMessages(messages: SQS.Message[]) {

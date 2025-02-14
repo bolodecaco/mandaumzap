@@ -3,7 +3,7 @@ import { ParentMessageProps } from "./ParentMessageProps";
 type InitSessionProps = { sessionId: string };
 
 export interface SignalsProps {
-  initialize: (content: InitSessionProps) => void;
+  start: (content: InitSessionProps) => void;
   getChats: () => void;
   sendText: (message: MessageTextProps) => void;
   sendImage: (message: MessageMediaProps) => void;
