@@ -30,10 +30,10 @@ deploy:
         username: ${{ secrets.VPS_USERNAME }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-            cd ~/server/mandaumzap
+            mkdir -p ~/app
             
             # Parar containers existentes
-            docker-compose -f ~/server/mandaumzap/docker-compose.prod.yml down || true
+            docker-compose -f ~/app/docker-compose.prod.yml down || true
             
             # Remover imagem antiga
             docker rmi ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest || true
@@ -42,9 +42,9 @@ deploy:
             docker pull ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest
             
             # Criar docker-compose.prod.yml
-            cat > ~/server/mandaumzap/docker-compose.prod.yml << 'EOL'
+            cat > ~/app/docker-compose.prod.yml << 'EOL'
             ${{ secrets.COMPOSE }}
             EOL
             
             # Iniciar aplicação
-            cd ~/server/mandaumzap && docker-compose -f docker-compose.prod.yml up -d
+            cd ~/app && docker-compose -f docker-compose.prod.yml up -d
