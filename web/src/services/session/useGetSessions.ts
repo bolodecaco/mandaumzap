@@ -1,7 +1,7 @@
 import { fetcher } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 
-export const useSessions = () => {
+export const useGetSessions = () => {
   const { data, error, isLoading } = useQuery({
     queryKey: ['sessions'],
     queryFn: () => fetcher('/user/sessions', { method: 'GET' }),

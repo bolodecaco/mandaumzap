@@ -1,7 +1,7 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
-const protectedRoutes = ['/dashboard']
+const protectedRoutes = ['/dashboard', '/history']
 const publicRoutes = ['/login']
 
 export default auth((req) => {
