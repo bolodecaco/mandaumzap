@@ -36,10 +36,10 @@ jobs:
               docker-compose -f ~/app/docker-compose.prod.yml down || true
               
               # Remover imagem antiga
-              docker rmi ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest || true
+              docker rmi ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest || true
               
               # Baixar nova imagem
-              docker pull ${{ secrets.DOCKER_USERNAME }}/ecommerce:latest
+              docker pull ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest
               
               # Criar docker-compose.prod.yml
               cat > ~/app/docker-compose.prod.yml << 'EOL'
