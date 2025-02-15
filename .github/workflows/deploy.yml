@@ -30,10 +30,10 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-              mkdir -p ~/app
+              cd ~/server/mandaumzap
               
               # Parar containers existentes
-              docker-compose -f ~/app/docker-compose.prod.yml down || true
+              docker compose -f ~/server/mandaumzap/docker-compose.prod.yml down || true
               
               # Remover imagem antiga
               docker rmi ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest || true
@@ -42,9 +42,9 @@ jobs:
               docker pull ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest
               
               # Criar docker-compose.prod.yml
-              cat > ~/app/docker-compose.prod.yml << 'EOL'
+              cat > ~/server/mandaumzap/docker-compose.prod.yml << 'EOL'
               ${{ secrets.COMPOSE }}
               EOL
               
               # Iniciar aplicação
-              cd ~/app && docker-compose -f docker-compose.prod.yml up -d
+              cd ~/server/mandaumzap && docker compose -f docker-compose.prod.yml up -d
