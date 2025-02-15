@@ -7,6 +7,7 @@ export const Wrapper = styled.header`
   border: 1px solid ${({ theme }) => theme.colors.border};
   padding: 0 1.5rem;
   width: 100%;
+  min-height: 4rem;
   height: 4rem;
   display: flex;
   align-items: center;
