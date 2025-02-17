@@ -66,4 +66,11 @@ public class SessionController {
         sessionService.deleteSession(id, jwtService.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Deleta todas as sessões do usuário")
+    @DeleteMapping("/")
+    public ResponseEntity<Void> deleteAllSessions() {
+        sessionService.deleteAllSessions(jwtService.getCurrentUserId());
+        return ResponseEntity.noContent().build();
+    }
 }

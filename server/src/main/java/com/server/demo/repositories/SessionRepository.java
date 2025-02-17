@@ -11,7 +11,12 @@ import com.server.demo.models.Session;
 
 @Repository
 public interface SessionRepository extends JpaRepository<Session, UUID> {
+
     List<Session> findByUserId(String userId);
+
     List<Session> findByIsActive(boolean isActive);
+
     Optional<Session> findByIdAndUserId(UUID id, String userId);
+
+    void deleteAllByUserId(String userId);
 }

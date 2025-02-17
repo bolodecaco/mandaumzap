@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -103,5 +104,10 @@ public class SessionService {
         Session session = sessionRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Sessão de id %s não encontrada", id)));
         sessionRepository.delete(session);
+    }
+
+    @Transactional
+    public void deleteAllSessions(String userId) {
+        sessionRepository.deleteAllByUserId(userId);
     }
 }
