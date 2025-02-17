@@ -35,19 +35,30 @@ jobs:
           script: |
               cd ~/server/mandaumzap
               
-              # Parar containers existentes
-              docker compose -f ~/server/mandaumzap/docker-compose.prod.yml down || true
+              # Criar docker-compose.prod.yml APENAS se não existir
+              if [ ! -f docker-compose.prod.yml ]; then
+                echo "Arquivo docker-compose.prod.yml não encontrado. Criando..."
+                echo "$COMPOSE_CONTENT" | tr -d '\r' > docker-compose.prod.yml
+              else
+                echo "Arquivo docker-compose.prod.yml já existe. Mantendo configuração atual."
+              fi
               
-              # Remover imagem antiga
-              docker rmi ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest || true
-              
-              # Baixar nova imagem
-              docker pull ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest
-              
-              # Criar docker-compose.prod.yml
-              cat > ~/server/mandaumzap/docker-compose.prod.yml << 'EOL'
-              ${{ secrets.COMPOSE }}
-              EOL
-              
-              # Iniciar aplicação
-              cd ~/server/mandaumzap && docker compose -f docker-compose.prod.yml up -d
+              # Verifica se o serviço já existe
+              if ! docker compose -f docker-compose.prod.yml ps | grep -q spring-app; then
+                echo "Primeiro deploy detectado. Inicializando tudo..."
+                docker compose -f docker-compose.prod.yml up -d
+              else
+                echo "Atualizando apenas o backend..."
+                
+                # Baixar nova imagem sem parar os containers
+                docker compose -f docker-compose.prod.yml pull spring-app
+                
+                # Remover imagem antiga apenas se necessário
+                docker images -q ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest | xargs -r docker rmi || true
+                
+                # Reiniciar apenas o serviço do backend (sem mexer no banco)
+                docker compose -f docker-compose.prod.yml up -d --no-deps spring-app
+
+                # Remover imagens antigas não usadas
+                docker image prune -f
+              fi
