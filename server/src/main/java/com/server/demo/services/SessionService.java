@@ -10,10 +10,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.demo.dtos.BotRequestDTO;
-import com.server.demo.dtos.BotResponseDTO;
+import com.server.demo.dtos.BotConnectionDTO;
+import com.server.demo.dtos.BotDTO;
+import com.server.demo.dtos.RequestBotDTO;
 import com.server.demo.dtos.RequestSessionDTO;
-import com.server.demo.dtos.ResponseBotConnectionDTO;
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.dtos.UpdateSessionDTO;
 import com.server.demo.exception.BusinessException;
@@ -61,14 +61,14 @@ public class SessionService {
         return sessionMapper.toDTO(session);
     }
 
-    public ResponseBotConnectionDTO createSession(RequestSessionDTO requestDTO, String userId) {
+    public BotConnectionDTO createSession(RequestSessionDTO requestDTO, String userId) {
         Session session = sessionMapper.toEntity(requestDTO);
         session.setUserId(userId);
         Session savedSession = sessionRepository.save(session);
-        BotRequestDTO botRequestDTO = sessionMapper.toBotRequestDTO(savedSession);
+        RequestBotDTO botRequestDTO = sessionMapper.toBotRequestDTO(savedSession);
         try {
             String botResponseJSON = this.requestBotConnection(botRequestDTO).block();
-            BotResponseDTO botQrcodeResponse = this.parseQrCode(botResponseJSON);
+            BotDTO botQrcodeResponse = this.parseQrCode(botResponseJSON);
             return sessionMapper.toResponseBotConnectionDTO(savedSession, botQrcodeResponse);
         } catch (BusinessException e) {
             sessionRepository.delete(savedSession);
@@ -76,7 +76,7 @@ public class SessionService {
         }
     }
 
-    private Mono<String> requestBotConnection(BotRequestDTO botRequestDTO) {
+    private Mono<String> requestBotConnection(RequestBotDTO botRequestDTO) {
         return webClientBuilder
                 .baseUrl(botUrl)
                 .build()
@@ -90,10 +90,10 @@ public class SessionService {
                 .bodyToMono(String.class);
     }
 
-    private BotResponseDTO parseQrCode(String qrcodeJSON) {
+    private BotDTO parseQrCode(String qrcodeJSON) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.readValue(qrcodeJSON, BotResponseDTO.class);
+            return objectMapper.readValue(qrcodeJSON, BotDTO.class);
         } catch (JsonProcessingException e) {
             throw new QrCodeParseException("Erro ao processar o QR Code", e);
         }

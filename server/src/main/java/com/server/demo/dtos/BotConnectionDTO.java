@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Schema(description = "DTO para resposta com qrcode, mensagem e status")
-public class ResponseBotConnectionDTO {
+public class BotConnectionDTO {
 
     @Schema(name = "id", description = "ID da sessão", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;

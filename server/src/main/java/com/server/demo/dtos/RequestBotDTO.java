@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "DTO para requisição de novas sessoões para o Bot")
-public class BotRequestDTO {
+public class RequestBotDTO {
 
     @Schema(name = "sessionId", description = "Identificador da sessão", example = "123e4567-e89b-12d3-a456-426614174000")
     private String sessionId;
