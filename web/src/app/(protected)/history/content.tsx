@@ -23,7 +23,7 @@ export const Content = () => {
   const [isNewDeviceModalOpen, setIsNewDeviceModalOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
-  const { data, error } = useGetSessions()
+  const { data, error, refetch } = useGetSessions()
 
   const handleDeleteClick = () => {
     setIsConfirmationModalOpen(true)
@@ -31,8 +31,8 @@ export const Content = () => {
 
   const handleConfirmationDelete = async () => {
     const response = await deleteAllSessions()
-    console.log(response)
     if (response.success) {
+      refetch()
       handleConfirmationClose()
     } else {
       toast.error(response.error)
@@ -100,7 +100,7 @@ export const Content = () => {
                 {data?.map((session: Session) => (
                   <Device
                     key={session.id}
-                    active={session.active}
+                    status={session.status}
                     id={session.id}
                   />
                 ))}

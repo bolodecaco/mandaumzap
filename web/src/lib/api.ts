@@ -36,6 +36,7 @@ export async function fetcher(endpoint: string, options: FetchAPIOptions) {
 
     if (response.status === 401) {
       await signOut()
+      return
     }
 
     if (!response.ok) {

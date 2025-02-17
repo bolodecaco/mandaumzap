@@ -13,24 +13,17 @@ import {
 } from '../styles'
 import { QRCodeDisplay } from './QRCodeDisplay'
 import { Cancel, Description, ProgressContainer } from './styles'
-import { QueryClient, useQuery } from '@tanstack/react-query'
-import { createSession } from '@/app/actions/sessions/createSession'
+import { QueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
+import { useCreateSession } from '@/services/session/useCreateSession'
 
 export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   const [qrCode, setQrCode] = useState<string | null>(null)
 
-  const { data, isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ['session'],
-    queryFn: () => createSession(),
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  })
-
+  const { data, isLoading, error, refetch } = useCreateSession()
   useEffect(() => {
     if (data?.success) {
       const queryClient = new QueryClient()
-
       setQrCode(data.value.qrcode ?? null)
       queryClient.refetchQueries({
         queryKey: ['sessions'],
@@ -68,7 +61,7 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
         </Header>
         <Main style={{ justifyContent: 'center', alignItems: 'center' }}>
           <QRCodeDisplay
-            isLoading={isLoading || isRefetching}
+            isLoading={isLoading}
             qrCode={qrCode}
             onRefresh={handleRefresh}
           />

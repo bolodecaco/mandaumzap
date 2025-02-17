@@ -9,9 +9,6 @@ export const createSession = createServerAction<Session>(async () => {
   try {
     const response = await fetcher('/user/sessions', {
       method: 'POST',
-      body: {
-        active: true,
-      },
     })
     return response
   } catch (err: unknown) {
