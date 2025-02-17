@@ -26,5 +26,6 @@ public interface SessionMapper {
     RequestBotDTO toBotRequestDTO(Session requestSessionDTO);
 
     @Mapping(target = "id", source = "session.id")
+    @Mapping(target = "status", source = "session.status")
     BotConnectionDTO toResponseBotConnectionDTO(Session session, BotDTO response);
 }

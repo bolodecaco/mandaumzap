@@ -14,9 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.demo.dtos.BotConnectionDTO;
 import com.server.demo.dtos.BotDTO;
 import com.server.demo.dtos.RequestBotDTO;
-import com.server.demo.dtos.RequestSessionDTO;
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.dtos.UpdateSessionDTO;
+import com.server.demo.enums.ConnectionStatusType;
 import com.server.demo.exception.BusinessException;
 import com.server.demo.exception.QrCodeParseException;
 import com.server.demo.mappers.SessionMapper;
@@ -51,7 +51,7 @@ public class SessionService {
     public SessionDTO updateSessionActivity(UUID id, UpdateSessionDTO updateSessionDTO, String userId) {
         Session session = sessionRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Sessão de id %s não encontrada", id)));
-        session.setActive(updateSessionDTO.isActive());
+        session.setStatus(updateSessionDTO.getStatus());
         Session updatedSession = sessionRepository.save(session);
         return sessionMapper.toDTO(updatedSession);
     }
@@ -62,22 +62,49 @@ public class SessionService {
         return sessionMapper.toDTO(session);
     }
 
-    public BotConnectionDTO createSession(RequestSessionDTO requestDTO, String userId) {
-        Session session = sessionMapper.toEntity(requestDTO);
-        session.setUserId(userId);
-        Session savedSession = sessionRepository.save(session);
-        RequestBotDTO botRequestDTO = sessionMapper.toBotRequestDTO(savedSession);
+    private int countUserSessions(String userId) {
+        return sessionRepository.countByUserId(userId);
+    }
+
+    public BotConnectionDTO startSession(UUID id, String userId) {
+        Session session = sessionRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new BusinessException(String.format("Sessão de id %s não encontrada", id)));
+        RequestBotDTO requestBotDTO = sessionMapper.toBotRequestDTO(session);
         try {
-            String botResponseJSON = this.requestBotConnection(botRequestDTO).block();
-            BotDTO botQrcodeResponse = this.parseQrCode(botResponseJSON);
-            return sessionMapper.toResponseBotConnectionDTO(savedSession, botQrcodeResponse);
+            String botResponseJSON = this.startBotConnection(requestBotDTO).block();
+            BotDTO botDTO = this.parseQrCode(botResponseJSON);
+            ConnectionStatusType status = botDTO.getStatus();
+            if (status == ConnectionStatusType.close || status == ConnectionStatusType.error) {
+                sessionRepository.delete(session);
+                throw new BusinessException("A sessão que você quer se conectar está fechada");
+            }
+            session.setStatus(status);
+            sessionRepository.save(session);
+            return sessionMapper.toResponseBotConnectionDTO(session, botDTO);
         } catch (BusinessException e) {
-            sessionRepository.delete(savedSession);
+            throw new BusinessException("Erro ao iniciar sessão com o bot");
+        }
+    }
+
+    public BotConnectionDTO createSession(String userId) {
+        if (countUserSessions(userId) >= 3) {
+            throw new BusinessException("Usuário já possui o limite de sessões");
+        }
+        Session session = new Session();
+        session.setUserId(userId);
+        session.setStatus(ConnectionStatusType.pending);
+        Session savedSession = sessionRepository.save(session);
+        RequestBotDTO requestBotDTO = sessionMapper.toBotRequestDTO(savedSession);
+        try {
+            String botResponseJSON = this.startBotConnection(requestBotDTO).block();
+            BotDTO botDTO = this.parseQrCode(botResponseJSON);
+            return sessionMapper.toResponseBotConnectionDTO(savedSession, botDTO);
+        } catch (BusinessException e) {
             throw new BusinessException("Erro ao criar sessão com o bot");
         }
     }
 
-    private Mono<String> requestBotConnection(RequestBotDTO botRequestDTO) {
+    private Mono<String> startBotConnection(RequestBotDTO botRequestDTO) {
         return webClientBuilder
                 .baseUrl(botUrl)
                 .build()
@@ -87,8 +114,17 @@ public class SessionService {
                 .queryParam("token", botToken)
                 .build())
                 .bodyValue(botRequestDTO)
-                .retrieve()
-                .bodyToMono(String.class);
+                .exchangeToMono(response -> {
+                    int statusCode = response.statusCode().value();
+                    return response.bodyToMono(String.class)
+                            .map(body -> {
+                                if (statusCode >= 400) {
+                                    throw new BusinessException(
+                                            "Erro ao iniciar sessão: " + statusCode + " - " + body);
+                                }
+                                return body;
+                            });
+                });
     }
 
     private BotDTO parseQrCode(String qrcodeJSON) {

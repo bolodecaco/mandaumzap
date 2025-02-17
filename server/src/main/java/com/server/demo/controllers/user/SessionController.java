@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.BotConnectionDTO;
-import com.server.demo.dtos.RequestSessionDTO;
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.dtos.UpdateSessionDTO;
 import com.server.demo.services.JwtService;
@@ -50,8 +49,14 @@ public class SessionController {
 
     @Operation(summary = "Cria uma nova sessão")
     @PostMapping
-    public ResponseEntity<BotConnectionDTO> createSession(@Valid @RequestBody RequestSessionDTO session) {
-        return ResponseEntity.ok(sessionService.createSession(session, jwtService.getCurrentUserId()));
+    public ResponseEntity<BotConnectionDTO> createSession() {
+        return ResponseEntity.ok(sessionService.createSession(jwtService.getCurrentUserId()));
+    }
+
+    @Operation(summary = "Inicia uma sessão existente")
+    @PatchMapping("/{id}/start")
+    public ResponseEntity<BotConnectionDTO> startSession(@PathVariable UUID id) {
+        return ResponseEntity.ok(sessionService.startSession(id, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Atualiza a atividade de uma sessão")

@@ -2,6 +2,8 @@ package com.server.demo.dtos;
 
 import java.util.UUID;
 
+import com.server.demo.enums.ConnectionStatusType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +18,6 @@ public class SessionDTO {
     @Schema(name = "id", description = "Identificador da sessão", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;
 
-    @Schema(name = "isActive", description = "Indica se a sessão está ativa", example = "true")
-    private boolean isActive;
+    @Schema(name = "status", description = "Indica se a sessão está ativa", example = "true")
+    private ConnectionStatusType status;
 }
