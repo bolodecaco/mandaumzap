@@ -3,17 +3,35 @@ import { useQRCodeTimer } from '@/components/modal/newDevice/useQRCodeTimer'
 import { ProgressBar } from '@/components/progressBar'
 import { Main } from '@/lib/styled/global'
 import { THEME } from '@/lib/styled/theme'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiX } from 'react-icons/fi'
 import { Background, Header, StyledTitle, StyledWrapper } from '../styles'
 import { QRCodeDisplay } from './QRCodeDisplay'
 import { Cancel, Description, ProgressContainer } from './styles'
-
-const INITIAL_QR_CODE =
-  '2@7Qp73ki497pk15x7BULoZGk3h9tjSd09iRiMxxYKjwc5hbOWAsYmYA5HNdj/UvFmX6QV+xBSpOQ9lfhNZ1mc3YW4iyXmoiOLg0E=,iK+d7W5DhB+LKoMjG0JA6PoGepp8yQZemqC0bOMqEBg=,FAt2zdBORPv0LwMNQGy3Z020s+HzeaFjSXzFLpPyeTE=,/OzQYhF6DsULmKWD43ar+YkkT76qRnqT7u8FOVRHPk0='
+import { QueryClient, useQuery } from '@tanstack/react-query'
+import { createSession } from '@/app/actions/sessions/createSession'
+import { toast } from 'react-toastify'
 
 export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   const [qrCode, setQrCode] = useState<string | null>(null)
+
+  const { data, isLoading, error, refetch, isRefetching } = useQuery({
+    queryKey: ['session'],
+    queryFn: () => createSession(),
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  })
+
+  useEffect(() => {
+    if (data?.success) {
+      const queryClient = new QueryClient()
+
+      setQrCode(data.value.qrcode ?? null)
+      queryClient.refetchQueries({
+        queryKey: ['sessions'],
+      })
+    }
+  }, [data])
 
   const { progress, remainingTime, resetTimer } = useQRCodeTimer({
     initialTime: 40,
@@ -22,8 +40,12 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   })
 
   const handleRefresh = () => {
-    setQrCode(INITIAL_QR_CODE)
+    refetch()
     resetTimer()
+  }
+
+  if (error) {
+    toast.error(`Erro ao gerar QRCode. Detalhes: ${error}`)
   }
 
   return (
@@ -40,7 +62,11 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
           />
         </Header>
         <Main style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <QRCodeDisplay qrCode={qrCode} onRefresh={handleRefresh} />
+          <QRCodeDisplay
+            isLoading={isLoading || isRefetching}
+            qrCode={qrCode}
+            onRefresh={handleRefresh}
+          />
           <Description>
             Escaneie esse QR Code para conectar seu WhatsApp
           </Description>
