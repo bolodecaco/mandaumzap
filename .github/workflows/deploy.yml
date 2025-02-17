@@ -35,17 +35,17 @@ jobs:
           script: |
               cd ~/server/mandaumzap
               
-              # Criar docker-compose.prod.yml se não existir
+              # Criar docker-compose.prod.yml APENAS se não existir
               if [ ! -f docker-compose.prod.yml ]; then
-                echo "Primeiro deploy detectado. Criando docker-compose.prod.yml..."
-                cat > docker-compose.prod.yml << 'EOL'
-                ${{ secrets.COMPOSE }}
-                EOL
+                echo "Arquivo docker-compose.prod.yml não encontrado. Criando..."
+                echo "$COMPOSE_CONTENT" | tr -d '\r' > docker-compose.prod.yml
+              else
+                echo "Arquivo docker-compose.prod.yml já existe. Mantendo configuração atual."
               fi
               
               # Verifica se o serviço já existe
               if ! docker compose -f docker-compose.prod.yml ps | grep -q spring-app; then
-                echo "Parece ser o primeiro deploy. Inicializando tudo..."
+                echo "Primeiro deploy detectado. Inicializando tudo..."
                 docker compose -f docker-compose.prod.yml up -d
               else
                 echo "Atualizando apenas o backend..."
