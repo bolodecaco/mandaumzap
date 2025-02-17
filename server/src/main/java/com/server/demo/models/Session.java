@@ -2,6 +2,8 @@ package com.server.demo.models;
 
 import java.util.UUID;
 
+import com.server.demo.enums.ConnectionStatusType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,5 +27,5 @@ public class Session {
     private String userId;
 
     @Column(nullable = false)
-    private boolean isActive;
+    private ConnectionStatusType status;
 }

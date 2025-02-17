@@ -1,5 +1,7 @@
 package com.server.demo.dtos;
 
+import com.server.demo.enums.ConnectionStatusType;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,5 +20,5 @@ public class BotDTO {
     private String message;
 
     @Schema(name = "status", description = "Status da requisição", example = "open")
-    private String status;
+    private ConnectionStatusType status;
 }
