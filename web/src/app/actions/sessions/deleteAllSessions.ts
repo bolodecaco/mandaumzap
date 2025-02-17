@@ -2,16 +2,12 @@
 
 import { fetcher } from '@/lib/api'
 import { createServerAction } from '../utils/createServerAction'
-import { Session } from '@/@types/session'
 import { throwGenericError } from '../utils/throwGenericError'
 
-export const createSession = createServerAction<Session>(async () => {
+export const deleteAllSessions = createServerAction(async () => {
   try {
     const response = await fetcher('/user/sessions', {
-      method: 'POST',
-      body: {
-        active: true,
-      },
+      method: 'DELETE',
     })
     return response
   } catch (err: unknown) {

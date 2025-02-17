@@ -1,11 +1,16 @@
-import { Button } from '@/components/button'
 import { useQRCodeTimer } from '@/components/modal/newDevice/useQRCodeTimer'
 import { ProgressBar } from '@/components/progressBar'
 import { Main } from '@/lib/styled/global'
 import { THEME } from '@/lib/styled/theme'
 import { useEffect, useState } from 'react'
 import { FiX } from 'react-icons/fi'
-import { Background, Header, StyledTitle, StyledWrapper } from '../styles'
+import {
+  Background,
+  Close,
+  Header,
+  StyledTitle,
+  StyledWrapper,
+} from '../styles'
 import { QRCodeDisplay } from './QRCodeDisplay'
 import { Cancel, Description, ProgressContainer } from './styles'
 import { QueryClient, useQuery } from '@tanstack/react-query'
@@ -53,7 +58,7 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
       <StyledWrapper style={{ width: '27.5rem' }}>
         <Header>
           <StyledTitle>Conectar novo dispositivo</StyledTitle>
-          <Button
+          <Close
             leftIcon={FiX}
             onClick={onClose}
             iconColor={THEME.colors.title}

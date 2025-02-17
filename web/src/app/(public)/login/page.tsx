@@ -35,8 +35,7 @@ export default function SignIn() {
         <Image
           src="/assets/images/preview.png"
           fill
-          objectFit="contain"
-          objectPosition="right"
+          style={{ objectFit: 'contain', objectPosition: 'right' }}
           alt="Imagem de preview do dashboard do mandaumzap"
         />
       </ImageContainer>

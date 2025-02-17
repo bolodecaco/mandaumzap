@@ -16,18 +16,39 @@ import { BsPhone } from 'react-icons/bs'
 import { HiPlus } from 'react-icons/hi'
 import { toast } from 'react-toastify'
 import { Delete, List } from './styles'
+import { Confirmation } from '@/components/modal/confirmation'
+import { deleteAllSessions } from '@/app/actions/sessions/deleteAllSessions'
 
 export const Content = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isNewDeviceModalOpen, setIsNewDeviceModalOpen] = useState(false)
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
   const { data, error } = useGetSessions()
 
-  const handleNewDeviceClick = () => {
-    setIsModalOpen(true)
+  const handleDeleteClick = () => {
+    setIsConfirmationModalOpen(true)
   }
 
-  const handleModalClose = () => {
-    setIsModalOpen(false)
+  const handleConfirmationDelete = async () => {
+    const response = await deleteAllSessions()
+    console.log(response)
+    if (response.success) {
+      handleConfirmationClose()
+    } else {
+      toast.error(response.error)
+    }
+  }
+
+  const handleConfirmationClose = () => {
+    setIsConfirmationModalOpen(false)
+  }
+
+  const handleNewDeviceClick = () => {
+    setIsNewDeviceModalOpen(true)
+  }
+
+  const handleNewDeviceClose = () => {
+    setIsNewDeviceModalOpen(false)
   }
 
   if (error) {
@@ -63,6 +84,7 @@ export const Content = () => {
                 leftIcon={BiTrash}
                 iconColor={THEME.colors.tertiary}
                 variant="ghost"
+                onClick={handleDeleteClick}
               />
             </Row>
 
@@ -88,7 +110,24 @@ export const Content = () => {
         </Row>
       </Main>
 
-      {isModalOpen && <NewDevice onClose={handleModalClose} />}
+      {isNewDeviceModalOpen && <NewDevice onClose={handleNewDeviceClose} />}
+      {isConfirmationModalOpen && (
+        <Confirmation
+          title="Tem certeza de que deseja desconectar todos os dispositivos?"
+          confirmButtonText="Sim, desconectar dispositivos"
+          cancelButtonText="Cancelar"
+          content={
+            <span>
+              Esta ação irá desconectar <strong>TODOS</strong> os dispositivos
+              em que estiver ativo e inativo. Você precisará reconectar caso
+              queira enviar novas mensagens.
+            </span>
+          }
+          onCancelButtonClick={handleConfirmationClose}
+          onCloseButtonClick={handleConfirmationClose}
+          onConfirmButtonClick={handleConfirmationDelete}
+        />
+      )}
     </Container>
   )
 }

@@ -1,5 +1,6 @@
 import { Row, Title, Wrapper } from '@/lib/styled/global'
 import { styled } from 'styled-components'
+import { Button } from '../button'
 
 export const Background = styled.div`
   position: absolute;
@@ -15,10 +16,14 @@ export const StyledWrapper = styled(Wrapper)`
 `
 export const Header = styled(Row)`
   justify-content: space-between;
-  align-items: center;
 `
 
 export const StyledTitle = styled(Title)`
   font-size: 1.125rem;
   font-weight: 600;
+`
+
+export const Close = styled(Button)`
+  padding: 0;
+  height: fit-content;
 `
