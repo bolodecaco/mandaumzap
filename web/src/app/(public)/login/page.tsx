@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/button'
 import { signIn } from 'next-auth/react'
 import Image from 'next/image'
 import {
@@ -22,7 +23,12 @@ export default function SignIn() {
             tempo e crie rotinas automáticas para otimizar sua comunicação! 📲✨
           </Subtitle>
         </div>
-        <button onClick={() => signIn('keycloak')}>Entrar agora</button>
+
+        <Button
+          text="Entrar agora"
+          onClick={() => signIn('keycloak')}
+          style={{ width: '12.25rem' }}
+        />
       </Callout>
 
       <ImageContainer>
