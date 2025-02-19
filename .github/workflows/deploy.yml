@@ -9,20 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+      
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
+      
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./server
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest
-
+      
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         env:
@@ -34,32 +34,29 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           envs: DOCKER_USERNAME,COMPOSE_CONTENT
           script: |
-              cd ~/server/mandaumzap
-              
-              # Criar docker-compose.prod.yml APENAS se não existir
-              if [ ! -f docker-compose.prod.yml ]; then
-                echo "Arquivo docker-compose.prod.yml não encontrado. Criando..."
-                echo "$COMPOSE_CONTENT" | tr -d '\r' > docker-compose.prod.yml
-              else
-                echo "Arquivo docker-compose.prod.yml já existe. Mantendo configuração atual."
-              fi
-              
-              # Verifica se o serviço já existe
-              if ! docker compose -f docker-compose.prod.yml ps | grep -q spring-app; then
-                echo "Primeiro deploy detectado. Inicializando tudo..."
-                docker compose -f docker-compose.prod.yml up -d
-              else
-                echo "Atualizando apenas o backend..."
-                
-                # Baixar nova imagem sem parar os containers
-                docker compose -f docker-compose.prod.yml pull spring-app
-                
-                # Remover imagem antiga apenas se necessário
-                docker images -q ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest | xargs -r docker rmi || true
-                
-                # Reiniciar apenas o serviço do backend (sem mexer no banco)
-                docker compose -f docker-compose.prod.yml up -d --no-deps spring-app
-
-                # Remover imagens antigas não usadas
-                docker image prune -f
-              fi
+            cd ~/server/mandaumzap
+            
+            # Check if directory exists, if not create it
+            mkdir -p ~/server/mandaumzap
+            
+            # Check if file exists, if not create it
+            if [ ! -f docker-compose.prod.yml ]; then
+              echo "Creating docker-compose.prod.yml..."
+              cat << 'EOF' > docker-compose.prod.yml
+              $COMPOSE_CONTENT
+            EOF
+            else
+              echo "docker-compose.prod.yml already exists"
+            fi
+            
+            # Continue with deployment
+            if ! docker compose -f docker-compose.prod.yml ps | grep -q spring-app; then
+              echo "First deployment detected. Initializing all services..."
+              docker compose -f docker-compose.prod.yml up -d
+            else
+              echo "Updating backend only..."
+              docker compose -f docker-compose.prod.yml pull spring-app
+              docker images -q ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest | xargs -r docker rmi || true
+              docker compose -f docker-compose.prod.yml up -d --no-deps spring-app
+              docker image prune -f
+            fi
