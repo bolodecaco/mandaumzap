@@ -143,6 +143,13 @@ public class SessionService {
         sessionRepository.delete(session);
     }
 
+    public void setConnectionStatus(UUID id, ConnectionStatusType status) {
+        Session session = sessionRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(String.format("Sessão de id %s não encontrada", id)));
+        session.setStatus(status);
+        sessionRepository.save(session);
+    }
+
     @Transactional
     public void deleteAllSessions(String userId) {
         sessionRepository.deleteAllByUserId(userId);
