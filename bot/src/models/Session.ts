@@ -48,10 +48,9 @@ class Session {
   }
 
   private async sendConnectionStatus(status: WAConnectionState) {
-    this.producer.sendProgress({
-      body: { status },
-      messageGroupId: crypto.randomUUID(),
-      type: "connection-status",
+    return await this.producer.sendMessage({
+      body: { status: "open", sessionId: this.id, type: "connection-status" },
+      messageGroupId: "connection-status",
     });
   }
 

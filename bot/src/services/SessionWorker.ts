@@ -56,10 +56,9 @@ async function genericSend<T>(
     } catch (error) {
       progress.unsentChats++;
     }
-    Producer.sendProgress({
-      body: { ...progress },
+    Producer.sendMessage({
+      body: { ...progress, type: "progress" },
       messageGroupId: crypto.randomUUID(),
-      type: "progress",
     });
   }
 }

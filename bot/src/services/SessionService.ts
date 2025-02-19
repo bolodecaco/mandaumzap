@@ -67,7 +67,7 @@ class SessionService {
     const { sessionId, userId, text, receivers, type } = JSON.parse(
       message.Body
     );
-    if (type === "progress") return;
+    if (type === "progress" || type === "connection-status") return;
     try {
       await this.sendText({ header: { receivers, sessionId, userId }, text });
     } catch (error: any) {

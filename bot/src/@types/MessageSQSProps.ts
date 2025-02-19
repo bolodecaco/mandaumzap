@@ -1,17 +1,19 @@
-import { WAConnectionState } from "@whiskeysockets/baileys";
+import { ConnectionStatus } from "./ConnectionStatus";
 
 export interface MessageToBeSentSQSProps {
   body: MessageProgressSQS | MessageConnectionStatusSQS;
   messageGroupId: string;
-  type: "progress" | "connection-status";
 }
 
 type MessageProgressSQS = {
   sentChats: number;
   unsentChats: number;
   totalChats: number;
+  type: "progress" | "connection-status";
 };
 
 type MessageConnectionStatusSQS = {
-  status: WAConnectionState;
+  status: ConnectionStatus;
+  sessionId: string;
+  type: "progress" | "connection-status";
 };
