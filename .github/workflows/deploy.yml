@@ -43,7 +43,7 @@ jobs:
             if [ ! -f docker-compose.prod.yml ]; then
               echo "Creating docker-compose.prod.yml..."
               cat << 'EOF' > docker-compose.prod.yml
-              $COMPOSE_CONTENT
+              ${COMPOSE_CONTENT}
             EOF
             else
               echo "docker-compose.prod.yml already exists"
