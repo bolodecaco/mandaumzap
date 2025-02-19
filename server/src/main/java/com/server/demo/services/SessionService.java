@@ -100,6 +100,7 @@ public class SessionService {
             BotDTO botDTO = this.parseQrCode(botResponseJSON);
             return sessionMapper.toResponseBotConnectionDTO(savedSession, botDTO);
         } catch (BusinessException e) {
+            sessionRepository.delete(savedSession);
             throw new BusinessException("Erro ao criar sessão com o bot");
         }
     }
