@@ -41,9 +41,7 @@ jobs:
             # Check if file exists, if not create it
             if [ ! -f docker-compose.prod.yml ]; then
               echo "Creating docker-compose.prod.yml..."
-              cat > docker-compose.prod.yml << 'EOL'
-              ${{ secrets.COMPOSE }}
-            EOL
+              echo "${{ secrets.COMPOSE }}" > docker-compose.prod.yml
             else
               echo "docker-compose.prod.yml already exists"
             fi
