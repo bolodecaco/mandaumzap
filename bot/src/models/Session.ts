@@ -1,20 +1,29 @@
-import { WASocket, DisconnectReason, delay } from "@whiskeysockets/baileys";
+import {
+  WASocket,
+  DisconnectReason,
+  delay,
+  WAConnectionState,
+} from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
 import { ConnectSessionProps } from "../@types/ConnectSessionProps";
 import { parentPort } from "worker_threads";
+import MessageProducer from "../producer/MessageProducer";
+import { ConnectionStatus } from "../@types/ConnectionStatus";
 
 class Session {
   private id: string;
   private waSocket: WASocketWrapper;
   private socketClient: WASocket | null = null;
-  private isConnected: boolean;
+  private connectionStatus: ConnectionStatus;
+  private producer: MessageProducer;
 
   constructor(id: string) {
     this.id = id;
     this.waSocket = new WASocketWrapper(id);
-    this.isConnected = false;
+    this.connectionStatus = "pending";
+    this.producer = new MessageProducer();
   }
 
   getId(): string {
@@ -38,44 +47,55 @@ class Session {
     process.exit(0);
   }
 
+  private async sendConnectionStatus(status: WAConnectionState) {
+    this.producer.sendProgress({
+      body: { status },
+      messageGroupId: crypto.randomUUID(),
+      type: "connection-status",
+    });
+  }
+
   async connect(): Promise<ConnectSessionProps> {
     await this.waSocket.start();
     this.socketClient = this.waSocket.getSocket();
     return new Promise((resolve, reject) => {
-      this.socketClient!.ev.on("connection.update", async (update) => {
-        const statusCode = (update.lastDisconnect?.error as Boom)?.output
-          ?.statusCode;
-        const { connection, qr } = update;
-        if (connection === "open") {
-          this.isConnected = true;
-          return resolve({
-            qrcode: "",
-            socket: this.socketClient!,
-            status: "open",
-          });
+      this.socketClient!.ev.on(
+        "connection.update",
+        async ({ connection, qr, lastDisconnect }) => {
+          const statusCode = (lastDisconnect?.error as Boom)?.output
+            ?.statusCode;
+          await this.sendConnectionStatus(connection!);
+          if (connection === "open") {
+            this.connectionStatus = "open";
+            return resolve({
+              qrcode: "",
+              socket: this.socketClient!,
+              status: "open",
+            });
+          }
+          if (connection === "close") {
+            if (DisconnectReason.restartRequired == statusCode)
+              return this.connect();
+            resolve({
+              socket: this.socketClient!,
+              qrcode: "",
+              status: "close",
+            });
+            this.delete();
+          }
+          if (qr && this.id) {
+            qrcode.generate(qr, { small: true });
+            setTimeout(() => {
+              if (this.connectionStatus != "open") this.delete();
+            }, 50 * 1000);
+            resolve({
+              socket: this.socketClient!,
+              qrcode: qr,
+              status: "pending",
+            });
+          }
         }
-        if (connection === "close") {
-          if (DisconnectReason.restartRequired == statusCode)
-            return this.connect();
-          resolve({
-            socket: this.socketClient!,
-            qrcode: "",
-            status: "close",
-          });
-          this.delete();
-        }
-        if (qr && this.id) {
-          qrcode.generate(qr, { small: true });
-          setTimeout(() => {
-            if (!this.isConnected) this.delete();
-          }, 50 * 1000); //50 seconds
-          resolve({
-            socket: this.socketClient!,
-            qrcode: qr,
-            status: "pending",
-          });
-        }
-      });
+      );
       this.socketClient!.ev.on("messaging-history.set", ({ contacts }) => {
         const chats = contacts.map((contact) => {
           return { id: contact.id, name: contact.name || "Desconhecido" };
