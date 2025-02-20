@@ -27,11 +27,12 @@ jobs:
         uses: appleboy/ssh-action@master
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          KC_CLIENT_SECRET_BACK: ${{ secrets.KC_CLIENT_SECRET_BACK }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: DOCKER_USERNAME
+          envs: DOCKER_USERNAME, KC_CLIENT_SECRET_BACK
           script: |
             # Check if directory exists, if not create it
             mkdir -p ~/server/mandaumzap
