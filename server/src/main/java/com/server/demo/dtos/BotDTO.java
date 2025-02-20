@@ -1,5 +1,7 @@
 package com.server.demo.dtos;
 
+import java.util.Date;
+
 import com.server.demo.enums.ConnectionStatusType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,4 +23,7 @@ public class BotDTO {
 
     @Schema(name = "status", description = "Status da requisição", example = "open")
     private ConnectionStatusType status;
+
+    @Schema(name = "createdAt", description = "Data de criação", example = "2021-08-01T00:00:00.000Z")
+    private Date createdAt;
 }
