@@ -1,19 +1,35 @@
-import { Button } from '@/components/button'
 import { useQRCodeTimer } from '@/components/modal/newDevice/useQRCodeTimer'
 import { ProgressBar } from '@/components/progressBar'
 import { Main } from '@/lib/styled/global'
 import { THEME } from '@/lib/styled/theme'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FiX } from 'react-icons/fi'
-import { Background, Header, StyledTitle, StyledWrapper } from '../styles'
+import {
+  Background,
+  Close,
+  Header,
+  StyledTitle,
+  StyledWrapper,
+} from '../styles'
 import { QRCodeDisplay } from './QRCodeDisplay'
 import { Cancel, Description, ProgressContainer } from './styles'
-
-const INITIAL_QR_CODE =
-  '2@7Qp73ki497pk15x7BULoZGk3h9tjSd09iRiMxxYKjwc5hbOWAsYmYA5HNdj/UvFmX6QV+xBSpOQ9lfhNZ1mc3YW4iyXmoiOLg0E=,iK+d7W5DhB+LKoMjG0JA6PoGepp8yQZemqC0bOMqEBg=,FAt2zdBORPv0LwMNQGy3Z020s+HzeaFjSXzFLpPyeTE=,/OzQYhF6DsULmKWD43ar+YkkT76qRnqT7u8FOVRHPk0='
+import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
+import { useCreateSession } from '@/services/session/useCreateSession'
 
 export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+
+  const { data, isLoading, error, refetch } = useCreateSession()
+
+  useEffect(() => {
+    setQrCode(data?.qrcode ?? null)
+    queryClient.invalidateQueries({
+      queryKey: ['sessions'],
+      refetchType: 'active',
+    })
+  }, [data, queryClient])
 
   const { progress, remainingTime, resetTimer } = useQRCodeTimer({
     initialTime: 40,
@@ -22,8 +38,12 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   })
 
   const handleRefresh = () => {
-    setQrCode(INITIAL_QR_CODE)
+    refetch()
     resetTimer()
+  }
+
+  if (error) {
+    toast.error(`Erro ao gerar QRCode: ${error}`, { toastId: 'qrcode' })
   }
 
   return (
@@ -31,7 +51,7 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
       <StyledWrapper style={{ width: '27.5rem' }}>
         <Header>
           <StyledTitle>Conectar novo dispositivo</StyledTitle>
-          <Button
+          <Close
             leftIcon={FiX}
             onClick={onClose}
             iconColor={THEME.colors.title}
@@ -40,7 +60,11 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
           />
         </Header>
         <Main style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <QRCodeDisplay qrCode={qrCode} onRefresh={handleRefresh} />
+          <QRCodeDisplay
+            isLoading={isLoading}
+            qrCode={qrCode}
+            onRefresh={handleRefresh}
+          />
           <Description>
             Escaneie esse QR Code para conectar seu WhatsApp
           </Description>
