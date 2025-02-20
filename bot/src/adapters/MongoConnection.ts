@@ -160,6 +160,13 @@ class MongoConnection {
     }
   }
 
+  async getCreatedAt(): Promise<Date | null> {
+    const session: any = await this.sessions.findOne({
+      sessionId: this.sessionId,
+    });
+    return session ? session.createdAt : null;
+  }
+
   async useAuthState() {
     this.creds = initAuthCreds();
 
@@ -224,7 +231,7 @@ class MongoConnection {
                 0
               ),
             },
-            $setOnInsert: {},
+            $setOnInsert: { createdAt: new Date() },
           },
           { upsert: true }
         );

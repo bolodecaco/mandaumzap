@@ -5,4 +5,5 @@ export interface ConnectSessionProps {
   socket: WASocket;
   qrcode: string;
   status: ConnectionStatus;
+  createdAt: Date | null;
 }

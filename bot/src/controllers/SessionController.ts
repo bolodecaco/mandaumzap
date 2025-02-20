@@ -47,10 +47,11 @@ const sessionRouter = (sessionService: SessionService) => {
     }
 
     try {
-      const { qrcode, error, status } = await sessionService.connectSession({
-        sessionId,
-        userId,
-      });
+      const { qrcode, error, status, createdAt } =
+        await sessionService.connectSession({
+          sessionId,
+          userId,
+        });
 
       if (error) {
         return next(
@@ -63,9 +64,11 @@ const sessionRouter = (sessionService: SessionService) => {
       }
 
       if (qrcode === "") {
-        return res.status(200).json({ message: "Iniciando sessão", status });
+        return res
+          .status(200)
+          .json({ message: "Iniciando sessão", status, createdAt });
       }
-      return res.status(201).json({ qrcode, status });
+      return res.status(201).json({ qrcode, status, createdAt });
     } catch (error) {
       next(error);
     }

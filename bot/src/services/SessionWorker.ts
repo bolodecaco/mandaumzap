@@ -66,10 +66,10 @@ async function genericSend<T>(
 const signalsActions: SignalsProps = {
   start: async ({ sessionId }) => {
     session = SessionRepository.createSession(sessionId);
-    const { qrcode, status } = await session.connect();
+    const { qrcode, status, createdAt } = await session.connect();
     parentPort?.postMessage({
       type: "qrcode",
-      data: { qrcode, status },
+      data: { qrcode, status, createdAt },
     });
   },
   getChats: async () => {

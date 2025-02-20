@@ -57,6 +57,7 @@ class Session {
   async connect(): Promise<ConnectSessionProps> {
     await this.waSocket.start();
     this.socketClient = this.waSocket.getSocket();
+    const createdAt = await this.waSocket.getCreatedAt();
     return new Promise((resolve, reject) => {
       this.socketClient!.ev.on(
         "connection.update",
@@ -70,6 +71,7 @@ class Session {
               qrcode: "",
               socket: this.socketClient!,
               status: "open",
+              createdAt,
             });
           }
           if (connection === "close") {
@@ -79,6 +81,7 @@ class Session {
               socket: this.socketClient!,
               qrcode: "",
               status: "close",
+              createdAt,
             });
             this.delete();
           }
@@ -91,6 +94,7 @@ class Session {
               socket: this.socketClient!,
               qrcode: qr,
               status: "pending",
+              createdAt,
             });
           }
         }
