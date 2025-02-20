@@ -7,8 +7,8 @@ export const useCreateSession = () => {
     queryFn: () => createSession(),
   })
   return {
-    data,
-    error,
+    data: data?.success ? data.value : undefined,
+    error: !data?.success ? data?.error : error,
     refetch,
     isLoading: isLoading || isRefetching,
   }

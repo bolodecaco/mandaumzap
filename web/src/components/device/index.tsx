@@ -5,9 +5,11 @@ import { ActivityBadge } from '../activityBadge'
 import { Delete, Phone, Uptime } from './styles'
 import { BiTrash } from 'react-icons/bi'
 import { deleteSession } from '@/app/actions/sessions/deleteSession'
-import { QueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { Session } from '@/@types/session'
+import { useState } from 'react'
+import { Confirmation } from '../modal/confirmation'
 
 interface DeviceProps {
   status: Session['status']
@@ -22,15 +24,26 @@ const STATUS_COLOR_MAP = {
 }
 
 export const Device = ({ status, id }: DeviceProps) => {
-  const handleDelete = async (sessionId: string) => {
-    const response = await deleteSession(sessionId)
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const queryClient = useQueryClient()
+
+  const handleOpenModal = () => {
+    setIsConfirmationModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsConfirmationModalOpen(false)
+  }
+
+  const handleDelete = async () => {
+    const response = await deleteSession(id)
     if (response.success) {
-      const queryClient = new QueryClient()
-      queryClient.refetchQueries({
+      queryClient.invalidateQueries({
         queryKey: ['sessions'],
-        type: 'active',
+        refetchType: 'active',
       })
       toast.success('Dispositivo desconectado com sucesso')
+      handleCloseModal()
     } else {
       toast.error(response.error)
     }
@@ -48,13 +61,31 @@ export const Device = ({ status, id }: DeviceProps) => {
         <Uptime>conectado há 3 dias</Uptime>
       </Column>
       <Delete
-        // abrir modal de confirmação
+        onClick={handleOpenModal}
         style={{ marginLeft: 'auto' }}
         variant="ghost"
         leftIcon={BiTrash}
         iconSize={24}
         iconColor={THEME.colors.tertiary}
       />
+
+      {isConfirmationModalOpen && (
+        <Confirmation
+          cancelButtonText="Cancelar"
+          confirmButtonText="Sim, desconectar dispositivo"
+          title="Tem certeza que deseja desconectar o dispositivo?"
+          content={
+            <span>
+              Esta ação irá desconectar o dispositivo e irá excluir todos os
+              chats disponíveis vinculados a ele. Você precisará reconectar o
+              dispositivo para recuperar os chats.
+            </span>
+          }
+          onCancelButtonClick={handleCloseModal}
+          onCloseButtonClick={handleCloseModal}
+          onConfirmButtonClick={handleDelete}
+        />
+      )}
     </Row>
   )
 }

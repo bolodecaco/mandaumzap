@@ -13,23 +13,23 @@ import {
 } from '../styles'
 import { QRCodeDisplay } from './QRCodeDisplay'
 import { Cancel, Description, ProgressContainer } from './styles'
-import { QueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { useCreateSession } from '@/services/session/useCreateSession'
 
 export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const { data, isLoading, error, refetch } = useCreateSession()
+
   useEffect(() => {
-    if (data?.success) {
-      const queryClient = new QueryClient()
-      setQrCode(data.value.qrcode ?? null)
-      queryClient.refetchQueries({
-        queryKey: ['sessions'],
-      })
-    }
-  }, [data])
+    setQrCode(data?.qrcode ?? null)
+    queryClient.invalidateQueries({
+      queryKey: ['sessions'],
+      refetchType: 'active',
+    })
+  }, [data, queryClient])
 
   const { progress, remainingTime, resetTimer } = useQRCodeTimer({
     initialTime: 40,
@@ -43,7 +43,7 @@ export const NewDevice = ({ onClose }: { onClose: () => void }) => {
   }
 
   if (error) {
-    toast.error(`Erro ao gerar QRCode. Detalhes: ${error}`)
+    toast.error(`Erro ao gerar QRCode: ${error}`, { toastId: 'qrcode' })
   }
 
   return (

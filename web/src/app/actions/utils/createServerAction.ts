@@ -17,8 +17,9 @@ export function createServerAction<Return, Args extends unknown[] = []>(
       const value = await callback(...args)
       return { success: true, value }
     } catch (error) {
-      if (error instanceof ServerActionError)
+      if (error instanceof ServerActionError) {
         return { success: false, error: error.message }
+      }
       throw error
     }
   }
