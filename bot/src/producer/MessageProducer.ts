@@ -8,17 +8,17 @@ class MessageProducer {
   private sqsClient: SQSClient;
   private logger = new Logger();
 
-  constructor() {
-    this.sqsClient = new SQSClient();
+  constructor(url: string) {
+    this.sqsClient = new SQSClient(url);
   }
 
-  async sendProgress(message: MessageToBeSentSQSProps) {
+  async sendMessage(message: MessageToBeSentSQSProps) {
     try {
       const params: SQS.Types.SendMessageRequest = {
         QueueUrl: this.sqsClient.url,
         MessageGroupId: message.messageGroupId,
         MessageDeduplicationId: crypto.randomUUID(),
-        MessageBody: JSON.stringify(message),
+        MessageBody: JSON.stringify(message.body),
       };
       await this.sqsClient.sqs.sendMessage(params).promise();
     } catch (error: any) {

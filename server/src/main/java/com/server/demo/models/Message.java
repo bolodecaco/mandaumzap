@@ -1,12 +1,21 @@
 package com.server.demo.models;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
+import java.util.Date;
 import java.util.UUID;
 
-import java.util.Date;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -23,14 +32,14 @@ public class Message {
 
     @Column(nullable = false)
     private String userId;
-    
-    @ManyToOne
+
+    @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
-    
+
     @ManyToOne
     @JoinColumn(name = "broadcast_list_id", nullable = true)
-    private BroadcastList broadcastList;  
+    private BroadcastList broadcastList;
 
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;
@@ -42,5 +51,5 @@ public class Message {
     private Date lastSentAt;
 
     @Column(nullable = true)
-    private Date deletedAt; 
+    private Date deletedAt;
 }

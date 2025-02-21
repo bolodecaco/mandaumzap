@@ -2,6 +2,7 @@ package com.server.demo.models;
 
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,11 +27,11 @@ public class Chat {
     @Column(nullable = false)
     private String userId;
 
-    @ManyToOne
+    @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique=true)
     private String whatsAppId;
 
     @Column(nullable = false)

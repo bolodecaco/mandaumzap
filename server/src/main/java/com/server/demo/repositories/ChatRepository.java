@@ -13,4 +13,5 @@ import com.server.demo.models.Chat;
 public interface ChatRepository extends JpaRepository<Chat, UUID> {
     List<Chat> findAllByUserId(String userId);
     Optional<Chat> findByIdAndUserId(UUID id, String userId);
+    Optional<Chat> findByWhatsAppId(String whatsAppId);
 }
