@@ -33,7 +33,7 @@ public class Message {
     @Column(nullable = false)
     private String userId;
 
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 

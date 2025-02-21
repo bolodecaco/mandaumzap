@@ -32,7 +32,7 @@ public class BroadcastList {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "broadcast_list_chats",
             joinColumns = @JoinColumn(name = "list_id"),

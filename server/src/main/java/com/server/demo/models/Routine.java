@@ -33,7 +33,7 @@ public class Routine {
     @Column(nullable = false)
     private String title;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "message_id", nullable = false)
     private Message message;
 
