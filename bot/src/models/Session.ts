@@ -93,12 +93,16 @@ class Session {
           });
         }
       });
-      this.socketClient!.ev.on("messaging-history.set", ({ contacts }) => {
-        const chats = contacts.map((contact) => {
-          return { id: contact.id, name: contact.name || "Desconhecido" };
-        });
-        this.waSocket.addChats(chats);
-      });
+      this.socketClient!.ev.on(
+        "messaging-history.set",
+        async ({ contacts }) => {
+          const chats = contacts.map((contact) => {
+            return { id: contact.id, name: contact.name || "Desconhecido" };
+          });
+          await this.waSocket.addChats(chats);
+          await this.sendConnectionStatus("open");
+        }
+      );
       this.socketClient!.ev.on("contacts.upsert", (contacts) => {
         const chats = contacts.map((contact) => {
           return {
