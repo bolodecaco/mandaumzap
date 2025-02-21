@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.server.demo.dtos.SqsMessageDTO;
 
 @Service
 public class MessageConsumer {
@@ -26,6 +28,7 @@ public class MessageConsumer {
 
     @Scheduled(fixedDelay = 5000)
     public void pollQueue() {
+        ObjectMapper objectMapper = new ObjectMapper();
         String queueUrl = amazonSQS.getQueueUrl(queueName).getQueueUrl();
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl)
                 .withMaxNumberOfMessages(10)
@@ -35,7 +38,8 @@ public class MessageConsumer {
 
         for (Message message : messages) {
             try {
-                processMessage(message.getBody());
+                SqsMessageDTO sqsMessageParse = objectMapper.readValue(message.getBody(), SqsMessageDTO.class);
+                processMessage(sqsMessageParse);
                 amazonSQS.deleteMessage(queueUrl, message.getReceiptHandle());
             } catch (Exception e) {
                 logger.error("Erro ao processar mensagem: {}", e.getMessage());
@@ -44,7 +48,7 @@ public class MessageConsumer {
         }
     }
 
-    private void processMessage(String message) {
+    private void processMessage(SqsMessageDTO message) {
         logger.info("Processando mensagem: {}", message);
     }
 }
