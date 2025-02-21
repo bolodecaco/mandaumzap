@@ -1,6 +1,9 @@
 import { SQS } from "aws-sdk";
 import SQSClient from "../adapters/SqsClient";
 import { Logger } from "../logger/Logger";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class MessageConsumer {
   private sqsClient: SQSClient;
@@ -9,7 +12,7 @@ class MessageConsumer {
   private logger = new Logger();
 
   constructor(processMessageCallback: (message: SQS.Message) => void) {
-    this.sqsClient = new SQSClient();
+    this.sqsClient = new SQSClient(process.env.SQS_URL!);
     this.processMessageCallback = processMessageCallback;
     this.params = {
       AttributeNames: ["SentTimestamp"],

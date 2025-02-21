@@ -10,9 +10,12 @@ import {
   MessagePollProps,
   MessageTextProps,
 } from "../@types/MessageSendProps";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 let session: Session;
-const Producer = new MessageProducer();
+const Producer = new MessageProducer(process.env.SQS_URL!);
 
 const formatMessage = {
   text: (text: string) => ({ text }),
@@ -56,7 +59,7 @@ async function genericSend<T>(
     } catch (error) {
       progress.unsentChats++;
     }
-    Producer.sendProgress({
+    Producer.sendMessage({
       body: { ...progress },
       messageGroupId: crypto.randomUUID(),
       type: "progress",
