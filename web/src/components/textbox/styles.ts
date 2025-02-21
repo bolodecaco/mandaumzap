@@ -22,6 +22,7 @@ export const Container = styled.div`
 export const TextArea = styled.textarea`
   box-sizing: border-box;
   font-family: 'Inter', sans-serif;
+  background-color: ${({ theme }) => theme.colors.input};
   font-size: 1rem;
   padding: 0.75rem;
   border-radius: 0.5rem;

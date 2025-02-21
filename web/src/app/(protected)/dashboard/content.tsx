@@ -1,7 +1,8 @@
 'use client'
 
+import { Label } from '@/components/label'
 import { TextBox } from '@/components/textbox'
-import { Row, Title, Wrapper } from '@/lib/styled/global'
+import { Column, Row, Title, Wrapper } from '@/lib/styled/global'
 import { useState } from 'react'
 
 export function Content() {
@@ -12,12 +13,16 @@ export function Content() {
       <Row style={{ flex: 1 }}>
         <Wrapper style={{ flex: 3, overflow: 'auto' }}>
           <Title>Enviar mensagem</Title>
-          <TextBox
-            placeholder="Digite uma mensagem para ser enviado à todos da lista"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onEdit={(t) => setMessage(t)}
-          />
+          <Column style={{ gap: '0.5rem', flex: 1 }}>
+            <Label htmlFor="textarea">Mensagem</Label>
+            <TextBox
+              placeholder="Digite uma mensagem para ser enviado à todos da lista"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onEdit={(t) => setMessage(t)}
+              id="textarea"
+            />
+          </Column>
         </Wrapper>
         <Wrapper
           style={{
