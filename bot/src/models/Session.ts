@@ -47,9 +47,9 @@ class Session {
     process.exit(0);
   }
 
-  private async sendConnectionStatus(status: WAConnectionState) {
+  private async sendConnectionStatus(status: ConnectionStatus) {
     return await this.producer.sendMessage({
-      body: { status: "open", sessionId: this.id, type: "connection-status" },
+      body: { status, sessionId: this.id, type: "connection-status" },
       messageGroupId: "connection-status",
     });
   }
@@ -64,8 +64,8 @@ class Session {
         async ({ connection, qr, lastDisconnect }) => {
           const statusCode = (lastDisconnect?.error as Boom)?.output
             ?.statusCode;
-          await this.sendConnectionStatus(connection!);
           if (connection === "open") {
+            await this.sendConnectionStatus(connection);
             this.connectionStatus = "open";
             return resolve({
               qrcode: "",
@@ -77,6 +77,7 @@ class Session {
           if (connection === "close") {
             if (DisconnectReason.restartRequired == statusCode)
               return this.connect();
+            await this.sendConnectionStatus(connection);
             resolve({
               socket: this.socketClient!,
               qrcode: "",
@@ -90,6 +91,7 @@ class Session {
             setTimeout(() => {
               if (this.connectionStatus != "open") this.delete();
             }, 50 * 1000);
+            await this.sendConnectionStatus("pending");
             resolve({
               socket: this.socketClient!,
               qrcode: qr,
