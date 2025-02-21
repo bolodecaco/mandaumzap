@@ -1,9 +1,11 @@
 'use client'
 
 import { Session } from '@/@types/session'
+import { deleteAllSessions } from '@/app/actions/sessions/deleteAllSessions'
 import { Button } from '@/components/button'
 import { Device } from '@/components/device'
 import { Empty } from '@/components/empty'
+import { Confirmation } from '@/components/modal/confirmation'
 import { NewDevice } from '@/components/modal/newDevice'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
 import { THEME } from '@/lib/styled/theme'
@@ -12,11 +14,9 @@ import { useState } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import { BsPhone } from 'react-icons/bs'
 import { HiPlus } from 'react-icons/hi'
+import Skeleton from 'react-loading-skeleton'
 import { toast } from 'react-toastify'
 import { Delete, List } from './styles'
-import { Confirmation } from '@/components/modal/confirmation'
-import { deleteAllSessions } from '@/app/actions/sessions/deleteAllSessions'
-import Skeleton from 'react-loading-skeleton'
 
 export const Content = () => {
   const [isNewDeviceModalOpen, setIsNewDeviceModalOpen] = useState(false)
@@ -84,11 +84,7 @@ export const Content = () => {
             />
           </Row>
 
-          {isLoading ? (
-            Array.from({ length: 5 }).map((_, index) => (
-              <Skeleton key={index} width={329} height={64} />
-            ))
-          ) : data?.length === 0 ? (
+          {data?.length === 0 ? (
             <Empty
               message={'Nenhum dispositivo conectado'}
               icon={BsPhone}
@@ -97,13 +93,17 @@ export const Content = () => {
             />
           ) : (
             <List>
-              {data?.map((session: Session) => (
-                <Device
-                  key={session.id}
-                  status={session.status}
-                  id={session.id}
-                />
-              ))}
+              {isLoading
+                ? Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton key={index} height={64} />
+                  ))
+                : data?.map((session: Session) => (
+                    <Device
+                      key={session.id}
+                      status={session.status}
+                      id={session.id}
+                    />
+                  ))}
             </List>
           )}
         </Wrapper>
