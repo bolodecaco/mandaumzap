@@ -39,7 +39,6 @@ public class BroadcastListService {
         return broadcastListMapper.toDTOList(list);
     }
 
-
     public BroadcastListDTO getListById(UUID id, String userId) {
         BroadcastList list = broadcastListRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException("Lista de transmissão não encontrada ou acesso negado"));
@@ -74,13 +73,18 @@ public class BroadcastListService {
         broadcastListRepository.delete(list);
     }
 
-    public BroadcastListDTO addChat(UUID id, AddChatToBroadcastListDTO chatDto, String userId) {
+    public BroadcastListDTO addChats(UUID id, List<AddChatToBroadcastListDTO> chatsDto, String userId) {
         BroadcastList list = broadcastListRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Lista de transmissão com id %s não encontrada", id)));
-        Chat chat = chatRepository.findById((chatDto.getChatId()))
-                .orElseThrow(() -> new BusinessException(String.format("Chat com id %s não encontrado", chatDto.getChatId())));
-        list.getChats().add(chat);
+
+        List<Chat> chats = chatsDto.stream()
+                .map(chatDto -> chatRepository.findById(chatDto.getChatId())
+                .orElseThrow(() -> new BusinessException(String.format("Chat com id %s não encontrado", chatDto.getChatId()))))
+                .toList();
+
+        list.getChats().addAll(chats);
         broadcastListRepository.save(list);
+
         return broadcastListMapper.toDTO(list);
     }
 

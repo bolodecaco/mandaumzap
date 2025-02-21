@@ -33,7 +33,7 @@ public class BroadcastListController {
 
     @Autowired
     private BroadcastListService listService;
-    
+
     @Autowired
     private JwtService jwtService;
 
@@ -55,10 +55,10 @@ public class BroadcastListController {
         return ResponseEntity.ok(listService.createList(list, jwtService.getCurrentUserId()));
     }
 
-    @Operation(summary = "Adiciona um chat a uma lista de transmissão")
+    @Operation(summary = "Adiciona uma lista de chats a uma lista de transmissão")
     @PostMapping("/{id}/chats")
-    public ResponseEntity<BroadcastListDTO> addChatToList(@PathVariable UUID id, @RequestBody AddChatToBroadcastListDTO chatDto) {
-        return ResponseEntity.ok(listService.addChat(id, chatDto, jwtService.getCurrentUserId()));
+    public ResponseEntity<BroadcastListDTO> addChatToList(@PathVariable UUID id, @RequestBody List<AddChatToBroadcastListDTO> chatsDto) {
+        return ResponseEntity.ok(listService.addChats(id, chatsDto, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Remove um chat de uma lista de transmissão")
