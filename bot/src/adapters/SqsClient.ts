@@ -11,8 +11,8 @@ class SQSClient {
   private accessKey = process.env.SQS_ACCESS_KEY_ID;
   private secretKey = process.env.SQS_SECRET_ACCESS_KEY;
 
-  constructor() {
-    this.url = process.env.SQS_URL!;
+  constructor(url: string) {
+    this.url = url;
     this.sqs = new AWS.SQS({
       region,
       credentials: {

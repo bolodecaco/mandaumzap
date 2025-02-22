@@ -55,6 +55,7 @@ public class MessageService {
                 .userId(userId)
                 .text(message.getContent())
                 .receivers(receiverIds)
+                .url(message.getUrl())
                 .build();
         Message currentMessage = messageRepository.save(message);
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
