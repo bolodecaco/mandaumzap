@@ -24,7 +24,7 @@ const NAV_ITEMS = [
 export const Container = ({ children }: ContainerProps) => {
   return (
     <StyledPage>
-      <Sidebar footerItems={[]} navItems={NAV_ITEMS} />
+      <Sidebar navItems={NAV_ITEMS} />
       {children}
     </StyledPage>
   )
