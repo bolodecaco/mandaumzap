@@ -14,7 +14,9 @@ export const Container = styled.button<ButtonProps>`
   justify-content: center;
   cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.05px;
+  transition: 100ms linear;
 
   ${({ theme, $variant = 'primary' }) =>
     $variant === 'primary'

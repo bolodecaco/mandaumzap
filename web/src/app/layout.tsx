@@ -20,7 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body
+        className={inter.className}
+        style={{
+          fontFamily: 'Inter',
+        }}
+      >
         <Registry>{children}</Registry>
       </body>
     </html>
