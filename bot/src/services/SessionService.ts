@@ -121,9 +121,11 @@ class SessionService {
     const { allowed, exists } = await this.checkSession(userSession);
     if (!exists || !allowed) return false;
     const worker = this.sessions.get(userSession.sessionId);
-    if (!worker) return false;
-    worker.postMessage({ type: "delete" });
-    this.sessions.delete(userSession.sessionId);
+    if (worker) {
+      worker.postMessage({ type: "close" });
+      this.sessions.delete(userSession.sessionId);
+    }
+    await this.mongoConnection.deleteSession(userSession);
     return true;
   }
 
