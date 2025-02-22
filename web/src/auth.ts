@@ -6,9 +6,9 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
   ...authConfig,
   providers: [
     Keycloak({
-      clientId: process.env.KC_CLIENT_ID,
+      clientId: process.env.NEXT_PUBLIC_KC_CLIENT_ID,
       clientSecret: process.env.KC_CLIENT_SECRET,
-      issuer: process.env.KC_ISSUER,
+      issuer: process.env.NEXT_PUBLIC_KC_ISSUER,
     }),
   ],
   callbacks: {
@@ -17,6 +17,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.uuid = profile.sub
+        token.idToken = account.id_token
       }
       return token
     },
@@ -24,6 +25,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       session.accessToken = token.accessToken
       session.refreshToken = token.refreshToken
       session.uuid = token.uuid
+      session.idToken = token.idToken
       return session
     },
   },

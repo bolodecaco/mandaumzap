@@ -2,38 +2,23 @@
 
 import { usePathname } from 'next/navigation'
 import { ElementType } from 'react'
-import {
-  Footer,
-  FooterItem,
-  Logo,
-  Nav,
-  NavItem,
-  Wrapper,
-  WrapperNavs,
-} from './styles'
+import { Footer, Logo, Nav, NavItem, Wrapper, WrapperNavs } from './styles'
+import { Logout } from '../logout'
 
 interface SidebarItem {
   id: number
   href: string
   icon: ElementType
 }
-
-interface FooterItemType {
-  id: number
-  href: string
-  icon: ElementType
-}
-
 interface SidebarProps {
   navItems: SidebarItem[]
-  footerItems: FooterItemType[]
   logoProps?: {
     src: string
     alt: string
   }
 }
 
-export const Sidebar = ({ navItems, footerItems, logoProps }: SidebarProps) => {
+export const Sidebar = ({ navItems, logoProps }: SidebarProps) => {
   const pathname = usePathname()
 
   return (
@@ -52,16 +37,7 @@ export const Sidebar = ({ navItems, footerItems, logoProps }: SidebarProps) => {
           ))}
         </Nav>
         <Footer>
-          {footerItems.map(({ id, href, icon: Icon }, index) => (
-            <FooterItem
-              key={id}
-              href={href}
-              $active={index !== footerItems.length - 1 && pathname === href}
-              $isLogout={index === footerItems.length - 1}
-            >
-              <Icon size={24} />
-            </FooterItem>
-          ))}
+          <Logout />
         </Footer>
       </WrapperNavs>
     </Wrapper>
