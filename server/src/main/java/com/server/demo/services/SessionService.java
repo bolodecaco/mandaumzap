@@ -127,6 +127,34 @@ public class SessionService {
                 });
     }
 
+    private void requestDeleteSession(UUID sessionId, String userId) {
+        webClientBuilder
+                .baseUrl(botUrl)
+                .build()
+                .delete()
+                .uri(uriBuilder -> uriBuilder
+                .path("/api/sessions/{userId}/{sessionId}")
+                .queryParam("token", botToken)
+                .build(userId, sessionId.toString()))
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    private void requestCloseSession(UUID sessionId, String userId) {
+        webClientBuilder
+                .baseUrl(botUrl)
+                .build()
+                .delete()
+                .uri(uriBuilder -> uriBuilder
+                .path("/api/sessions/close/{userId}/{sessionId}")
+                .queryParam("token", botToken)
+                .build(userId, sessionId.toString()))
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
     private BotDTO parseQrCode(String qrcodeJSON) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -139,7 +167,16 @@ public class SessionService {
     public void deleteSession(UUID id, String userId) {
         Session session = sessionRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Sessão de id %s não encontrada", id)));
+        requestDeleteSession(session.getId(), session.getUserId());
         sessionRepository.delete(session);
+    }
+
+    public void closeSession(UUID id, String userId) {
+        Session session = sessionRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new BusinessException(String.format("Sessão de id %s não encontrada", id)));
+        requestCloseSession(session.getId(), session.getUserId());
+        session.setStatus(ConnectionStatusType.close);
+        sessionRepository.save(session);
     }
 
     @Transactional

@@ -75,12 +75,12 @@ const sessionRouter = (sessionService: SessionService) => {
     "/sessions/close/:userId/:sessionId",
     async (req, res, next): Promise<any> => {
       const { sessionId, userId } = req.params;
-      if (!sessionId) {
+      if (!sessionId || !userId) {
         return next(
           new GlobalException({
             message: "Parâmetro inválido",
             statusCode: 400,
-            details: "ID da sessão é obrigatório",
+            details: "ID da sessão e ID do usuário são obrigatórios",
           })
         );
       }
@@ -108,26 +108,15 @@ const sessionRouter = (sessionService: SessionService) => {
     "/sessions/:userId/:sessionId",
     async (req, res, next): Promise<any> => {
       const { sessionId, userId } = req.params;
-      if (!sessionId) {
+      if (!sessionId || !userId) {
         return next(
           new GlobalException({
             message: "Parâmetro inválido",
             statusCode: 400,
-            details: "ID da sessão é obrigatório",
+            details: "ID da sessão e ID do usuário são obrigatórios",
           })
         );
       }
-
-      if (!sessionService.haveSession(sessionId)) {
-        return next(
-          new GlobalException({
-            message: "Sessão não encontrada",
-            statusCode: 400,
-            details: "Não existe uma sessão com este ID",
-          })
-        );
-      }
-
       try {
         sessionService.deleteSession({ sessionId, userId });
         return res.status(200).json({ message: "Sessão excluída" });

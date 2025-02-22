@@ -113,6 +113,20 @@ class MongoConnection {
     }
   }
 
+  async deleteSession(user: UserMongoProps) {
+    try {
+      await this.users.deleteOne({ sessionId: user.sessionId });
+      await this.sessions.deleteOne({ sessionId: user.sessionId });
+      await this.keys.deleteMany({ sessionId: user.sessionId });
+      await this.chats.deleteMany({ sessionId: user.sessionId });
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao remover sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
+    }
+  }
+
   async addChats(chats: ChatProps[]) {
     try {
       await this.chats.updateOne(
