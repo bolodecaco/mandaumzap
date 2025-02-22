@@ -32,4 +32,7 @@ public class MessageDTO {
     @Schema(name = "broadcastListId", description = "ID da lista de transmissão", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID broadcastListId;
 
+    @Schema(name = "url", description = "URL da mensagem", example = "https://avatars.githubusercontent.com/u/105653717?v=4")
+    private String url;
+
 }
