@@ -64,11 +64,18 @@ class SessionService {
 
   private async processMessage(message: AWS.SQS.Message) {
     if (!message.Body) return;
-    const { sessionId, userId, text, receivers, type } = JSON.parse(
+    const { sessionId, userId, text, receivers, type, url } = JSON.parse(
       message.Body
     );
-    if (type === "progress") return;
+    if (type && type === "progress") return;
     try {
+      if (url)
+        return await this.sendImage({
+          header: { receivers, sessionId, userId },
+          url,
+          text,
+        });
+
       await this.sendText({ header: { receivers, sessionId, userId }, text });
     } catch (error: any) {
       this.logger.writeLog(`Error processing message: ${error.message}`);

@@ -33,7 +33,7 @@ public class Message {
     @Column(nullable = false)
     private String userId;
 
-    @ManyToOne(cascade=CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
@@ -43,6 +43,9 @@ public class Message {
 
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;
+
+    @Column(nullable = true)
+    private String url;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date firstSentAt;
