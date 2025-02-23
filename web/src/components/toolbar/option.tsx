@@ -12,8 +12,8 @@ export const Option = ({ iconName, iconAlt, ...rest }: OptionProps) => {
     <Wrapper {...rest}>
       <Image
         src={`/assets/toolbar/${iconName}.svg`}
-        width={24}
-        height={24}
+        width={20}
+        height={20}
         alt={iconAlt}
       />
     </Wrapper>

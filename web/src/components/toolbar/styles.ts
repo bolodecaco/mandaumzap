@@ -2,7 +2,7 @@ import { styled } from 'styled-components'
 
 export const Container = styled.div`
   box-sizing: border-box;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem;
   border-top: 1px solid ${({ theme }) => theme.colors.border};
 
   display: flex;
@@ -25,8 +25,8 @@ export const Divider = styled.span`
 
 export const Wrapper = styled.button`
   all: unset;
-  height: 2rem;
-  width: 2rem;
+  height: 1.5rem;
+  width: 1.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
