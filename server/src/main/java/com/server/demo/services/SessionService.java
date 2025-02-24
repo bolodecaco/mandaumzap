@@ -141,6 +141,20 @@ public class SessionService {
                 .block();
     }
 
+    private void requestDeleteAllSession(String userId) {
+        webClientBuilder
+                .baseUrl(botUrl)
+                .build()
+                .delete()
+                .uri(uriBuilder -> uriBuilder
+                .path("/api/sessions/{userId}/")
+                .queryParam("token", botToken)
+                .build(userId))
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
     private void requestCloseSession(UUID sessionId, String userId) {
         webClientBuilder
                 .baseUrl(botUrl)
@@ -181,6 +195,7 @@ public class SessionService {
 
     @Transactional
     public void deleteAllSessions(String userId) {
+        requestDeleteAllSession(userId);
         sessionRepository.deleteAllByUserId(userId);
     }
 }
