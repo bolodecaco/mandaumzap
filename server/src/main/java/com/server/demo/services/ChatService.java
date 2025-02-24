@@ -1,7 +1,11 @@
 package com.server.demo.services;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +39,10 @@ public class ChatService {
 
     public List<ChatDTO> getAllChats(String userId) {
         List<Chat> chats = chatRepository.findAllByUserId(userId);
-        return chatMapper.toDTOList(chats);
+        List<Chat> sortedChats = chats.stream()
+                .sorted(Comparator.comparing(Chat::getChatName))
+                .collect(Collectors.toList());
+        return chatMapper.toDTOList(sortedChats);
     }
 
     public ChatDTO getChatDTOById(UUID id, String userId) {
@@ -76,9 +83,12 @@ public class ChatService {
 
         try {
             String userId = session.getUserId();
-
-            List<Chat> chatEntities = chats.stream()
-                    .filter(botChat -> !chatRepository.findByWhatsAppId(botChat.getId()).isPresent())
+            Map<String, BotChatsDTO.BotResponseChats> uniqueChats = new HashMap<>();
+            for (BotChatsDTO.BotResponseChats chat : chats) {
+                uniqueChats.putIfAbsent(chat.getId(), chat);
+            }
+            List<Chat> chatEntities = uniqueChats.values().stream()
+                    .filter(botChat -> chatRepository.findByWhatsAppId(botChat.getId()).isEmpty())
                     .map(botChat -> {
                         Chat chat = new Chat();
                         chat.setChatName(botChat.getName());
@@ -88,7 +98,6 @@ public class ChatService {
                         return chat;
                     })
                     .toList();
-
             if (!chatEntities.isEmpty()) {
                 chatRepository.saveAll(chatEntities);
             }
@@ -97,4 +106,5 @@ public class ChatService {
             logger.error("Erro ao inserir chats: {}", e.getMessage());
         }
     }
+
 }

@@ -142,7 +142,7 @@ paths:
           required: true
           description: O ID único da sessão a ser fechada.
       responses:
-        200:
+        204:
           description: Sessão fechada com sucesso.
         400:
           description: A sessão não existe.
@@ -152,6 +152,13 @@ paths:
       summary: Deleta e fecha uma sessão
       description: Fecha uma sessão ativa.
       parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+            default: "userId"
+          required: true
+          description: O ID único do usuário.
         - in: path
           name: sessionId
           schema:
@@ -167,10 +174,35 @@ paths:
           required: true
           description: Token para autenticação.
       responses:
-        200:
+        204:
           description: Sessão fechada com sucesso.
         400:
           description: A sessão não existe.
+  /api/sessions/{userId}/:
+    delete:
+      tags: [Session]
+      summary: Deleta todas as sessões do usuário
+      description: Remove todas as sessões ativas de um usuário específico.
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+            default: "userId"
+          required: true
+          description: O ID único do usuário.
+        - in: query
+          name: token
+          schema:
+            type: string
+            default: "token"
+          required: true
+          description: Token para autenticação.
+      responses:
+        204:
+          description: Todas as sessões foram deletadas com sucesso.
+        400:
+          description: Erro ao deletar as sessões.
   /api/messages/send/text:
     post:
       tags: [Message]
