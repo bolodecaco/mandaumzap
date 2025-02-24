@@ -24,8 +24,7 @@ export const ChatsSection = () => {
   const initialContacts = useMemo(
     () =>
       Array(4).fill({
-        avatar: 'https://avatars.githubusercontent.com/u/101940943?v=4',
-        name: 'Joao',
+        name: 'joao',
         phone: '99999-9999',
         list: 'Lista',
         checked: false,

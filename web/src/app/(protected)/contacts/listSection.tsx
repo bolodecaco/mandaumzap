@@ -20,10 +20,17 @@ export const ListSection = () => {
 
   const data = useMemo(
     () =>
-      Array(2).fill({
+      Array(5).fill({
         title: 'ADS 6˚ periodo',
         avatars: [
-          { src: 'https://avatars.githubusercontent.com/u/101940943?v=4' },
+          { name: 'joao' },
+          { name: 'Desconhecido' },
+          { name: 'Desconhecido' },
+          { name: 'Desconhecido' },
+          { name: 'maria' },
+          { name: 'pedro' },
+          { name: 'Desconhecido' },
+          { name: 'ana' },
         ],
       }),
     [],

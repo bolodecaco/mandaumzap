@@ -36,9 +36,10 @@ export const Avatars = styled.div`
   align-items: center;
 `
 
-export const Avatar = styled.img`
-  width: 1.875rem;
-  height: 1.875rem;
+export const DivAvatar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   border: 1px solid ${({ theme }) => theme.colors.secondary};
   margin-left: -0.5rem;
@@ -48,10 +49,10 @@ export const Avatar = styled.img`
 `
 
 export const MoreAvatars = styled.div`
-  width: 1.875rem;
-  height: 1.875rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 50%;
-  border: 0.063rem solid ${({ theme }) => theme.colors.secondary};
+  border: 1px solid ${({ theme }) => theme.colors.secondary};
   background: ${({ theme }) => theme.colors.toolbar};
   display: flex;
   align-items: center;

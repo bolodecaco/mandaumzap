@@ -38,6 +38,7 @@ export const ListName = styled(TdBase)`
 export const UserDiv = styled.div`
   display: flex;
   width: 19.125rem;
+  max-height: 2rem;
   flex-direction: row;
   align-items: center;
   gap: 0.25rem;
@@ -45,9 +46,10 @@ export const UserDiv = styled.div`
 
 export const Checkbox = styled.input.attrs({ type: 'checkbox' })``
 
-export const Avatar = styled.img`
-  width: 1.875rem;
-  height: 1.875rem;
+export const DivAvatar = styled.div`
   border-radius: 50%;
   border: 1px solid ${({ theme }) => theme.colors.secondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `
