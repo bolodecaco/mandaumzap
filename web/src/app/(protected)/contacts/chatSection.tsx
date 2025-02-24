@@ -1,3 +1,5 @@
+'use client'
+
 import { CardContact } from '@/components/cardContact'
 import { Checkbox } from '@/components/cardContact/styles'
 import { Empty } from '@/components/empty'

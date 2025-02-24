@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/button'
 import { CardList } from '@/components/cardList'
 import { Empty } from '@/components/empty'
