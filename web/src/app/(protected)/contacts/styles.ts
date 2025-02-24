@@ -9,15 +9,43 @@ export const Delete = styled(Button)`
   color: ${({ theme }) => theme.colors.tertiary};
 `
 
-export const List = styled.div`
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  height: 100%;
+export const ListHeader = styled.div`
   width: 100%;
-  max-height: 100%;
-  overflow: hidden;
-  overflow-y: auto;
-  margin-left: -0.75rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+`
+
+export const Phone = styled.td`
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  padding: 0.5rem 0;
+  text-align: left;
+  width: 12rem;
+`
+export const ListName = styled.td`
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  padding: 0.5rem 0;
+  text-align: left;
+  max-width: 100%;
+`
+
+export const UserDiv = styled.div`
+  display: flex;
+  width: 19.125rem;
+  flex-direction: row;
+  align-items: center;
+`
+
+export const Th = styled.th`
+  text-align: left;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 0.5rem 0;
+  color: ${({ theme }) => theme.colors.secondary};
 `

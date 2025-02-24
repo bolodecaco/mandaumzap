@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import { Container, SelectorButton, SelectorItem, SelectorMenu } from './styles'
 
@@ -8,6 +7,8 @@ interface SelectorProps {
   width?: string
   height?: string
   onSelect: (option: string) => void
+  isOpen: boolean
+  onOpenChange: () => void
 }
 
 export const Selector = ({
@@ -16,34 +17,22 @@ export const Selector = ({
   height,
   options,
   onSelect,
+  isOpen,
+  onOpenChange,
 }: SelectorProps) => {
-  const [open, setOpen] = useState(false)
-
-  //   const [selectedLabel, setSelectedLabel] = useState(label)
-
   const handleSelect = (option: string) => {
-    // setSelectedLabel(option)
     onSelect(option)
-    setOpen(false)
+    onOpenChange()
   }
 
   return (
     <Container>
-      <SelectorButton
-        $width={width}
-        $height={height}
-        onClick={() => setOpen(!open)}
-      >
+      <SelectorButton $width={width} $height={height} onClick={onOpenChange}>
         {label} <FiChevronDown />
       </SelectorButton>
-      <SelectorMenu open={open}>
+      <SelectorMenu open={isOpen}>
         {options.map((option) => (
-          <SelectorItem
-            key={option}
-            onClick={() => {
-              handleSelect(option)
-            }}
-          >
+          <SelectorItem key={option} onClick={() => handleSelect(option)}>
             {option}
           </SelectorItem>
         ))}

@@ -14,6 +14,7 @@ export const THEME = {
     placeholder: '#A6A6A6',
     keybind: '#D3DCE5',
     hover: '#F5F5F5',
+    lastUpdateText: '#6A727C',
   },
 
   variants: {
