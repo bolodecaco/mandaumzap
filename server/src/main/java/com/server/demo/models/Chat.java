@@ -1,5 +1,6 @@
 package com.server.demo.models;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -9,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -27,17 +29,19 @@ public class Chat {
     @Column(nullable = false)
     private String userId;
 
-    @ManyToOne(cascade=CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
-    @Column(nullable = false, unique=true)
+    @Column(nullable = false, unique = true)
     private String whatsAppId;
 
     @Column(nullable = false)
     private String chatName;
 
     @Column(nullable = false)
-    private boolean isGroup;
+
+    @ManyToMany(mappedBy = "chats", cascade = CascadeType.ALL)
+    private List<BroadcastList> broadcastLists;
 
 }
