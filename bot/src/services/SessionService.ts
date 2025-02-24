@@ -129,6 +129,17 @@ class SessionService {
     return true;
   }
 
+  async deleteAllSessions(userId: string) {
+    const sessions = await this.mongoConnection.getAllSessions(userId);
+    sessions.forEach((session) => {
+      if (this.sessions.has(session)) {
+        const worker = this.sessions.get(session);
+        worker?.postMessage({ type: "close" });
+      }
+    });
+    await this.mongoConnection.deleteSessions(sessions);
+  }
+
   async sendText({
     header: { receivers, sessionId, userId },
     text,

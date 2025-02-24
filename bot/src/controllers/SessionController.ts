@@ -97,12 +97,31 @@ const sessionRouter = (sessionService: SessionService) => {
 
       try {
         sessionService.closeSession({ sessionId, userId });
-        return res.status(200).json({ message: "Sessão fechada" });
+        return res.status(204).json({ message: "Sessão fechada" });
       } catch (error) {
         next(error);
       }
     }
   );
+
+  router.delete("/sessions/:userId", async (req, res, next): Promise<any> => {
+    const { userId } = req.params;
+    if (!userId) {
+      return next(
+        new GlobalException({
+          message: "Parâmetro inválido",
+          statusCode: 400,
+          details: "ID do usuário é obrigatório",
+        })
+      );
+    }
+    try {
+      await sessionService.deleteAllSessions(userId);
+      return res.status(204).json({ message: "Sessões excluídas" });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   router.delete(
     "/sessions/:userId/:sessionId",
@@ -119,7 +138,7 @@ const sessionRouter = (sessionService: SessionService) => {
       }
       try {
         sessionService.deleteSession({ sessionId, userId });
-        return res.status(200).json({ message: "Sessão excluída" });
+        return res.status(204).json({ message: "Sessão excluída" });
       } catch (error) {
         next(error);
       }

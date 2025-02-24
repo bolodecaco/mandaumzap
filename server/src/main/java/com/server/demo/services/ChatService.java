@@ -1,9 +1,11 @@
 package com.server.demo.services;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,10 @@ public class ChatService {
 
     public List<ChatDTO> getAllChats(String userId) {
         List<Chat> chats = chatRepository.findAllByUserId(userId);
-        return chatMapper.toDTOList(chats);
+        List<Chat> sortedChats = chats.stream()
+                .sorted(Comparator.comparing(Chat::getChatName))
+                .collect(Collectors.toList());
+        return chatMapper.toDTOList(sortedChats);
     }
 
     public ChatDTO getChatDTOById(UUID id, String userId) {
