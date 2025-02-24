@@ -4,20 +4,20 @@ import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
 import { Selector } from '@/components/selector'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
 
-interface ListSectionProps {
-  openSelector: string | null
-  handleOpenSelector: (name: string) => void
-}
+export const ListSection = () => {
+  const [openSelectorLists, setOpenSelectorLists] = useState<string | null>(
+    null,
+  )
 
-export const ListSection = ({
-  openSelector,
-  handleOpenSelector,
-}: ListSectionProps) => {
+  const handleOpenSelectorLists = (name: string) => {
+    setOpenSelectorLists((prev) => (prev === name ? null : name))
+  }
+
   const data = useMemo(
     () =>
       Array(2).fill({
@@ -45,16 +45,16 @@ export const ListSection = ({
           options={['Mais recente', 'Mais antigo']}
           onSelect={() => {}}
           height="2.5rem"
-          isOpen={openSelector === 'ordenar'}
-          onOpenChange={() => handleOpenSelector('ordenar')}
+          isOpen={openSelectorLists === 'ordenar'}
+          onOpenChange={() => handleOpenSelectorLists('ordenar')}
         />
         <Selector
           label="Filtrar"
           options={['Disponível', 'Indisponível']}
           onSelect={() => {}}
           height="2.5rem"
-          isOpen={openSelector === 'filtrar'}
-          onOpenChange={() => handleOpenSelector('filtrar')}
+          isOpen={openSelectorLists === 'filtrar'}
+          onOpenChange={() => handleOpenSelectorLists('filtrar')}
         />
       </Row>
 
