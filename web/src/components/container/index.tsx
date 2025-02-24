@@ -1,8 +1,8 @@
-import { ReactNode } from 'react';
-import { BiHome } from 'react-icons/bi';
-import { PiAddressBook, PiClockCounterClockwise } from 'react-icons/pi';
-import { Sidebar } from '../sideBar';
-import { StyledPage } from './styles';
+import { ReactNode } from 'react'
+import { BiHome } from 'react-icons/bi'
+import { PiAddressBook, PiClockCounterClockwise } from 'react-icons/pi'
+import { Sidebar } from '../sideBar'
+import { StyledPage } from './styles'
 
 interface ContainerProps {
   children: ReactNode
