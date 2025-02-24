@@ -10,17 +10,16 @@ import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
 import { ListHeader, ListName, Phone, UserDiv } from './styles'
 
-interface ChatsSectionProps {
-  openSelector: string | null
-  handleOpenSelector: (name: string) => void
-}
-
-export const ChatsSection = ({
-  openSelector,
-  handleOpenSelector,
-}: ChatsSectionProps) => {
+export const ChatsSection = () => {
   const router = useRouter()
   const [checkAll, setCheckAll] = useState(false)
+  const [openSelectorChats, setOpenSelectorChats] = useState<string | null>(
+    null,
+  )
+
+  const handleOpenSelectorChats = (name: string) => {
+    setOpenSelectorChats((prev) => (prev === name ? null : name))
+  }
 
   const initialContacts = useMemo(
     () =>
@@ -71,16 +70,16 @@ export const ChatsSection = ({
           options={['Mais recente', 'Mais antigo']}
           onSelect={() => {}}
           height="2.5rem"
-          isOpen={openSelector === 'ordenar'}
-          onOpenChange={() => handleOpenSelector('ordenar')}
+          isOpen={openSelectorChats === 'ordenar'}
+          onOpenChange={() => handleOpenSelectorChats('ordenar')}
         />
         <Selector
           label="Filtrar"
           options={['Disponível', 'Indisponível']}
           onSelect={() => {}}
           height="2.5rem"
-          isOpen={openSelector === 'filtrar'}
-          onOpenChange={() => handleOpenSelector('filtrar')}
+          isOpen={openSelectorChats === 'filtrar'}
+          onOpenChange={() => handleOpenSelectorChats('filtrar')}
         />
       </Row>
 
