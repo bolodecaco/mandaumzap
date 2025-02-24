@@ -1,6 +1,8 @@
 package com.server.demo.services;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -76,9 +78,12 @@ public class ChatService {
 
         try {
             String userId = session.getUserId();
-
-            List<Chat> chatEntities = chats.stream()
-                    .filter(botChat -> !chatRepository.findByWhatsAppId(botChat.getId()).isPresent())
+            Map<String, BotChatsDTO.BotResponseChats> uniqueChats = new HashMap<>();
+            for (BotChatsDTO.BotResponseChats chat : chats) {
+                uniqueChats.putIfAbsent(chat.getId(), chat);
+            }
+            List<Chat> chatEntities = uniqueChats.values().stream()
+                    .filter(botChat -> chatRepository.findByWhatsAppId(botChat.getId()).isEmpty())
                     .map(botChat -> {
                         Chat chat = new Chat();
                         chat.setChatName(botChat.getName());
@@ -88,7 +93,6 @@ public class ChatService {
                         return chat;
                     })
                     .toList();
-
             if (!chatEntities.isEmpty()) {
                 chatRepository.saveAll(chatEntities);
             }
@@ -97,4 +101,5 @@ public class ChatService {
             logger.error("Erro ao inserir chats: {}", e.getMessage());
         }
     }
+
 }
