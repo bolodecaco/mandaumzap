@@ -121,10 +121,23 @@ class SessionService {
     const { allowed, exists } = await this.checkSession(userSession);
     if (!exists || !allowed) return false;
     const worker = this.sessions.get(userSession.sessionId);
-    if (!worker) return false;
-    worker.postMessage({ type: "delete" });
-    this.sessions.delete(userSession.sessionId);
+    if (worker) {
+      worker.postMessage({ type: "close" });
+      this.sessions.delete(userSession.sessionId);
+    }
+    await this.mongoConnection.deleteSession(userSession);
     return true;
+  }
+
+  async deleteAllSessions(userId: string) {
+    const sessions = await this.mongoConnection.getAllSessions(userId);
+    sessions.forEach((session) => {
+      if (this.sessions.has(session)) {
+        const worker = this.sessions.get(session);
+        worker?.postMessage({ type: "close" });
+      }
+    });
+    await this.mongoConnection.deleteSessions(sessions);
   }
 
   async sendText({

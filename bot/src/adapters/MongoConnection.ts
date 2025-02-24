@@ -64,6 +64,31 @@ class MongoConnection {
     }
   }
 
+  async getAllSessions(userId: string): Promise<string[]> {
+    try {
+      const sessions = await this.users.find({ userId }).toArray();
+      return sessions.map((session: any) => session.sessionId);
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao buscar sessões do usuário ${userId}: ${error.message}`
+      );
+      throw error;
+    }
+  }
+
+  async deleteSessions(sessions: string[]) {
+    try {
+      await this.users.deleteMany({ sessionId: { $in: sessions } });
+      await this.sessions.deleteMany({ sessionId: { $in: sessions } });
+      await this.keys.deleteMany({ sessionId: { $in: sessions } });
+      await this.chats.deleteMany({ sessionId: { $in: sessions } });
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao remover sessões ${sessions}: ${error.message}`
+      );
+    }
+  }
+
   async getSessionByUserId(userId: string) {
     try {
       const sessions = await this.users.find({ userId }).toArray();
@@ -108,6 +133,20 @@ class MongoConnection {
     } catch (error: any) {
       this.logger.error(
         `Erro ao remover usuário da sessão ${this.sessionId}: ${error.message}`
+      );
+      throw error;
+    }
+  }
+
+  async deleteSession(user: UserMongoProps) {
+    try {
+      await this.users.deleteOne({ sessionId: user.sessionId });
+      await this.sessions.deleteOne({ sessionId: user.sessionId });
+      await this.keys.deleteMany({ sessionId: user.sessionId });
+      await this.chats.deleteMany({ sessionId: user.sessionId });
+    } catch (error: any) {
+      this.logger.error(
+        `Erro ao remover sessão ${this.sessionId}: ${error.message}`
       );
       throw error;
     }

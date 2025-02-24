@@ -72,6 +72,13 @@ public class SessionController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Fecha uma sessão")
+    @PatchMapping("/{id}/close")
+    public ResponseEntity<Void> closeSession(@PathVariable UUID id) {
+        sessionService.closeSession(id, jwtService.getCurrentUserId());
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Deleta todas as sessões do usuário")
     @DeleteMapping("/")
     public ResponseEntity<Void> deleteAllSessions() {
