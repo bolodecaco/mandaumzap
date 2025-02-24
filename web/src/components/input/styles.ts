@@ -34,7 +34,7 @@ export const StyledInput = styled.input`
   max-width: 100%;
 `
 
-export const Keybind = styled.caption`
+export const Keybind = styled.span`
   all: unset;
   font-size: 0.625rem;
   font-weight: 600;

@@ -18,7 +18,7 @@ export const ListHeader = styled.div`
   border-bottom: 1px solid #e5e7eb;
 `
 
-export const Phone = styled.td`
+export const Phone = styled.div`
   display: flex;
   align-items: center;
   justify-content: start;
@@ -26,7 +26,7 @@ export const Phone = styled.td`
   text-align: left;
   width: 12rem;
 `
-export const ListName = styled.td`
+export const ListName = styled.div`
   display: flex;
   align-items: center;
   justify-content: start;

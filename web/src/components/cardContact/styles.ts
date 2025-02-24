@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const Container = styled.tr`
+export const Container = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -12,14 +12,14 @@ export const Container = styled.tr`
   }
 `
 
-export const Th = styled.th`
+export const Th = styled.div`
   text-align: left;
   padding: 10px;
   font-weight: bold;
   color: #6b7280;
 `
 
-const TdBase = styled.td`
+const TdBase = styled.div`
   display: flex;
   align-items: center;
   justify-content: start;

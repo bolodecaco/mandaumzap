@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { FiChevronDown } from 'react-icons/fi'
 import { Container, SelectorButton, SelectorItem, SelectorMenu } from './styles'
 
@@ -20,15 +21,33 @@ export const Selector = ({
   isOpen,
   onOpenChange,
 }: SelectorProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        if (isOpen) {
+          onOpenChange()
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isOpen, onOpenChange])
+
   const handleSelect = (option: string) => {
     onSelect(option)
     onOpenChange()
   }
 
   return (
-    <Container>
+    <Container ref={containerRef}>
       <SelectorButton $width={width} $height={height} onClick={onOpenChange}>
-        {label} <FiChevronDown />
+        {label} <FiChevronDown size={20} />
       </SelectorButton>
       <SelectorMenu open={isOpen}>
         {options.map((option) => (

@@ -12,6 +12,7 @@ export const SelectorButton = styled.button<{
   max-width: ${({ $width }) => $width ?? '100%'};
   background-color: ${({ theme }) => theme.colors.input};
   border: 1px solid ${({ theme }) => theme.colors.darkBorder};
+  color: ${({ theme }) => theme.colors.title};
   border-radius: 0.5rem;
   overflow: hidden;
   display: flex;
@@ -23,7 +24,7 @@ export const SelectorButton = styled.button<{
 
   cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 0.05px;
 
   &:hover {
