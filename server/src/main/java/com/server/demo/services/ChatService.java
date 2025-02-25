@@ -1,15 +1,16 @@
 package com.server.demo.services;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.BotChatsDTO;
@@ -22,6 +23,7 @@ import com.server.demo.models.Chat;
 import com.server.demo.models.Session;
 import com.server.demo.repositories.ChatRepository;
 import com.server.demo.repositories.SessionRepository;
+import com.server.demo.specification.ChatSpecification;
 
 @Service
 public class ChatService {
@@ -37,12 +39,15 @@ public class ChatService {
     @Autowired
     private ChatMapper chatMapper;
 
-    public List<ChatDTO> getAllChats(String userId) {
-        List<Chat> chats = chatRepository.findAllByUserId(userId);
-        List<Chat> sortedChats = chats.stream()
-                .sorted(Comparator.comparing(Chat::getChatName))
-                .collect(Collectors.toList());
-        return chatMapper.toDTOList(sortedChats);
+    public Page<ChatDTO> getAllChats(String userId, Pageable pageable, String search, UUID sessionId) {
+        try {
+            Specification<Chat> specification = ChatSpecification.withFilters(userId, search, sessionId);
+            Page<Chat> chatsPage = chatRepository.findAll(specification, pageable);
+            return chatsPage.map(chatMapper::toDTO);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar chats: {}", e.getMessage());
+            throw new BusinessException("Erro ao buscar chats");
+        }
     }
 
     public ChatDTO getChatDTOById(UUID id, String userId) {
