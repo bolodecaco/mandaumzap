@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import com.server.demo.dtos.RequestRoutineDTO;
 import com.server.demo.dtos.RoutineDTO;
 import com.server.demo.dtos.UpdateRoutineCronDTO;
-import com.server.demo.exception.BusinessException;
 import com.server.demo.dtos.UpdateRoutineDTO;
+import com.server.demo.exception.BusinessException;
 import com.server.demo.mappers.RoutineMapper;
 import com.server.demo.models.Routine;
 import com.server.demo.repositories.RoutineRepository;
@@ -37,6 +37,12 @@ public class RoutineService {
     public List<RoutineDTO> getAllRoutines(String userId) {
         List<Routine> routines = routineRepository.findAllByUserId(userId);
         return routineMapper.toDTOList(routines);
+    }
+
+    public void updateTimesSent(UUID id, int timesSent) {
+        Routine routine = routineRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("Rotina com ID %s não encontrada", id)));
+        routine.setTimesSent(timesSent);
+        routineRepository.save(routine);
     }
 
     public RoutineDTO getRoutineById(UUID id, String userId) {
