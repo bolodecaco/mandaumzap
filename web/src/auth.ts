@@ -13,7 +13,6 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
-      console.log(token)
       if (account && profile) {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
