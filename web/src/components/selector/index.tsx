@@ -2,9 +2,10 @@ import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import { Icon, Select } from '@radix-ui/react-select'
 import { useMemo, useState } from 'react'
 import { Container, Value, Popper, StyledItem } from './styles'
+import Skeleton from 'react-loading-skeleton'
 
 type Option = {
-  id: number
+  id: number | string
   value: string
   name: string
 }
@@ -15,8 +16,8 @@ interface SelectorProps {
   width?: string
   height?: string
   value: string
+  isLoading?: boolean
   onValueChange: (newValue: string) => void
-  onSelect: (option: string) => void
 }
 
 export const Selector = ({
@@ -24,6 +25,7 @@ export const Selector = ({
   width,
   height,
   options,
+  isLoading,
   value,
   onValueChange,
 }: SelectorProps) => {
@@ -32,6 +34,10 @@ export const Selector = ({
     () => options.find((option) => option.value === value)?.name,
     [options, value],
   )
+
+  if (isLoading) {
+    return <Skeleton width={width ?? '8rem'} height={height ?? '2.5rem'} />
+  }
 
   return (
     <Select

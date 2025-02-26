@@ -12,6 +12,8 @@ import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
 import { ListHeader, ListName, Phone, UserDiv } from './styles'
 import { useQueryState } from 'nuqs'
+import { useGetSessions } from '@/services/session/useGetSessions'
+import { toast } from 'react-toastify'
 
 const ORDER_OPTIONS = [
   {
@@ -38,7 +40,21 @@ const ORDER_OPTIONS = [
 
 export const Chats = () => {
   const router = useRouter()
+
   const [orderBy, setOrderBy] = useQueryState('orderBy')
+  const [session, setSession] = useQueryState('session')
+
+  const { data: sessions, isLoading, error } = useGetSessions()
+
+  const SESSION_OPTIONS = useMemo(
+    () =>
+      sessions?.map((session) => ({
+        id: session.id,
+        value: session.id,
+        name: session.id,
+      })),
+    [sessions],
+  )
 
   const [checkAll, setCheckAll] = useState(false)
 
@@ -75,6 +91,12 @@ export const Chats = () => {
     router.push('/history')
   }
 
+  if (error) {
+    toast.error(`Erro ao carregar sessões: ${error}`, {
+      toastId: 'sessions',
+    })
+  }
+
   return (
     <Wrapper style={{ flex: 3, overflow: 'auto' }}>
       <Title>Meus chats</Title>
@@ -89,17 +111,16 @@ export const Chats = () => {
         <Selector
           label="Ordenar"
           options={ORDER_OPTIONS}
-          onSelect={() => {}}
           value={orderBy || ''}
           onValueChange={(newValue) => setOrderBy(newValue)}
           height="2.5rem"
         />
         <Selector
           label="Sessão"
-          options={ORDER_OPTIONS}
-          onSelect={() => {}}
-          value={orderBy || ''}
-          onValueChange={(newValue) => setOrderBy(newValue)}
+          isLoading={isLoading}
+          options={SESSION_OPTIONS || []}
+          value={session || ''}
+          onValueChange={(newValue) => setSession(newValue)}
           height="2.5rem"
         />
       </Row>
