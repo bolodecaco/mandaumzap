@@ -1,15 +1,22 @@
-import { useEffect, useRef } from 'react'
-import { FiChevronDown } from 'react-icons/fi'
-import { Container, SelectorButton, SelectorItem, SelectorMenu } from './styles'
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
+import { Icon, Select } from '@radix-ui/react-select'
+import { useMemo, useState } from 'react'
+import { Container, Value, Popper, StyledItem } from './styles'
+
+type Option = {
+  id: number
+  value: string
+  name: string
+}
 
 interface SelectorProps {
   label: string
-  options: string[]
+  options: Option[]
   width?: string
   height?: string
+  value: string
+  onValueChange: (newValue: string) => void
   onSelect: (option: string) => void
-  isOpen: boolean
-  onOpenChange: () => void
 }
 
 export const Selector = ({
@@ -17,45 +24,36 @@ export const Selector = ({
   width,
   height,
   options,
-  onSelect,
-  isOpen,
-  onOpenChange,
+  value,
+  onValueChange,
 }: SelectorProps) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        if (isOpen) {
-          onOpenChange()
-        }
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen, onOpenChange])
-
-  const handleSelect = (option: string) => {
-    onSelect(option)
-    onOpenChange()
-  }
+  const [open, setOpen] = useState(false)
+  const selectedValue = useMemo(
+    () => options.find((option) => option.value === value)?.name,
+    [options, value],
+  )
 
   return (
-    <Container ref={containerRef}>
-      <SelectorButton $width={width} $height={height} onClick={onOpenChange}>
-        {label} <FiChevronDown size={20} />
-      </SelectorButton>
-      <SelectorMenu open={isOpen}>
+    <Select
+      open={open}
+      value={value}
+      onOpenChange={() => setOpen(!open)}
+      onValueChange={(newValue) => onValueChange(newValue)}
+    >
+      <Container $width={width} $height={height}>
+        <Value $placeholder={!!selectedValue}>{selectedValue || label}</Value>
+        <Icon>
+          {!open ? <FiChevronDown size={20} /> : <FiChevronUp size={20} />}
+        </Icon>
+      </Container>
+
+      <Popper position="popper">
         {options.map((option) => (
-          <SelectorItem key={option} onClick={() => handleSelect(option)}>
-            {option}
-          </SelectorItem>
+          <StyledItem key={option.id} value={option.value}>
+            {option.name}
+          </StyledItem>
         ))}
-      </SelectorMenu>
-    </Container>
+      </Popper>
+    </Select>
   )
 }

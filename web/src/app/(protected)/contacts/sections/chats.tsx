@@ -1,3 +1,5 @@
+'use client'
+
 import { CardContact } from '@/components/cardContact'
 import { Checkbox } from '@/components/cardContact/styles'
 import { Empty } from '@/components/empty'
@@ -9,17 +11,36 @@ import { useCallback, useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
 import { ListHeader, ListName, Phone, UserDiv } from './styles'
+import { useQueryState } from 'nuqs'
 
-export const ChatsSection = () => {
+const ORDER_OPTIONS = [
+  {
+    id: 1,
+    value: 'chatName',
+    name: 'Nome (A-z)',
+  },
+  {
+    id: 2,
+    value: '-chatName',
+    name: 'Nome (Z-a)',
+  },
+  {
+    id: 3,
+    value: 'whatsAppId',
+    name: 'Celular (A-z)',
+  },
+  {
+    id: 4,
+    value: '-whatsAppId',
+    name: 'Celular (Z-a)',
+  },
+]
+
+export const Chats = () => {
   const router = useRouter()
-  const [checkAll, setCheckAll] = useState(false)
-  const [openSelectorChats, setOpenSelectorChats] = useState<string | null>(
-    null,
-  )
+  const [orderBy, setOrderBy] = useQueryState('orderBy')
 
-  const handleOpenSelectorChats = (name: string) => {
-    setOpenSelectorChats((prev) => (prev === name ? null : name))
-  }
+  const [checkAll, setCheckAll] = useState(false)
 
   const initialContacts = useMemo(
     () =>
@@ -67,19 +88,19 @@ export const ChatsSection = () => {
         />
         <Selector
           label="Ordenar"
-          options={['Mais recente', 'Mais antigo']}
+          options={ORDER_OPTIONS}
           onSelect={() => {}}
+          value={orderBy || ''}
+          onValueChange={(newValue) => setOrderBy(newValue)}
           height="2.5rem"
-          isOpen={openSelectorChats === 'ordenar'}
-          onOpenChange={() => handleOpenSelectorChats('ordenar')}
         />
         <Selector
-          label="Filtrar"
-          options={['Disponível', 'Indisponível']}
+          label="Sessão"
+          options={ORDER_OPTIONS}
           onSelect={() => {}}
+          value={orderBy || ''}
+          onValueChange={(newValue) => setOrderBy(newValue)}
           height="2.5rem"
-          isOpen={openSelectorChats === 'filtrar'}
-          onOpenChange={() => handleOpenSelectorChats('filtrar')}
         />
       </Row>
 
