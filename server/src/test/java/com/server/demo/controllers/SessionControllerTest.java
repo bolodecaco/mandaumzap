@@ -97,7 +97,7 @@ class SessionControllerTest {
         mockMvc.perform(post("/api/user/sessions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(botConnectionDTO.getId().toString()))
-                .andExpect(jsonPath("$.status").value(botConnectionDTO.getStatus().toString()))
+                .andExpect(jsonPath("$.status").value(botConnectionDTO.getStatus()))
                 .andExpect(jsonPath("$.qrcode").value(botConnectionDTO.getQrcode()));
     }
 
@@ -108,7 +108,7 @@ class SessionControllerTest {
         mockMvc.perform(patch("/api/user/sessions/" + sessionDTO.getId() + "/start"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(botConnectionDTO.getId().toString()))
-                .andExpect(jsonPath("$.status").value(botConnectionDTO.getStatus().toString()))
+                .andExpect(jsonPath("$.status").value(botConnectionDTO.getStatus()))
                 .andExpect(jsonPath("$.qrcode").value(botConnectionDTO.getQrcode()));
     }
 
