@@ -134,8 +134,8 @@ class ChatControllerTest {
     @Test
     void shouldValidateChatCreation() throws Exception {
         RequestChatDTO invalidChat = new RequestChatDTO();
-        invalidChat.setChatName("a"); // Nome muito curto
-        invalidChat.setWhatsAppId("invalid-id"); // ID do WhatsApp inválido
+        invalidChat.setChatName("a");
+        invalidChat.setWhatsAppId("invalid-id");
 
         mockMvc.perform(post("/api/user/chats")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -1,6 +1,8 @@
 package com.server.demo.security.service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
+
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -9,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.server.demo.exception.BusinessException;
 
-import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class KeycloakUserService {
@@ -25,17 +27,13 @@ public class KeycloakUserService {
 
     public void updateUserAttributes(String userId, Map<String, List<String>> attributes) {
         try {
-            // Pega a representação do usuário
             UserResource userResource = keycloak.realm(realm).users().get(userId);
             UserRepresentation user = userResource.toRepresentation();
 
-            // Log para debug
             log.debug("Atualizando atributos para usuário: {}", userId);
 
-            // Atualiza os atributos
             user.setAttributes(attributes);
 
-            // Salva as alterações
             userResource.update(user);
 
         } catch (Exception e) {

@@ -112,8 +112,8 @@ class NotificationControllerTest {
     @Test
     void shouldValidateNotificationCreation() throws Exception {
         RequestNotificationDTO invalidNotification = new RequestNotificationDTO();
-        invalidNotification.setContent("a"); // Conteúdo muito curto
-        invalidNotification.setType("a"); // Tipo muito curto
+        invalidNotification.setContent("a");
+        invalidNotification.setType("a");
 
         mockMvc.perform(post("/api/user/notifications")
                 .contentType(MediaType.APPLICATION_JSON)

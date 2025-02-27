@@ -86,8 +86,8 @@ class RoutineControllerTest {
         mockMvc.perform(get("/api/user/routines"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(routineDTO.getId().toString()))
-                .andExpect(jsonPath("$[0].title").value(routineDTO.getTitle())) // Corrigido de name para title
-                .andExpect(jsonPath("$[0].cron").value(routineDTO.getCron()));  // Corrigido de cronExpression para cron
+                .andExpect(jsonPath("$[0].title").value(routineDTO.getTitle()))
+                .andExpect(jsonPath("$[0].cron").value(routineDTO.getCron()));
     }
 
     @Test
@@ -97,7 +97,7 @@ class RoutineControllerTest {
         mockMvc.perform(get("/api/user/routines/" + routineDTO.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(routineDTO.getId().toString()))
-                .andExpect(jsonPath("$.title").value(routineDTO.getTitle()));  // Corrigido de name para title
+                .andExpect(jsonPath("$.title").value(routineDTO.getTitle()));
     }
 
     @Test
@@ -109,7 +109,7 @@ class RoutineControllerTest {
                 .content(objectMapper.writeValueAsString(requestRoutineDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(routineDTO.getId().toString()))
-                .andExpect(jsonPath("$.title").value(routineDTO.getTitle()));  // Corrigido de name para title
+                .andExpect(jsonPath("$.title").value(routineDTO.getTitle()));
     }
 
     @Test
@@ -122,6 +122,6 @@ class RoutineControllerTest {
                 .content(objectMapper.writeValueAsString(updateRoutineDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(routineDTO.getId().toString()))
-                .andExpect(jsonPath("$.title").value(routineDTO.getTitle()));  // Corrigido de name para title
+                .andExpect(jsonPath("$.title").value(routineDTO.getTitle()));
     }
 }
