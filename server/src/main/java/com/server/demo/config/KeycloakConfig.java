@@ -24,7 +24,6 @@ public class KeycloakConfig {
 
     @Bean
     public Keycloak keycloakAdmin() {
-        // Remove /realms/ecommerce da URL do issuer
         String serverUrl = issuerUri.substring(0, issuerUri.indexOf("/realms"));
 
         return KeycloakBuilder.builder()
