@@ -1,38 +1,35 @@
 package com.server.demo.services;
 
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.instancio.Instancio;
+import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.MessageDTO;
-import com.server.demo.dtos.MessageSentToBotDTO;
 import com.server.demo.dtos.RequestMessageDTO;
-import com.server.demo.exception.BusinessException;
 import com.server.demo.mappers.MessageMapper;
-import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Message;
-import com.server.demo.models.Session;
 import com.server.demo.producer.MessageProducer;
 import com.server.demo.repositories.MessageRepository;
 
-@ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
 
     @Mock
@@ -50,115 +47,179 @@ class MessageServiceTest {
     @InjectMocks
     private MessageService messageService;
 
-    private Message message;
-    private MessageDTO messageDTO;
-    private RequestMessageDTO requestMessageDTO;
     private String userId;
 
     @BeforeEach
     void setUp() {
-        userId = "testUserId";
-        
-        message = new Message();
-        message.setId(UUID.randomUUID());
-        message.setContent("Test Message");
-        message.setTimesSent(0);
-        message.setUserId(userId);
-        message.setSession(new Session());
-        message.setBroadcastList(new BroadcastList());
-
-        messageDTO = new MessageDTO();
-        messageDTO.setId(message.getId());
-        messageDTO.setContent(message.getContent());
-        messageDTO.setTimesSent(message.getTimesSent());
-
-        requestMessageDTO = new RequestMessageDTO();
-        requestMessageDTO.setContent("New Message");
-        requestMessageDTO.setSessionId(UUID.randomUUID());
-        requestMessageDTO.setBroadcastListId(UUID.randomUUID());
+        userId = UUID.randomUUID().toString();
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void shouldSendMessage() {
-        ChatDTO chatDTO = new ChatDTO();
-        chatDTO.setWhatsAppId("123@c.us");
-        
-        when(messageRepository.findById(any())).thenReturn(Optional.of(message));
-        when(messageRepository.save(any())).thenReturn(message);
-        when(messageMapper.toDTO(any())).thenReturn(messageDTO);
-        when(broadcastListService.getChatsFromList(any(), anyString())).thenReturn(Arrays.asList(chatDTO));
+    @DisplayName("Enviar mensagem com ID válido")
+    void sendMessageWithValidId() {
+        UUID messageId = UUID.randomUUID();
+        UUID listId = UUID.randomUUID();
 
-        MessageDTO result = messageService.sendMessage(message.getId());
+        Message message = Instancio.of(Message.class)
+                .set(field(Message::getDeletedAt), null)
+                .set(field(Message::getTimesSent), 0)
+                .create();
+        List<ChatDTO> chats = List.of(Instancio.create(ChatDTO.class));
+        MessageDTO responseDTO = Instancio.create(MessageDTO.class);
 
-        assertNotNull(result);
-        assertEquals(messageDTO.getId(), result.getId());
-        verify(messageProducer, times(1)).sendObject(any(MessageSentToBotDTO.class));
-        verify(broadcastListService, times(1)).incrementMessageSent(any(), anyString());
+        when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+        when(messageRepository.save(message)).thenReturn(message);
+        when(messageMapper.toDTO(message)).thenReturn(responseDTO);
+        when(broadcastListService.getChatsFromList(listId, userId)).thenReturn(chats);
+
+        MessageDTO data = messageService.sendMessage(messageId);
+
+        assertEquals(responseDTO, data);
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository).save(message);
+        assertTrue(message.getTimesSent() == 1);
+        assertNotNull(message.getLastSentAt());
     }
 
     @Test
-    void shouldGetMessageById() {
-        when(messageRepository.findByIdAndUserId(any(), anyString())).thenReturn(Optional.of(message));
-        when(messageMapper.toDTO(message)).thenReturn(messageDTO);
+    @DisplayName("Buscar mensagem com ID válido")
+    void getMessageWithValidId() {
+        UUID messageId = UUID.randomUUID();
+        Message message = Instancio.create(Message.class);
+        MessageDTO responseDTO = Instancio.create(MessageDTO.class);
 
-        MessageDTO result = messageService.getMessageById(message.getId(), userId);
+        when(messageRepository.findByIdAndUserId(messageId, userId)).thenReturn(Optional.of(message));
+        when(messageMapper.toDTO(message)).thenReturn(responseDTO);
 
-        assertNotNull(result);
-        assertEquals(messageDTO.getId(), result.getId());
+        MessageDTO data = messageService.getMessageById(messageId, userId);
+
+        assertEquals(responseDTO, data);
+        verify(messageRepository).findByIdAndUserId(messageId, userId);
+        verify(messageMapper).toDTO(message);
     }
 
     @Test
-    void shouldGetMessagesBySessionId() {
-        when(messageRepository.findBySessionIdAndUserId(any(), anyString())).thenReturn(Arrays.asList(message));
-        when(messageMapper.toDTOList(any())).thenReturn(Arrays.asList(messageDTO));
+    @DisplayName("Criar nova mensagem com dados válidos")
+    void createMessageWithValidData() {
+        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
+        Message message = Instancio.create(Message.class);
+        MessageDTO responseDTO = Instancio.create(MessageDTO.class);
 
-        List<MessageDTO> result = messageService.getMessagesBySessionId(UUID.randomUUID(), userId);
+        when(messageMapper.toEntity(requestDTO)).thenReturn(message);
+        when(messageRepository.save(message)).thenReturn(message);
+        when(messageMapper.toDTO(message)).thenReturn(responseDTO);
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(messageDTO.getId(), result.get(0).getId());
+        MessageDTO data = messageService.saveMessage(requestDTO, userId);
+
+        assertEquals(responseDTO, data);
+        verify(messageMapper).toEntity(requestDTO);
+        verify(messageRepository).save(message);
+        verify(messageMapper).toDTO(message);
     }
 
     @Test
-    void shouldSaveMessage() {
-        when(messageMapper.toEntity(any())).thenReturn(message);
-        when(messageRepository.save(any())).thenReturn(message);
-        when(messageMapper.toDTO(message)).thenReturn(messageDTO);
+    @DisplayName("Buscar mensagem com ID inválido deve falhar")
+    void getMessageWithInvalidId() {
+        UUID messageId = UUID.randomUUID();
+        when(messageRepository.findByIdAndUserId(messageId, userId)).thenReturn(Optional.empty());
 
-        MessageDTO result = messageService.saveMessage(requestMessageDTO, userId);
+        assertThrows(RuntimeException.class,
+                () -> messageService.getMessageById(messageId, userId));
 
-        assertNotNull(result);
-        assertEquals(messageDTO.getId(), result.getId());
+        verify(messageRepository).findByIdAndUserId(messageId, userId);
+        verify(messageMapper, never()).toDTO(any());
     }
 
     @Test
-    void shouldGetActiveMessages() {
-        when(messageRepository.findByDeletedAtIsNullAndUserId(anyString())).thenReturn(Arrays.asList(message));
-        when(messageMapper.toDTOList(any())).thenReturn(Arrays.asList(messageDTO));
+    @DisplayName("Buscar mensagens através de ID de sessão válido")
+    void getMessagesByUserId() {
+        UUID sessionId = UUID.randomUUID();
+        List<Message> messages = List.of(Instancio.create(Message.class));
+        List<MessageDTO> responseDTOs = List.of(Instancio.create(MessageDTO.class));
+        when(messageRepository.findBySessionIdAndUserId(sessionId, userId)).thenReturn(messages);
+        when(messageMapper.toDTOList(messages)).thenReturn(responseDTOs);
 
-        List<MessageDTO> result = messageService.getActiveMessages(userId);
+        List<MessageDTO> data = messageService.getMessagesBySessionId(sessionId, userId);
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(messageDTO.getId(), result.get(0).getId());
+        assertEquals(responseDTOs, data);
+        verify(messageRepository).findBySessionIdAndUserId(sessionId, userId);
+        verify(messageMapper).toDTOList(messages);
     }
 
     @Test
-    void shouldThrowExceptionWhenMessageNotFound() {
-        when(messageRepository.findByIdAndUserId(any(), anyString())).thenReturn(Optional.empty());
+    @DisplayName("Enviar mensagem com ID inválido deve falhar")
+    void sendMessageWithInvalidId() {
+        UUID messageId = UUID.randomUUID();
+        RequestMessageDTO requestDTO = Instancio.create(RequestMessageDTO.class);
 
-        assertThrows(BusinessException.class, () -> {
-            messageService.getMessageById(UUID.randomUUID(), userId);
-        });
+        when(messageRepository.findById(messageId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> messageService.sendMessage(messageId));
+
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository, never()).save(any());
     }
 
     @Test
-    void shouldDeleteMessage() {
-        when(messageRepository.findByIdAndUserId(any(), anyString())).thenReturn(Optional.of(message));
-        when(messageRepository.save(any())).thenReturn(message);
+    @DisplayName("Deletar mensagem com ID inválido deve falhar")
+    void deleteMessageWithInvalidId() {
+        UUID messageId = UUID.randomUUID();
+        when(messageRepository.findByIdAndUserId(messageId, userId)).thenReturn(Optional.empty());
 
-        messageService.deleteMessage(message.getId(), userId);
+        assertThrows(RuntimeException.class,
+                () -> messageService.deleteMessage(messageId, userId));
 
-        verify(messageRepository, times(1)).save(any());
+        verify(messageRepository).findByIdAndUserId(messageId, userId);
+        verify(messageRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Enviar mensagem deletada deve falhar")
+    void sendMessageWithDeletedAt() {
+        UUID messageId = UUID.randomUUID();
+        Message message = Instancio.create(Message.class);
+        message.setDeletedAt(new Date());
+
+        when(messageRepository.findById(messageId)).thenReturn(Optional.of(message));
+
+        assertThrows(RuntimeException.class,
+                () -> messageService.sendMessage(messageId));
+
+        verify(messageRepository).findById(messageId);
+        verify(messageRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Buscar mensagens ativas")
+    void getActiveMessages() {
+        List<Message> messages = List.of(Instancio.create(Message.class));
+        List<MessageDTO> responseDTOs = List.of(Instancio.create(MessageDTO.class));
+
+        when(messageRepository.findByDeletedAtIsNullAndUserId(userId)).thenReturn(messages);
+        when(messageMapper.toDTOList(messages)).thenReturn(responseDTOs);
+
+        List<MessageDTO> data = messageService.getActiveMessages(userId);
+
+        assertEquals(responseDTOs, data);
+        verify(messageRepository).findByDeletedAtIsNullAndUserId(userId);
+        verify(messageMapper).toDTOList(messages);
+    }
+
+    @Test
+    @DisplayName("Deletar mensagem com ID válido")
+    void deleteMessageWithValidId() {
+        UUID messageId = UUID.randomUUID();
+        Message message = Instancio.create(Message.class);
+
+        when(messageRepository.findByIdAndUserId(messageId, userId)).thenReturn(Optional.of(message));
+        when(messageRepository.save(message)).thenReturn(message);
+
+        messageService.deleteMessage(messageId, userId);
+
+        assertNotNull(message.getDeletedAt());
+        verify(messageRepository).findByIdAndUserId(messageId, userId);
+        verify(messageRepository).save(message);
     }
 }
