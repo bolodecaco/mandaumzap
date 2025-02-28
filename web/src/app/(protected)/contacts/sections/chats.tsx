@@ -48,7 +48,7 @@ const ORDER_OPTIONS = [
   },
 ]
 
-export const Chats = () => {
+const Chats = () => {
   const router = useRouter()
   const observerTarget = useRef<HTMLDivElement>(null)
 
@@ -188,3 +188,5 @@ export const Chats = () => {
     </Wrapper>
   )
 }
+
+export default Chats

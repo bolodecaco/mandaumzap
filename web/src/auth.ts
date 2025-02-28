@@ -4,6 +4,7 @@ import { authConfig } from './auth.config'
 
 export const { signIn, signOut, auth, handlers } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     Keycloak({
       clientId: process.env.NEXT_PUBLIC_KC_CLIENT_ID,

@@ -10,7 +10,7 @@ import { FiSearch } from 'react-icons/fi'
 import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
 
-export const Lists = () => {
+const Lists = () => {
   const data = useMemo(
     () =>
       Array(5).fill({
@@ -78,3 +78,5 @@ export const Lists = () => {
     </Wrapper>
   )
 }
+
+export default Lists
