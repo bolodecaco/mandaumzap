@@ -33,7 +33,6 @@ export const getAllChats = createServerAction(
           sort,
         },
       })
-      console.log(response)
       return response
     } catch (err) {
       throwGenericError(err)

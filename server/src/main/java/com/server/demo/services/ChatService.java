@@ -39,9 +39,9 @@ public class ChatService {
     @Autowired
     private ChatMapper chatMapper;
 
-    public Page<ChatDTO> getAllChats(String userId, Pageable pageable, String search, UUID sessionId) {
+    public Page<ChatDTO> getAllChats(String userId, Pageable pageable, String search, String sessionId) {
         try {
-            Specification<Chat> specification = ChatSpecification.withFilters(userId, search, sessionId);
+            Specification<Chat> specification = ChatSpecification.withFilters(userId, search, UUID.fromString(sessionId));
             Page<Chat> chatsPage = chatRepository.findAll(specification, pageable);
             return chatsPage.map(chatMapper::toDTO);
         } catch (Exception e) {

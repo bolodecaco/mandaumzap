@@ -27,27 +27,18 @@ const TdBase = styled.div`
   text-align: left;
 `
 
-export const Phone = styled(TdBase)`
-  width: 12rem;
-`
-
-export const ListName = styled(TdBase)`
+export const Session = styled(TdBase)`
   max-width: 100%;
+  width: 24rem;
 `
 
 export const UserDiv = styled.div`
   display: flex;
-  width: 19.125rem;
+  width: 20rem;
+  max-height: 2rem;
   flex-direction: row;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
 `
 
 export const Checkbox = styled.input.attrs({ type: 'checkbox' })``
-
-export const Avatar = styled.img`
-  width: 1.875rem;
-  height: 1.875rem;
-  border-radius: 50%;
-  border: 1px solid ${({ theme }) => theme.colors.secondary};
-`

@@ -4,28 +4,26 @@ import { Button } from '@/components/button'
 import { CardList } from '@/components/cardList'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
-import { Selector } from '@/components/selector'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
 
 export const Lists = () => {
-  const [openSelectorLists, setOpenSelectorLists] = useState<string | null>(
-    null,
-  )
-
-  const handleOpenSelectorLists = (name: string) => {
-    setOpenSelectorLists((prev) => (prev === name ? null : name))
-  }
-
   const data = useMemo(
     () =>
-      Array(2).fill({
+      Array(5).fill({
         title: 'ADS 6˚ periodo',
         avatars: [
-          { src: 'https://avatars.githubusercontent.com/u/101940943?v=4' },
+          { name: 'joao' },
+          { name: 'Desconhecido' },
+          { name: 'Desconhecido' },
+          { name: 'Desconhecido' },
+          { name: 'maria' },
+          { name: 'pedro' },
+          { name: 'Desconhecido' },
+          { name: 'ana' },
         ],
       }),
     [],
@@ -42,7 +40,7 @@ export const Lists = () => {
       />
       <Row style={{ gap: '0.5rem' }}>
         <Button text="Nova lista" leftIcon={HiPlus} onClick={() => {}} />
-        <Selector
+        {/* <Selector
           label="Ordenar"
           options={['Mais recente', 'Mais antigo']}
           onSelect={() => {}}
@@ -57,7 +55,7 @@ export const Lists = () => {
           height="2.5rem"
           isOpen={openSelectorLists === 'filtrar'}
           onOpenChange={() => handleOpenSelectorLists('filtrar')}
-        />
+        /> */}
       </Row>
 
       {data.length === 0 ? (

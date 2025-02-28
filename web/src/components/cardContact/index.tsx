@@ -1,29 +1,42 @@
-import { Avatar, Checkbox, Container, ListName, Phone, UserDiv } from './styles'
+import LetteredAvatar from 'react-lettered-avatar'
+import { Avatar } from '../avatar'
+import { Checkbox, Container, Session, UserDiv } from './styles'
 
 interface CardContactProps {
-  avatar: string
   name: string
-  phone: string
-  list: string
-  checked: boolean
+  session: string
+  contact: string
   onCheck?: () => void
 }
 
-export const CardContact: React.FC<CardContactProps> = ({
-  avatar,
+export const CardContact = ({
+  session,
   name,
-  phone,
-  list,
-  checked,
+  contact,
   onCheck,
-}) => (
-  <Container>
-    <Checkbox type="checkbox" checked={checked} onChange={onCheck} />
-    <UserDiv>
-      <Avatar src={avatar} alt={`Avatar de ${name}`} />
-      <span>{name}</span>
-    </UserDiv>
-    <Phone>{phone}</Phone>
-    <ListName>{list}</ListName>
-  </Container>
-)
+}: CardContactProps) => {
+  const normalizedContact = contact.includes('@s.whatsapp.net')
+    ? contact.replace('@s.whatsapp.net', '')
+    : '-'
+
+  return (
+    <Container>
+      <Checkbox type="checkbox" onClick={onCheck} />
+      <UserDiv>
+        {name === 'Desconhecido' ? (
+          <Avatar />
+        ) : (
+          <LetteredAvatar
+            size={34}
+            name={name[0]}
+            color="#fff"
+            backgroundColor="#075E54"
+          />
+        )}
+        {name}
+      </UserDiv>
+      <Session>{normalizedContact}</Session>
+      <Session>{session}</Session>
+    </Container>
+  )
+}
