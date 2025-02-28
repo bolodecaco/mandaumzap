@@ -1,19 +1,21 @@
 'use client'
 
+import { Sort } from '@/app/actions/chats/getAllChats'
 import { CardContact } from '@/components/cardContact'
 import { Checkbox } from '@/components/cardContact/styles'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
 import { Selector } from '@/components/selector'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
+import { useGetChats } from '@/services/chat/useGetChats'
+import { useGetSessions } from '@/services/session/useGetSessions'
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useState } from 'react'
+import { useQueryState } from 'nuqs'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
-import { ListHeader, ListName, Phone, UserDiv } from './styles'
-import { useQueryState } from 'nuqs'
-import { useGetSessions } from '@/services/session/useGetSessions'
 import { toast } from 'react-toastify'
+import { ListHeader, ListName, Phone, UserDiv } from './styles'
 
 const ORDER_OPTIONS = [
   {
@@ -45,6 +47,14 @@ export const Chats = () => {
   const [session, setSession] = useQueryState('session')
 
   const { data: sessions, isLoading, error } = useGetSessions()
+  const {
+    data: chats,
+    isLoading: isLoadingChats,
+    error: chatsError,
+  } = useGetChats({
+    sessionId: session || undefined,
+    sort: (orderBy as Sort) || undefined,
+  })
 
   const SESSION_OPTIONS = useMemo(
     () =>
@@ -57,20 +67,6 @@ export const Chats = () => {
   )
 
   const [checkAll, setCheckAll] = useState(false)
-
-  const initialContacts = useMemo(
-    () =>
-      Array(4).fill({
-        avatar: 'https://avatars.githubusercontent.com/u/101940943?v=4',
-        name: 'Joao',
-        phone: '99999-9999',
-        list: 'Lista',
-        checked: false,
-      }),
-    [],
-  )
-
-  const [dataContact, setDataContact] = useState(initialContacts)
 
   const handleCheckAll = useCallback(() => {
     setCheckAll((prev) => !prev)
@@ -90,6 +86,10 @@ export const Chats = () => {
   const handleReconnect = () => {
     router.push('/history')
   }
+
+  useEffect(() => {
+    if (sessions) setSession(sessions[0].id)
+  }, [sessions, setSession])
 
   if (error) {
     toast.error(`Erro ao carregar sessões: ${error}`, {
@@ -136,7 +136,7 @@ export const Chats = () => {
         <ListName>Listas presente</ListName>
       </ListHeader>
 
-      {dataContact.length === 0 ? (
+      {chats?.length === 0 ? (
         <Empty
           message="Não há chats sincronizados"
           icon={MdGroupAdd}
@@ -146,7 +146,7 @@ export const Chats = () => {
           }}
         />
       ) : (
-        dataContact.map((data, index) => (
+        chats?.map((data, index) => (
           <CardContact
             key={`${data.name}-${index}`}
             {...data}

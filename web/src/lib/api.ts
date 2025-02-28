@@ -12,10 +12,11 @@ interface FetchAPIOptions {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
   next?: NextFetchRequestConfig
+  queryParams?: Record<string, string | number | boolean | undefined>
 }
 
 export async function fetcher(endpoint: string, options: FetchAPIOptions) {
-  const { method, body, next } = options
+  const { method, body, next, queryParams } = options
 
   const session = await auth()
   const authToken = session?.accessToken
@@ -30,7 +31,19 @@ export async function fetcher(endpoint: string, options: FetchAPIOptions) {
     ...(next && { next }),
   }
 
-  const url = `${process.env.API_URL}${endpoint}`
+  const queryString = queryParams
+    ? `?${new URLSearchParams(
+        Object.entries(queryParams).reduce(
+          (acc, [key, value]) => {
+            acc[key] = String(value)
+            return acc
+          },
+          {} as Record<string, string>,
+        ),
+      ).toString()}`
+    : ''
+
+  const url = `${process.env.API_URL}${endpoint}${queryString}`
   try {
     const response = await fetch(url, headers)
 
