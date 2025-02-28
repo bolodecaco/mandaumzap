@@ -8,6 +8,7 @@ import { Main } from '@/lib/styled/global'
 const HEADER_MAP = {
   '/dashboard': 'Dashboard',
   '/history': 'Meu histórico',
+  '/contacts': 'Meu Whatsapp',
 }
 
 export default function ProtectedLayout({

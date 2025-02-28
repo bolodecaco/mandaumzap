@@ -43,7 +43,7 @@ public class ChatController {
     @GetMapping
     public ResponseEntity<Page<ChatDTO>> getAllChats(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) UUID sessionId,
+            @RequestParam(required = false) String sessionId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "chatName") String sort
