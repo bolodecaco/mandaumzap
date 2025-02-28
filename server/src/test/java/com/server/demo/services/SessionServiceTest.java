@@ -45,7 +45,7 @@ class SessionServiceTest {
 
     @BeforeEach
     void setUp() {
-        userId = "67128981-aoiadjadjada";
+        userId = UUID.randomUUID().toString();
         MockitoAnnotations.openMocks(this);
         webClientBuilder = mock(WebClient.Builder.class);
         when(webClientBuilder.baseUrl(anyString())).thenReturn(webClientBuilder);

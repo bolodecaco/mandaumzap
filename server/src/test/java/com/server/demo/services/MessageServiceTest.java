@@ -51,7 +51,7 @@ class MessageServiceTest {
 
     @BeforeEach
     void setUp() {
-        userId = "aldasdasdkakla-2131k-1sdasda";
+        userId = UUID.randomUUID().toString();
         MockitoAnnotations.openMocks(this);
     }
 

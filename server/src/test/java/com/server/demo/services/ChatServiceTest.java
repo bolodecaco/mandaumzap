@@ -41,7 +41,7 @@ class ChatServiceTest {
 
     @BeforeEach
     void setUp() {
-        userId = "akjaskjdas-1723-askjdasjdaas";
+        userId = UUID.randomUUID().toString();
         MockitoAnnotations.openMocks(this);
     }
 
