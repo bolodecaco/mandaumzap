@@ -14,12 +14,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import com.server.demo.dtos.AddChatToBroadcastListDTO;
 import com.server.demo.dtos.BroadcastListDTO;
@@ -161,15 +166,16 @@ class BroadcastListServiceTest {
     void getAllLists() {
         List<BroadcastList> lists = List.of(Instancio.create(BroadcastList.class));
         List<BroadcastListDTO> responseDTOs = List.of(Instancio.create(BroadcastListDTO.class));
+        Pageable pageable = Pageable.unpaged();
+        Page<BroadcastList> page = new PageImpl<>(lists);
 
-        when(broadcastListRepository.findAllByUserId(userId)).thenReturn(lists);
-        when(broadcastListMapper.toDTOList(lists)).thenReturn(responseDTOs);
+        when(broadcastListRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(broadcastListMapper.toDTO(any(BroadcastList.class))).thenReturn(responseDTOs.get(0));
 
-        List<BroadcastListDTO> data = broadcastListService.findAllByUserId(userId);
+        Page<BroadcastListDTO> data = broadcastListService.findAllByUserId(userId, pageable, "titulo");
 
-        assertEquals(responseDTOs, data);
-        verify(broadcastListRepository).findAllByUserId(userId);
-        verify(broadcastListMapper).toDTOList(lists);
+        assertEquals(1, data.getContent().size());
+        verify(broadcastListRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
@@ -177,15 +183,16 @@ class BroadcastListServiceTest {
     void getListsByOwnerId() {
         List<BroadcastList> lists = List.of(Instancio.create(BroadcastList.class));
         List<BroadcastListDTO> responseDTOs = List.of(Instancio.create(BroadcastListDTO.class));
+        Pageable pageable = Pageable.unpaged();
+        Page<BroadcastList> page = new PageImpl<>(lists);
 
-        when(broadcastListRepository.findAllByUserId(userId)).thenReturn(lists);
-        when(broadcastListMapper.toDTOList(lists)).thenReturn(responseDTOs);
+        when(broadcastListRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(broadcastListMapper.toDTO(any(BroadcastList.class))).thenReturn(responseDTOs.get(0));
 
-        List<BroadcastListDTO> data = broadcastListService.findAllByUserId(userId);
+        Page<BroadcastListDTO> data = broadcastListService.findAllByUserId(userId, pageable, "titulo");
 
-        assertEquals(responseDTOs, data);
-        verify(broadcastListRepository).findAllByUserId(userId);
-        verify(broadcastListMapper).toDTOList(lists);
+        assertEquals(1, data.getContent().size());
+        verify(broadcastListRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
