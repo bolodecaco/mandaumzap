@@ -1,8 +1,10 @@
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
+'use client'
+
 import { Icon, Select } from '@radix-ui/react-select'
 import { useMemo, useState } from 'react'
-import { Container, Value, Popper, StyledItem } from './styles'
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import Skeleton from 'react-loading-skeleton'
+import { Container, Popper, StyledItem, Value } from './styles'
 
 type Option = {
   id: number | string

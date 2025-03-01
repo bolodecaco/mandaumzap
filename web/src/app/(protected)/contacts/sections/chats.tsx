@@ -12,9 +12,10 @@ import { useGetChats } from '@/services/chat/useGetChats'
 import { useGetSessions } from '@/services/session/useGetSessions'
 import { useRouter } from 'next/navigation'
 import { parseAsString, useQueryState } from 'nuqs'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
+import { useInView } from 'react-intersection-observer'
 import { toast } from 'react-toastify'
 import {
   List,
@@ -50,7 +51,7 @@ const ORDER_OPTIONS = [
 
 const Chats = () => {
   const router = useRouter()
-  const observerTarget = useRef<HTMLDivElement>(null)
+  const { ref, inView } = useInView()
 
   const [orderBy, setOrderBy] = useQueryState('orderBy')
   const [session, setSession] = useQueryState('session')
@@ -85,25 +86,14 @@ const Chats = () => {
   }
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage()
-        }
-      },
-      { threshold: 0.1 },
-    )
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current)
-    }
-
-    return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
-
-  useEffect(() => {
     if (sessions) setSession(sessions[0].id)
   }, [sessions, setSession])
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage])
 
   if (error) {
     toast.error(`Erro ao carregar sessões: ${error}`, {
@@ -177,7 +167,7 @@ const Chats = () => {
               />
             )),
           )}
-          <div ref={observerTarget} style={{ height: '20px' }} />
+          <div ref={ref} style={{ height: '20px' }} />
           {isFetchingNextPage && (
             <LoaderContainer style={{ paddingBlock: '1rem' }}>
               <Spinner />

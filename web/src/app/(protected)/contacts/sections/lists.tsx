@@ -5,29 +5,24 @@ import { CardList } from '@/components/cardList'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
-import { useMemo } from 'react'
+import { useGetLists } from '@/services/list/useGetLists'
+import { useEffect } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
+import { toast } from 'react-toastify'
+import { LoaderContainer, Spinner } from './styles'
 
 const Lists = () => {
-  const data = useMemo(
-    () =>
-      Array(5).fill({
-        title: 'ADS 6˚ periodo',
-        avatars: [
-          { name: 'joao' },
-          { name: 'Desconhecido' },
-          { name: 'Desconhecido' },
-          { name: 'Desconhecido' },
-          { name: 'maria' },
-          { name: 'pedro' },
-          { name: 'Desconhecido' },
-          { name: 'ana' },
-        ],
-      }),
-    [],
-  )
+  const { data, error, isLoading } = useGetLists()
+
+  useEffect(() => {
+    if (error) {
+      toast.error(`Erro ao carregar listas. Tente carregar a página.`, {
+        toastId: 'lists',
+      })
+    }
+  }, [error])
 
   return (
     <Wrapper style={{ flex: 1, alignItems: 'center' }}>
@@ -58,7 +53,11 @@ const Lists = () => {
         /> */}
       </Row>
 
-      {data.length === 0 ? (
+      {isLoading ? (
+        <LoaderContainer>
+          <Spinner />
+        </LoaderContainer>
+      ) : data?.length === 0 ? (
         <Empty
           message="Nenhuma lista cadastrada"
           icon={RiPlayListAddFill}
@@ -66,11 +65,15 @@ const Lists = () => {
           onActionClick={() => {}}
         />
       ) : (
-        data.map((item, index) => (
+        data?.map((list) => (
           <CardList
-            key={`${item.title}-${index}`}
-            {...item}
-            lastUpdate="Último envio às 11:27"
+            key={list.id}
+            title={list.title}
+            lastUpdate={
+              list.lastActiveAt
+                ? list.lastActiveAt.toISOString()
+                : 'Nenhuma mensagem enviada'
+            }
             onClickOptions={() => {}}
           />
         ))
