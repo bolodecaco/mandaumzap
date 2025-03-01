@@ -39,7 +39,12 @@ const Lists = () => {
         placeholder="Pesquisar lista"
       />
       <Row style={{ gap: '0.5rem' }}>
-        <Button text="Nova lista" leftIcon={HiPlus} onClick={() => {}} />
+        <Button
+          text="Nova lista"
+          leftIcon={HiPlus}
+          onClick={() => {}}
+          weight="normal"
+        />
         {/* <Selector
           label="Ordenar"
           options={['Mais recente', 'Mais antigo']}

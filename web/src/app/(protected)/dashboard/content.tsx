@@ -5,10 +5,10 @@ import { Input } from '@/components/input'
 import { Label } from '@/components/label'
 import { TextBox } from '@/components/textbox'
 import { Column, Row, Title, Wrapper } from '@/lib/styled/global'
-import { useState } from 'react'
-import { AddList, Clear } from './styles'
-import { RxFilePlus } from 'react-icons/rx'
 import { THEME } from '@/lib/styled/theme'
+import { useState } from 'react'
+import { RxFilePlus } from 'react-icons/rx'
+import { AddList, Clear } from './styles'
 
 export function Content() {
   const [message, setMessage] = useState('')
@@ -50,7 +50,7 @@ export function Content() {
 
           <Row style={{ gap: '0.5rem', justifyContent: 'flex-end' }}>
             <Clear text="Limpar tudo" variant="ghost" />
-            <Button text="Enviar" style={{ width: '6.625rem' }} />
+            <Button text="Enviar" style={{ width: '6.625rem' }} weight="bold" />
           </Row>
         </Wrapper>
         <Wrapper

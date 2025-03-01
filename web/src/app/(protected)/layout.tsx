@@ -1,14 +1,15 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import { Header } from '@/components/header'
 import { Container } from '@/components/container'
+import { Header } from '@/components/header'
 import { Main } from '@/lib/styled/global'
+import { usePathname } from 'next/navigation'
 
 const HEADER_MAP = {
   '/dashboard': 'Dashboard',
   '/history': 'Meu histórico',
   '/contacts': 'Meu Whatsapp',
+  '/routine': 'Minha rotinas',
 }
 
 export default function ProtectedLayout({
