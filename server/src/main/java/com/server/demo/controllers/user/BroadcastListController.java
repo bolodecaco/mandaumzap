@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.demo.dtos.AddChatToBroadcastListDTO;
@@ -37,10 +42,17 @@ public class BroadcastListController {
     @Autowired
     private JwtService jwtService;
 
-    @Operation(summary = "Retorna todas as listas de transmissão")
+    @Operation(summary = "Retorna todos as listas")
     @GetMapping
-    public ResponseEntity<List<BroadcastListDTO>> getAllLists() {
-        return ResponseEntity.ok(listService.findAllByUserId(jwtService.getCurrentUserId()));
+    public ResponseEntity<Page<BroadcastListDTO>> getAllChats(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "lastActiveAt") String sort
+    ) {
+        String sortDirection = sort.startsWith("-") ? "DESC" : "ASC";
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDirection), sort.replace("-", "")));
+        return ResponseEntity.ok(listService.findAllByUserId(jwtService.getCurrentUserId(), pageable, search));
     }
 
     @Operation(summary = "Retorna uma lista de transmissão pelo ID")

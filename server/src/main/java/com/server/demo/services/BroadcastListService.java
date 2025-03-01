@@ -3,7 +3,12 @@ package com.server.demo.services;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.AddChatToBroadcastListDTO;
@@ -18,9 +23,12 @@ import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Chat;
 import com.server.demo.repositories.BroadcastListRepository;
 import com.server.demo.repositories.ChatRepository;
+import com.server.demo.specification.BroadcastListSpecification;
 
 @Service
 public class BroadcastListService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     @Autowired
     private BroadcastListRepository broadcastListRepository;
@@ -34,9 +42,15 @@ public class BroadcastListService {
     @Autowired
     private ChatMapper chatMapper;
 
-    public List<BroadcastListDTO> findAllByUserId(String userId) {
-        List<BroadcastList> list = broadcastListRepository.findAllByUserId(userId);
-        return broadcastListMapper.toDTOList(list);
+    public Page<BroadcastListDTO> findAllByUserId(String userId, Pageable pageable, String search) {
+        try {
+            Specification<BroadcastList> specification = BroadcastListSpecification.withFilters(userId, search);
+            Page<BroadcastList> listsPage = broadcastListRepository.findAll(specification, pageable);
+            return listsPage.map(broadcastListMapper::toDTO);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar listas: {}", e.getMessage());
+            throw new BusinessException("Erro ao buscar listas");
+        }
     }
 
     public BroadcastListDTO getListById(UUID id, String userId) {

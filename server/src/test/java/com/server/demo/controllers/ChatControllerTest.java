@@ -90,6 +90,21 @@ class ChatControllerTest {
     }
 
     @Test
+    void shouldGetAllChatsWithoutSessionId() throws Exception {
+        Page<ChatDTO> chatPage = new PageImpl<>(Arrays.asList(chatDTO));
+        when(chatService.getAllChats(anyString(), any(Pageable.class), any(), any())).thenReturn(chatPage);
+
+        mockMvc.perform(get("/api/user/chats")
+                .param("page", "0")
+                .param("size", "10")
+                .param("sort", "chatName"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(chatDTO.getId().toString()))
+                .andExpect(jsonPath("$.content[0].chatName").value(chatDTO.getChatName()))
+                .andExpect(jsonPath("$.content[0].whatsAppId").value(chatDTO.getWhatsAppId()));
+    }
+
+    @Test
     void shouldGetChatById() throws Exception {
         when(chatService.getChatDTOById(any(UUID.class), anyString())).thenReturn(chatDTO);
 
