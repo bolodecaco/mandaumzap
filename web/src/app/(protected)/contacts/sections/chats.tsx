@@ -2,6 +2,8 @@
 
 import { Chat } from '@/@types/chat'
 import { Sort } from '@/app/actions/chats/getAllChats'
+import { addChatsToList } from '@/app/actions/lists/addChatsToList'
+import { Button } from '@/components/button'
 import { CardContact } from '@/components/cardContact'
 import { Checkbox } from '@/components/cardContact/styles'
 import { Empty } from '@/components/empty'
@@ -12,7 +14,7 @@ import { useGetChats } from '@/services/chat/useGetChats'
 import { useGetSessions } from '@/services/session/useGetSessions'
 import { useRouter } from 'next/navigation'
 import { parseAsString, useQueryState } from 'nuqs'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
 import { useInView } from 'react-intersection-observer'
@@ -56,6 +58,7 @@ const Chats = () => {
   const [orderBy, setOrderBy] = useQueryState('orderBy')
   const [session, setSession] = useQueryState('session')
   const [search, setSearch] = useQueryState('search', parseAsString)
+  const [selectedChats, setSelectedChats] = useState<string[]>([])
 
   const { data: sessions, isLoading, error } = useGetSessions()
   const {
@@ -81,8 +84,52 @@ const Chats = () => {
     [sessions],
   )
 
+  const allChatsIds = useMemo(
+    () =>
+      chats?.pages.flatMap((page) => page.content.map((chat) => chat.id)) || [],
+    [chats?.pages],
+  )
+
+  const isAllSelected = useMemo(
+    () =>
+      allChatsIds.length > 0 &&
+      selectedChats.length === allChatsIds.length &&
+      allChatsIds.every((id) => selectedChats.includes(id)),
+    [selectedChats, allChatsIds],
+  )
+
   const handleReconnect = () => {
     router.push('/history')
+  }
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedChats(e.target.checked ? allChatsIds : [])
+  }
+
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChats((prev) =>
+      prev.includes(chatId)
+        ? prev.filter((id) => id !== chatId)
+        : [...prev, chatId],
+    )
+  }
+
+  // TODO: select list then send chats
+
+  const handleSendSelectedChats = async () => {
+    const formattedChats = selectedChats.map((id) => ({ chatId: id }))
+    const response = await addChatsToList({
+      chats: formattedChats,
+      listId: 'd9bcb5cd-8454-42fc-a030-a97acac4c1f5',
+    })
+
+    if (response.success) {
+      toast.success('Sucesso ao adicionar chats selecionados')
+      setSelectedChats([])
+      return
+    }
+
+    toast.error('Erro ao enviar chats selecionados')
   }
 
   useEffect(() => {
@@ -135,10 +182,20 @@ const Chats = () => {
           onValueChange={(newValue) => setSession(newValue)}
           height="2.5rem"
         />
+        {selectedChats.length > 0 && (
+          <Button
+            text={`Enviar ${selectedChats.length} chats selecionados`}
+            onClick={handleSendSelectedChats}
+          />
+        )}
       </Row>
 
       <ListHeader>
-        <Checkbox type="checkbox" />
+        <Checkbox
+          type="checkbox"
+          checked={isAllSelected}
+          onChange={handleSelectAll}
+        />
         <UserDiv>Nome do chat</UserDiv>
         <Session>Contato</Session>
         <Session>Sessão</Session>
@@ -156,24 +213,28 @@ const Chats = () => {
           onActionClick={handleReconnect}
         />
       ) : (
-        <List>
-          {chats?.pages.map((page) =>
-            page.content.map((data: Chat) => (
-              <CardContact
-                key={data.id}
-                name={data.chatName}
-                session={data.sessionId}
-                contact={data.whatsAppId}
-              />
-            )),
-          )}
-          <div ref={ref} style={{ height: '20px' }} />
-          {isFetchingNextPage && (
-            <LoaderContainer style={{ paddingBlock: '1rem' }}>
-              <Spinner />
-            </LoaderContainer>
-          )}
-        </List>
+        <>
+          <List>
+            {chats?.pages.map((page) =>
+              page.content.map((data: Chat) => (
+                <CardContact
+                  key={data.id}
+                  name={data.chatName}
+                  session={data.sessionId}
+                  contact={data.whatsAppId}
+                  checked={selectedChats.includes(data.id)}
+                  onCheck={() => handleSelectChat(data.id)}
+                />
+              )),
+            )}
+            <div ref={ref} style={{ height: '20px' }} />
+            {isFetchingNextPage && (
+              <LoaderContainer style={{ paddingBlock: '1rem' }}>
+                <Spinner />
+              </LoaderContainer>
+            )}
+          </List>
+        </>
       )}
     </Wrapper>
   )
