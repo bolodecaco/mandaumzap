@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -80,22 +83,19 @@ class BroadcastListControllerTest {
         when(jwtService.getCurrentUserId()).thenReturn("testUserId");
     }
 
-    // @Test
-    // void shouldGetAllLists() throws Exception {
-    //     Page<BroadcastListDTO> listsPage = new PageImpl<>(Arrays.asList(broadcastListDTO));
+    @Test
+    void shouldGetAllChats() throws Exception {
+        Page<BroadcastListDTO> listPage = new PageImpl<>(Arrays.asList(broadcastListDTO));
+        when(broadcastListService.findAllByUserId(anyString(), any(Pageable.class), any())).thenReturn(listPage);
 
-    //     when(broadcastListService.findAllByUserId(anyString(), any(Pageable.class), anyString()))
-    //             .thenReturn(listsPage);
-
-    //     mockMvc.perform(get("/api/user/lists")
-    //             .param("page", "0")
-    //             .param("size", "10")
-    //             .param("sort", "lastActiveAt"))
-    //             .andExpect(status().isOk())
-    //             .andExpect(jsonPath("$.content[0].id").value(broadcastListDTO.getId().toString()))
-    //             .andExpect(jsonPath("$.content[0].title").value(broadcastListDTO.getTitle()))
-    //             .andExpect(jsonPath("$.totalElements").value(1));
-    // }
+        mockMvc.perform(get("/api/user/lists")
+                .param("page", "0")
+                .param("size", "10")
+                .param("sort", "lastActiveAt"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(broadcastListDTO.getId().toString()))
+                .andExpect(jsonPath("$.content[0].title").value(broadcastListDTO.getTitle()));
+    }
 
     @Test
     void shouldGetListById() throws Exception {
