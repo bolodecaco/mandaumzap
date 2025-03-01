@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.server.demo.dtos.PlanDTO;
 import com.server.demo.dtos.RequestPlanDTO;
+import com.server.demo.dtos.UpdatePlanDTO;
 import com.server.demo.enums.PlanType;
 import com.server.demo.mappers.PlanMapper;
 import com.server.demo.models.Plan;
@@ -110,7 +111,7 @@ class PlanServiceTest {
     void updatePlanWithValidData() {
         UUID id = UUID.randomUUID();
         Plan existingPlan = Instancio.create(Plan.class);
-        Plan updateDetails = Instancio.create(Plan.class);
+        UpdatePlanDTO updateDetails = Instancio.create(UpdatePlanDTO.class);
         PlanDTO responseDTO = Instancio.create(PlanDTO.class);
 
         when(planRepository.findById(id)).thenReturn(Optional.of(existingPlan));
@@ -129,7 +130,7 @@ class PlanServiceTest {
     @DisplayName("Atualizar plano com ID inválido deve falhar")
     void updatePlanWithInvalidId() {
         UUID id = UUID.randomUUID();
-        Plan updateDetails = Instancio.create(Plan.class);
+        UpdatePlanDTO updateDetails = Instancio.create(UpdatePlanDTO.class);
 
         when(planRepository.findById(id)).thenReturn(Optional.empty());
 
