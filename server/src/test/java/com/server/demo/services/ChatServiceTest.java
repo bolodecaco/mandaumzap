@@ -1,15 +1,21 @@
 package com.server.demo.services;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.instancio.Instancio;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -18,18 +24,27 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
+import com.server.demo.dtos.BotChatsDTO;
 import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.RequestChatDTO;
 import com.server.demo.dtos.UpdateChatDTO;
 import com.server.demo.mappers.ChatMapper;
 import com.server.demo.models.Chat;
+import com.server.demo.models.Session;
 import com.server.demo.repositories.ChatRepository;
+import com.server.demo.repositories.SessionRepository;
 
 class ChatServiceTest {
 
     @Mock
     private ChatRepository chatRepository;
+
+    @Mock
+    private SessionRepository sessionRepository;
 
     @Mock
     private ChatMapper chatMapper;
@@ -165,5 +180,61 @@ class ChatServiceTest {
         assertEquals(String.format("Chat com id %s não encontrado", id), exception.getMessage());
         verify(chatRepository).findByIdAndUserId(id, userId);
         verify(chatMapper, never()).toDTO(any());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    @DisplayName("Buscar todos os chats com parâmetros válidos")
+    void getAllChatsWithValidParameters() {
+        Pageable pageable = PageRequest.of(0, 10);
+        String search = "chatName";
+        String sessionId = UUID.randomUUID().toString();
+        
+        Chat chat = Instancio.create(Chat.class);
+        ChatDTO chatDTO = Instancio.create(ChatDTO.class);
+        
+        Page<Chat> chatPage = new PageImpl<>(List.of(chat), pageable, 1);
+        
+        when(chatRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(chatPage);
+        when(chatMapper.toDTO(any(Chat.class))).thenReturn(chatDTO);
+
+        Page<ChatDTO> chats = chatService.getAllChats(userId, pageable, search, sessionId);
+
+        assertNotNull(chats);
+        assertEquals(1, chats.getTotalElements());
+        assertEquals(chatDTO, chats.getContent().get(0));
+        verify(chatRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(chatMapper).toDTO(any(Chat.class));
+    }
+
+    @Test
+    @DisplayName("Inserir chats novos")
+    void insertChatsWithUniqueChats() {
+        UUID sessionId = UUID.randomUUID();
+        
+        BotChatsDTO.BotResponseChats chat1 = Instancio.create(BotChatsDTO.BotResponseChats.class);
+        chat1.setId("chatId1");
+    
+        BotChatsDTO.BotResponseChats chat2 = Instancio.create(BotChatsDTO.BotResponseChats.class);
+        chat2.setId("chatId2");
+        
+        List<BotChatsDTO.BotResponseChats> botChats = List.of(chat1, chat2);
+    
+        Session session = Instancio.create(Session.class);
+        session.setUserId(userId);
+        
+        Chat existingChat = Instancio.create(Chat.class);
+        existingChat.setWhatsAppId(chat1.getId());
+    
+        when(sessionRepository.findById(sessionId)).thenReturn(Optional.of(session));
+        when(chatRepository.findByWhatsAppId(chat1.getId())).thenReturn(Optional.of(existingChat));
+        when(chatRepository.findByWhatsAppId(chat2.getId())).thenReturn(Optional.empty());
+    
+        chatService.insertChats(botChats, sessionId);
+    
+        verify(sessionRepository).findById(sessionId);
+        verify(chatRepository).findByWhatsAppId(chat1.getId());
+        verify(chatRepository).findByWhatsAppId(chat2.getId());
+        verify(chatRepository).saveAll(anyList());
     }
 }

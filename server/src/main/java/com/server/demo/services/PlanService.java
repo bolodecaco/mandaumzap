@@ -1,7 +1,6 @@
 package com.server.demo.services;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.PlanDTO;
 import com.server.demo.dtos.RequestPlanDTO;
+import com.server.demo.dtos.UpdatePlanDTO;
 import com.server.demo.enums.PlanType;
+import com.server.demo.exception.BusinessException;
 import com.server.demo.mappers.PlanMapper;
 import com.server.demo.models.Plan;
 import com.server.demo.repositories.PlanRepository;
@@ -29,7 +30,7 @@ public class PlanService {
     }
 
     private PlanDTO getPlanByType(PlanType type) {
-        Plan plan = planRepository.findByType(type).orElseThrow(() -> new RuntimeException(String.format("Plano de tipo %s não encontrado.", type)));
+        Plan plan = planRepository.findByType(type).orElseThrow(() -> new BusinessException(String.format("Plano de tipo %s não encontrado.", type)));
         return planMapper.toDTO(plan);
     }
 
@@ -38,13 +39,13 @@ public class PlanService {
         try {
             planType = PlanType.valueOf(type.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid plan type: " + type);
+            throw new BusinessException("Plano com tipo inválido: " + type);
         }
         return getPlanByType(planType);
     }
 
     public PlanDTO getPlanById(UUID id) {
-        Plan plan = planRepository.findById(id).orElseThrow(() -> new RuntimeException("Plan not found"));
+        Plan plan = planRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("Plano de ID %s não encontrado", id)));
         return planMapper.toDTO(plan);
     }
 
@@ -54,22 +55,11 @@ public class PlanService {
         return planMapper.toDTO(currentPlan);
     }
 
-    public PlanDTO updatePlan(UUID id, Plan planDetails) {
-        Plan plan = planRepository.findById(id).orElseThrow(() -> new RuntimeException("Plan not found"));
-        if (planDetails.getName() != null) {
-            plan.setName(planDetails.getName());
-        }
-        if (planDetails.getBenefits() != null) {
-            plan.setBenefits(planDetails.getBenefits());
-        }
-        if (!Objects.isNull(planDetails.getPrice())) {
-            plan.setPrice(planDetails.getPrice());
-        }
-        if (planDetails.getType() != null) {
-            plan.setType(planDetails.getType());
-        }
-        Plan updatedPlan = planRepository.save(plan);
-        return planMapper.toDTO(updatedPlan);
+    public PlanDTO updatePlan(UUID id, UpdatePlanDTO planDetails) {
+        Plan plan = planRepository.findById(id).orElseThrow(() -> new BusinessException(String.format("Plano de ID %s não encontrado", id)));
+        planMapper.updateEntityFromDTO(planDetails, plan);
+        planRepository.save(plan);
+        return planMapper.toDTO(plan);
     }
 
     public void deletePlan(UUID id) {
