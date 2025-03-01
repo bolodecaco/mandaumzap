@@ -91,12 +91,17 @@ public class BroadcastListService {
         BroadcastList list = broadcastListRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Lista de transmissão com id %s não encontrada", id)));
 
-        List<Chat> chats = chatsDto.stream()
+        List<Chat> chatsToAdd = chatsDto.stream()
                 .map(chatDto -> chatRepository.findById(chatDto.getChatId())
                 .orElseThrow(() -> new BusinessException(String.format("Chat com id %s não encontrado", chatDto.getChatId()))))
+                .filter(chat -> !list.getChats().contains(chat))
                 .toList();
 
-        list.getChats().addAll(chats);
+        if (chatsToAdd.isEmpty()) {
+            throw new BusinessException("Nenhum novo chat foi adicionado, pois todos já estão na lista.");
+        }
+
+        list.getChats().addAll(chatsToAdd);
         broadcastListRepository.save(list);
 
         return broadcastListMapper.toDTO(list);
