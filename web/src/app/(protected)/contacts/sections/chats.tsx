@@ -2,12 +2,12 @@
 
 import { Chat } from '@/@types/chat'
 import { Sort } from '@/app/actions/chats/getAllChats'
-import { addChatsToList } from '@/app/actions/lists/addChatsToList'
 import { Button } from '@/components/button'
 import { CardContact } from '@/components/cardContact'
 import { Checkbox } from '@/components/cardContact/styles'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
+import { AddToListModal } from '@/components/modal/addToList'
 import { Selector } from '@/components/selector'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
 import { useGetChats } from '@/services/chat/useGetChats'
@@ -59,6 +59,7 @@ const Chats = () => {
   const [session, setSession] = useQueryState('session')
   const [search, setSearch] = useQueryState('search', parseAsString)
   const [selectedChats, setSelectedChats] = useState<string[]>([])
+  const [isListsModalOpen, setIsListsModalOpen] = useState(false)
 
   const { data: sessions, isLoading, error } = useGetSessions()
   const {
@@ -86,7 +87,9 @@ const Chats = () => {
 
   const allChatsIds = useMemo(
     () =>
-      chats?.pages.flatMap((page) => page.content.map((chat) => chat.id)) || [],
+      chats?.pages.flatMap((page) =>
+        page.content.map((chat: Chat) => chat.id),
+      ) || [],
     [chats?.pages],
   )
 
@@ -114,26 +117,12 @@ const Chats = () => {
     )
   }
 
-  // TODO: select list then send chats
-
   const handleSendSelectedChats = async () => {
-    const formattedChats = selectedChats.map((id) => ({ chatId: id }))
-    const response = await addChatsToList({
-      chats: formattedChats,
-      listId: 'd9bcb5cd-8454-42fc-a030-a97acac4c1f5',
-    })
-
-    if (response.success) {
-      toast.success('Sucesso ao adicionar chats selecionados')
-      setSelectedChats([])
-      return
-    }
-
-    toast.error('Erro ao enviar chats selecionados')
+    setIsListsModalOpen(true)
   }
 
   useEffect(() => {
-    if (sessions) setSession(sessions[0].id)
+    if (sessions && sessions[0]) setSession(sessions[0].id)
   }, [sessions, setSession])
 
   useEffect(() => {
@@ -235,6 +224,14 @@ const Chats = () => {
             )}
           </List>
         </>
+      )}
+
+      {isListsModalOpen && (
+        <AddToListModal
+          onClose={() => setIsListsModalOpen(false)}
+          chatsId={selectedChats}
+          onAddedSuccessfully={() => setSelectedChats([])}
+        />
       )}
     </Wrapper>
   )

@@ -1,12 +1,13 @@
 'use client'
 
+import { List } from '@/@types/list'
 import { Button } from '@/components/button'
 import { CardList } from '@/components/cardList'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
 import { useGetLists } from '@/services/list/useGetLists'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
@@ -14,7 +15,8 @@ import { toast } from 'react-toastify'
 import { LoaderContainer, Spinner } from './styles'
 
 const Lists = () => {
-  const { data, error, isLoading } = useGetLists()
+  const [search, setSearch] = useState('')
+  const { data, error, isLoading } = useGetLists({ search })
 
   useEffect(() => {
     if (error) {
@@ -32,6 +34,8 @@ const Lists = () => {
         height="3.225rem"
         leftIcon={FiSearch}
         placeholder="Pesquisar lista"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
       />
       <Row style={{ gap: '0.5rem' }}>
         <Button text="Nova lista" leftIcon={HiPlus} onClick={() => {}} />
@@ -57,7 +61,7 @@ const Lists = () => {
         <LoaderContainer>
           <Spinner />
         </LoaderContainer>
-      ) : data?.length === 0 ? (
+      ) : data?.content.length === 0 ? (
         <Empty
           message="Nenhuma lista cadastrada"
           icon={RiPlayListAddFill}
@@ -65,7 +69,7 @@ const Lists = () => {
           onActionClick={() => {}}
         />
       ) : (
-        data?.map((list) => (
+        data?.content.map((list: List) => (
           <CardList
             key={list.id}
             title={list.title}
