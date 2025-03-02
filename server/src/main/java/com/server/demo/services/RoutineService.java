@@ -80,6 +80,10 @@ public class RoutineService {
     }
 
     private String getCronExpression(RequestRoutineDTO routine) {
+        if (routine.getFrequency() == null) {
+            throw new BusinessException("Frequência inválida!");
+        }
+
         String[] time = routine.getExecutionDateTime().split(":");
         int hour = Integer.parseInt(time[0]);
         int minute = Integer.parseInt(time[1]);

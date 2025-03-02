@@ -6,11 +6,15 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -19,6 +23,7 @@ import com.server.demo.dtos.RoutineDTO;
 import com.server.demo.dtos.UpdateRoutineCronDTO;
 import com.server.demo.dtos.UpdateRoutineDTO;
 import com.server.demo.enums.FrequencyType;
+import com.server.demo.exception.BusinessException;
 import com.server.demo.mappers.RoutineMapper;
 import com.server.demo.models.Routine;
 import com.server.demo.repositories.RoutineRepository;
@@ -159,5 +164,92 @@ class RoutineServiceTest {
         routineService.deleteRoutine(routine.getId());
     }
 
+    @Test
+    void shouldCreateRoutineWithWeeklyFrequency() {
+        requestRoutineDTO.setFrequency(FrequencyType.WEEKLY);
+        requestRoutineDTO.setDaysOfWeek("MON,WED,FRI");
+        
+        String expectedCron = "0 0 10 * * MON,WED,FRI";
+        
+        when(routineMapper.toEntity(requestRoutineDTO)).thenAnswer(invocation -> {
+            Routine routine = new Routine();
+            routine.setCron(expectedCron);
+            return routine;
+        });
+
+        when(routineRepository.save(any(Routine.class))).thenAnswer(invocation -> {
+            Routine savedRoutine = invocation.getArgument(0);
+            assertEquals(expectedCron, savedRoutine.getCron());
+            return savedRoutine;
+        });
+
+        when(routineMapper.toDTO(any(Routine.class))).thenReturn(routineDTO);
+
+        RoutineDTO createdRoutine = routineService.createRoutine(requestRoutineDTO, userId);
+
+        assertNotNull(createdRoutine);
+    }
+
+    @Test
+    void shouldThrowExceptionForInvalidFrequency() {
+        requestRoutineDTO.setFrequency(null);
+    
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            routineService.createRoutine(requestRoutineDTO, userId);
+        });
+    
+        assertEquals("Frequência inválida!", exception.getMessage());
+    }
+    
+
+    @Test
+    void shouldThrowExceptionForMissingDaysOfWeekInWeeklyFrequency() {
+        requestRoutineDTO.setFrequency(FrequencyType.WEEKLY);
+        requestRoutineDTO.setDaysOfWeek(null);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            routineService.createRoutine(requestRoutineDTO, userId);
+        });
+
+        assertEquals("Para frequência semanal, os dias da semana devem ser informados!", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionForInvalidDayOfMonthInMonthlyFrequency() {
+        requestRoutineDTO.setFrequency(FrequencyType.MONTHLY);
+        requestRoutineDTO.setDayOfMonth(32);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> {
+            routineService.createRoutine(requestRoutineDTO, userId);
+        });
+
+        assertEquals("Para frequência mensal, um dia válido do mês deve ser informado!", exception.getMessage());
+    }
+
+    @Test
+    void shouldCreateRoutineWithMonthlyFrequency() {
+        requestRoutineDTO.setFrequency(FrequencyType.MONTHLY);
+        requestRoutineDTO.setDayOfMonth(15);
+
+        String expectedCron = "0 0 10 15 * *";
+
+        when(routineMapper.toEntity(requestRoutineDTO)).thenAnswer(invocation -> {
+            Routine routine = new Routine();
+            routine.setCron(expectedCron);
+            return routine;
+        });
+
+        when(routineRepository.save(any(Routine.class))).thenAnswer(invocation -> {
+            Routine savedRoutine = invocation.getArgument(0);
+            assertEquals(expectedCron, savedRoutine.getCron());
+            return savedRoutine;
+        });
+
+        when(routineMapper.toDTO(any(Routine.class))).thenReturn(routineDTO);
+
+        RoutineDTO createdRoutine = routineService.createRoutine(requestRoutineDTO, userId);
+
+        assertNotNull(createdRoutine);
+    }
 
 }
