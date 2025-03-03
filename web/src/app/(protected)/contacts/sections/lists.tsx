@@ -14,11 +14,31 @@ import { RiPlayListAddFill } from 'react-icons/ri'
 import { toast } from 'react-toastify'
 import { LoaderContainer, Spinner } from './styles'
 import { NewListModal } from '@/components/modal/newList'
+import { Selector } from '@/components/selector'
+
+const ORDER_OPTIONS = [
+  {
+    id: 1,
+    value: 'lastActiveAt',
+    name: 'Ativo recentemente',
+  },
+  {
+    id: 2,
+    value: 'title',
+    name: 'Nome (A-z)',
+  },
+  {
+    id: 3,
+    value: '-title',
+    name: 'Nome (Z-a)',
+  },
+]
 
 const Lists = () => {
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('')
   const [isNewListModalOpen, setIsNewListModalOpen] = useState(false)
-  const { data, error, isLoading } = useGetLists({ search })
+  const { data, error, isLoading } = useGetLists({ search, sort })
 
   useEffect(() => {
     if (error) {
@@ -45,22 +65,13 @@ const Lists = () => {
           leftIcon={HiPlus}
           onClick={() => setIsNewListModalOpen(true)}
         />
-        {/* <Selector
-          label="Ordenar"
-          options={['Mais recente', 'Mais antigo']}
-          onSelect={() => {}}
-          height="2.5rem"
-          isOpen={openSelectorLists === 'ordenar'}
-          onOpenChange={() => handleOpenSelectorLists('ordenar')}
-        />
         <Selector
-          label="Filtrar"
-          options={['Disponível', 'Indisponível']}
-          onSelect={() => {}}
+          label="Ordenar"
+          options={ORDER_OPTIONS}
+          value={sort || ''}
+          onValueChange={(newValue) => setSort(newValue)}
           height="2.5rem"
-          isOpen={openSelectorLists === 'filtrar'}
-          onOpenChange={() => handleOpenSelectorLists('filtrar')}
-        /> */}
+        />
       </Row>
 
       {isLoading ? (
