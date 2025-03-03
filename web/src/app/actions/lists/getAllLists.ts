@@ -6,7 +6,7 @@ import { throwGenericError } from '../utils/throwGenericError'
 
 interface GetAllListsParams {
   search?: string
-  sort?: 'title' | '-title' | 'lastActiveAt'
+  sort?: 'title' | '-title' | 'lastActiveAt' | ''
 }
 
 export const getAllLists = createServerAction(

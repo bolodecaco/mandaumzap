@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 
 interface UseGetListsParams {
   search?: string
-  sort?: 'title' | '-title' | 'lastActiveAt'
+  sort?: 'title' | '-title' | 'lastActiveAt' | ''
 }
 
 export const useGetLists = ({ search, sort }: UseGetListsParams) => {

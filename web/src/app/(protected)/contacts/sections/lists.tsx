@@ -36,7 +36,7 @@ const ORDER_OPTIONS = [
 
 const Lists = () => {
   const [search, setSearch] = useState('')
-  const [sort, setSort] = useState('')
+  const [sort, setSort] = useState<'title' | '-title' | 'lastActiveAt' | ''>('')
   const [isNewListModalOpen, setIsNewListModalOpen] = useState(false)
   const { data, error, isLoading } = useGetLists({ search, sort })
 
@@ -69,7 +69,9 @@ const Lists = () => {
           label="Ordenar"
           options={ORDER_OPTIONS}
           value={sort || ''}
-          onValueChange={(newValue) => setSort(newValue)}
+          onValueChange={(newValue) =>
+            setSort(newValue as 'title' | '-title' | 'lastActiveAt' | '')
+          }
           height="2.5rem"
         />
       </Row>
