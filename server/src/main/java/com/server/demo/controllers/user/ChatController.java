@@ -3,9 +3,6 @@ package com.server.demo.controllers.user;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +31,6 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/user/chats")
 @Tag(name = "Chats", description = "API chats do usuário")
-@EnableCaching
 public class ChatController {
 
     @Autowired
@@ -45,7 +41,6 @@ public class ChatController {
 
     @Operation(summary = "Retorna todos os chats")
     @GetMapping
-    @Cacheable(value = "chats", key = "#search + '-' + #sessionId + '-' + #page + '-' + #size + '-' + #sort", condition = "#result != null and !#result.isEmpty()")
     public ResponseEntity<Page<ChatDTO>> getAllChats(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sessionId,
@@ -60,28 +55,24 @@ public class ChatController {
 
     @Operation(summary = "Retorna um chat pelo ID")
     @GetMapping("/{id}")
-    @Cacheable(value = "chats", key = "#id")
     public ResponseEntity<ChatDTO> getChatById(@PathVariable UUID id) {
         return ResponseEntity.ok(chatService.getChatDTOById(id, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Cria um novo chat")
     @PostMapping
-    @CacheEvict(value = "chats", allEntries = true)
     public ResponseEntity<ChatDTO> createChat(@Valid @RequestBody RequestChatDTO chat) {
         return ResponseEntity.ok(chatService.createChat(chat, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Atualiza um chat pelo ID")
     @PutMapping("/{id}")
-    @CacheEvict(value = "chats", allEntries = true)
     public ResponseEntity<ChatDTO> updateChat(@Valid @PathVariable UUID id, @RequestBody UpdateChatDTO chatDetails) {
         return ResponseEntity.ok(chatService.updateChat(id, chatDetails, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Deleta um chat pelo ID")
     @DeleteMapping("/{id}")
-    @CacheEvict(value = "chats", allEntries = true)
     public ResponseEntity<Void> deleteChat(@PathVariable UUID id) {
         chatService.deleteChat(id, jwtService.getCurrentUserId());
         return ResponseEntity.noContent().build();
