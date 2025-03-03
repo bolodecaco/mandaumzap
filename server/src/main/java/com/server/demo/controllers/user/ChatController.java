@@ -45,7 +45,7 @@ public class ChatController {
 
     @Operation(summary = "Retorna todos os chats")
     @GetMapping
-    @Cacheable(value = "chats", key = "#search + '-' + #sessionId + '-' + #page + '-' + #size + '-' + #sort")
+    @Cacheable(value = "chats", key = "#search + '-' + #sessionId + '-' + #page + '-' + #size + '-' + #sort", condition = "#result != null and !#result.isEmpty()")
     public ResponseEntity<Page<ChatDTO>> getAllChats(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sessionId,
