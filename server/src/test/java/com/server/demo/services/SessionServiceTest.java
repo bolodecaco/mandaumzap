@@ -23,6 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.server.demo.dtos.SessionDTO;
 import com.server.demo.dtos.UpdateSessionDTO;
+import com.server.demo.exception.BusinessException;
 import com.server.demo.mappers.SessionMapper;
 import com.server.demo.models.Session;
 import com.server.demo.repositories.SessionRepository;
@@ -70,13 +71,63 @@ class SessionServiceTest {
     }
 
     @Test
+    @DisplayName("Contar sessões de um usuário")
+    void countUserSessions() {
+        int expectedCount = 2;
+
+        when(sessionRepository.countByUserId(userId)).thenReturn(expectedCount);
+
+        int result = sessionService.countUserSessions(userId);
+
+        assertEquals(expectedCount, result);
+        verify(sessionRepository).countByUserId(userId);
+    }
+
+    // @Test
+    // @DisplayName("Iniciar sessão com sucesso")
+    // void startSessionSuccess() {
+    //     UUID id = UUID.randomUUID();
+    //     Session session = Instancio.create(Session.class);
+    //     RequestBotDTO requestBotDTO = Instancio.create(RequestBotDTO.class);
+    //     BotDTO botDTO = Instancio.create(BotDTO.class);
+    //     botDTO.setStatus(ConnectionStatusType.open);
+    //     String botResponseJSON = "{\"status\":\"open\"}";
+    //     when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.of(session));
+    //     when(sessionMapper.toBotRequestDTO(session)).thenReturn(requestBotDTO);
+    //     when(sessionService.startBotConnection(requestBotDTO)).thenReturn(Mono.just(botResponseJSON));
+    //     when(sessionService.parseQrCode(botResponseJSON)).thenReturn(botDTO);
+    //     when(sessionRepository.save(session)).thenReturn(session);
+    //     BotConnectionDTO result = sessionService.startSession(id, userId);
+    //     assertNotNull(result);
+    //     verify(sessionRepository).findByIdAndUserId(id, userId);
+    //     verify(sessionMapper).toBotRequestDTO(session);
+    //     verify(sessionRepository).save(session);
+    // }
+    // @Test
+    // @DisplayName("Iniciar sessão com status fechado deve falhar")
+    // void startSessionWithClosedStatus() {
+    //     UUID id = UUID.randomUUID();
+    //     Session session = Instancio.create(Session.class);
+    //     RequestBotDTO requestBotDTO = Instancio.create(RequestBotDTO.class);
+    //     BotDTO botDTO = Instancio.create(BotDTO.class);
+    //     botDTO.setStatus(ConnectionStatusType.close);
+    //     String botResponseJSON = "{\"status\":\"close\"}";
+    //     when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.of(session));
+    //     when(sessionMapper.toBotRequestDTO(session)).thenReturn(requestBotDTO);
+    //     when(sessionService.startBotConnection(requestBotDTO)).thenReturn(Mono.just(botResponseJSON));
+    //     when(sessionService.parseQrCode(botResponseJSON)).thenReturn(botDTO);
+    //     assertThrows(BusinessException.class, () -> sessionService.startSession(id, userId));
+    //     verify(sessionRepository).findByIdAndUserId(id, userId);
+    //     verify(sessionRepository).delete(session);
+    // }
+    @Test
     @DisplayName("Buscar sessão por ID com ID inválido deve falhar")
     void getSessionByIdWithInvalidId() {
         UUID id = UUID.randomUUID();
 
         when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> sessionService.getSessionById(id, userId));
+        assertThrows(BusinessException.class, () -> sessionService.getSessionById(id, userId));
         verify(sessionRepository).findByIdAndUserId(id, userId);
         verifyNoInteractions(sessionMapper);
     }
@@ -114,6 +165,33 @@ class SessionServiceTest {
         verify(sessionMapper).toDTO(expectedSession);
     }
 
+    // @Test
+    // @DisplayName("Criar sessão com sucesso")
+    // void createSessionSuccess() {
+    //     Session session = Instancio.create(Session.class);
+    //     RequestBotDTO requestBotDTO = Instancio.create(RequestBotDTO.class);
+    //     BotDTO botDTO = Instancio.create(BotDTO.class);
+    //     String botResponseJSON = "{\"status\":\"open\"}";
+    //     when(sessionRepository.countByUserId(userId)).thenReturn(0);
+    //     when(sessionRepository.save(any(Session.class))).thenReturn(session);
+    //     when(sessionMapper.toBotRequestDTO(session)).thenReturn(requestBotDTO);
+    //     when(sessionService.startBotConnection(requestBotDTO)).thenReturn(Mono.just(botResponseJSON));
+    //     when(sessionService.parseQrCode(botResponseJSON)).thenReturn(botDTO);
+    //     BotConnectionDTO result = sessionService.createSession(userId);
+    //     assertNotNull(result);
+    //     verify(sessionRepository).countByUserId(userId);
+    //     verify(sessionRepository).save(any(Session.class));
+    // }
+    @Test
+    @DisplayName("Criar sessão com limite excedido deve falhar")
+    void createSessionWithLimitExceeded() {
+        when(sessionRepository.countByUserId(userId)).thenReturn(3);
+
+        assertThrows(BusinessException.class, () -> sessionService.createSession(userId));
+        verify(sessionRepository).countByUserId(userId);
+        verifyNoMoreInteractions(sessionRepository);
+    }
+
     @Test
     @DisplayName("Buscar sessão por ID com ID inválido deve falhar ao retornar entidade")
     void getSessionEntityByIdWithInvalidId() {
@@ -121,7 +199,7 @@ class SessionServiceTest {
 
         when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> sessionService.getSessionById(id, userId));
+        assertThrows(BusinessException.class, () -> sessionService.getSessionById(id, userId));
         verify(sessionRepository).findByIdAndUserId(id, userId);
         verifyNoInteractions(sessionMapper);
     }
@@ -154,9 +232,72 @@ class SessionServiceTest {
 
         when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> sessionService.updateSessionActivity(id, updateSessionDTO, userId));
+        assertThrows(BusinessException.class, () -> sessionService.updateSessionActivity(id, updateSessionDTO, userId));
         verify(sessionRepository).findByIdAndUserId(id, userId);
         verifyNoMoreInteractions(sessionRepository);
         verifyNoInteractions(sessionMapper);
     }
+
+    // @Test
+    // @DisplayName("Deletar sessão com sucesso")
+    // void deleteSessionSuccess() {
+    //     UUID id = UUID.randomUUID();
+    //     Session session = Instancio.create(Session.class);
+    //     when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.of(session));
+    //     sessionService.deleteSession(id, userId);
+    //     verify(sessionRepository).findByIdAndUserId(id, userId);
+    //     verify(sessionRepository).delete(session);
+    // }
+    @Test
+    @DisplayName("Deletar sessão com ID inválido deve falhar")
+    void deleteSessionWithInvalidId() {
+        UUID id = UUID.randomUUID();
+
+        when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.empty());
+
+        assertThrows(BusinessException.class, () -> sessionService.deleteSession(id, userId));
+        verify(sessionRepository).findByIdAndUserId(id, userId);
+        verifyNoMoreInteractions(sessionRepository);
+    }
+
+    // @Test
+    // @DisplayName("Fechar sessão com sucesso")
+    // void closeSessionSuccess() {
+    //     UUID id = UUID.randomUUID();
+    //     Session session = Instancio.create(Session.class);
+    //     when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.of(session));
+    //     sessionService.closeSession(id, userId);
+    //     verify(sessionRepository).findByIdAndUserId(id, userId);
+    //     verify(sessionRepository).save(session);
+    // }
+    // @Test
+    // @DisplayName("Fechar sessão com ID inválido deve falhar")
+    // void closeSessionWithInvalidId() {
+    //     UUID id = UUID.randomUUID();
+    //     when(sessionRepository.findByIdAndUserId(id, userId)).thenReturn(Optional.empty());
+    //     assertThrows(BusinessException.class, () -> sessionService.closeSession(id, userId));
+    //     verify(sessionRepository).findByIdAndUserId(id, userId);
+    //     verifyNoMoreInteractions(sessionRepository);
+    // }
+    // @Test
+    // @DisplayName("Deletar todas as sessões de um usuário")
+    // void deleteAllSessions() {
+    //     sessionService.deleteAllSessions(userId);
+    //     verify(sessionRepository).deleteAllByUserId(userId);
+    // }
+    // @Test
+    // @DisplayName("Parsear QR Code com sucesso")
+    // void parseQrCodeSuccess() {
+    //     String qrCodeJSON = "{\"status\":\"open\"}";
+    //     BotDTO expectedBotDTO = Instancio.create(BotDTO.class);
+    //     BotDTO result = sessionService.parseQrCode(qrCodeJSON);
+    //     assertNotNull(result);
+    //     assertEquals(expectedBotDTO.getStatus(), result.getStatus());
+    // }
+    // @Test
+    // @DisplayName("Parsear QR Code inválido deve falhar")
+    // void parseQrCodeWithInvalidJSON() {
+    //     String invalidQrCodeJSON = "invalid JSON";
+    //     assertThrows(QrCodeParseException.class, () -> sessionService.parseQrCode(invalidQrCodeJSON));
+    // }
 }
