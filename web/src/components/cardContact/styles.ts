@@ -41,4 +41,7 @@ export const UserDiv = styled.div`
   gap: 0.5rem;
 `
 
-export const Checkbox = styled.input.attrs({ type: 'checkbox' })``
+export const Checkbox = styled.input.attrs({ type: 'checkbox' })`
+  width: 1rem;
+  height: 1rem;
+`

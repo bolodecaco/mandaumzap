@@ -21,6 +21,7 @@ export const Header = styled(Row)`
 export const StyledTitle = styled(Title)`
   font-size: 1.125rem;
   font-weight: 600;
+  height: fit-content;
 `
 
 export const Close = styled(Button)`

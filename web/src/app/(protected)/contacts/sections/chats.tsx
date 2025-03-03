@@ -2,19 +2,22 @@
 
 import { Chat } from '@/@types/chat'
 import { Sort } from '@/app/actions/chats/getAllChats'
+import { Button } from '@/components/button'
 import { CardContact } from '@/components/cardContact'
 import { Checkbox } from '@/components/cardContact/styles'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
+import { AddToListModal } from '@/components/modal/addToList'
 import { Selector } from '@/components/selector'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
 import { useGetChats } from '@/services/chat/useGetChats'
 import { useGetSessions } from '@/services/session/useGetSessions'
 import { useRouter } from 'next/navigation'
 import { parseAsString, useQueryState } from 'nuqs'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { MdGroupAdd } from 'react-icons/md'
+import { useInView } from 'react-intersection-observer'
 import { toast } from 'react-toastify'
 import {
   List,
@@ -50,11 +53,13 @@ const ORDER_OPTIONS = [
 
 const Chats = () => {
   const router = useRouter()
-  const observerTarget = useRef<HTMLDivElement>(null)
+  const { ref, inView } = useInView()
 
   const [orderBy, setOrderBy] = useQueryState('orderBy')
   const [session, setSession] = useQueryState('session')
   const [search, setSearch] = useQueryState('search', parseAsString)
+  const [selectedChats, setSelectedChats] = useState<string[]>([])
+  const [isListsModalOpen, setIsListsModalOpen] = useState(false)
 
   const { data: sessions, isLoading, error } = useGetSessions()
   const {
@@ -80,30 +85,57 @@ const Chats = () => {
     [sessions],
   )
 
+  const allChatsIds = useMemo(
+    () =>
+      chats?.pages.flatMap((page) =>
+        page.content.map((chat: Chat) => chat.id),
+      ) || [],
+    [chats?.pages],
+  )
+
+  const isAllSelected = useMemo(
+    () =>
+      allChatsIds.length > 0 &&
+      selectedChats.length === allChatsIds.length &&
+      allChatsIds.every((id) => selectedChats.includes(id)),
+    [selectedChats, allChatsIds],
+  )
+
   const handleReconnect = () => {
     router.push('/history')
   }
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage()
-        }
-      },
-      { threshold: 0.1 },
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedChats(e.target.checked ? allChatsIds : [])
+  }
+
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChats((prev) =>
+      prev.includes(chatId)
+        ? prev.filter((id) => id !== chatId)
+        : [...prev, chatId],
     )
+  }
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current)
-    }
+  const handleSendSelectedChats = async () => {
+    setIsListsModalOpen(true)
+  }
 
-    return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  const handleSessionChange = (newValue: string) => {
+    setSession(newValue)
+  }
 
   useEffect(() => {
-    if (sessions) setSession(sessions[0].id)
-  }, [sessions, setSession])
+    if (!session && sessions?.length) {
+      setSession(sessions[0].id)
+    }
+  }, [sessions, session, setSession])
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage])
 
   if (error) {
     toast.error(`Erro ao carregar sessões: ${error}`, {
@@ -142,19 +174,29 @@ const Chats = () => {
           isLoading={isLoading}
           options={SESSION_OPTIONS || []}
           value={session || ''}
-          onValueChange={(newValue) => setSession(newValue)}
+          onValueChange={handleSessionChange}
           height="2.5rem"
         />
+        {selectedChats.length > 0 && (
+          <Button
+            text={`Enviar ${selectedChats.length} chats selecionados`}
+            onClick={handleSendSelectedChats}
+          />
+        )}
       </Row>
 
       <ListHeader>
-        <Checkbox type="checkbox" />
+        <Checkbox
+          type="checkbox"
+          checked={isAllSelected}
+          onChange={handleSelectAll}
+        />
         <UserDiv>Nome do chat</UserDiv>
         <Session>Contato</Session>
         <Session>Sessão</Session>
       </ListHeader>
 
-      {isLoadingChats ? (
+      {!session && isLoadingChats ? (
         <LoaderContainer>
           <Spinner />
         </LoaderContainer>
@@ -166,24 +208,36 @@ const Chats = () => {
           onActionClick={handleReconnect}
         />
       ) : (
-        <List>
-          {chats?.pages.map((page) =>
-            page.content.map((data: Chat) => (
-              <CardContact
-                key={data.id}
-                name={data.chatName}
-                session={data.sessionId}
-                contact={data.whatsAppId}
-              />
-            )),
-          )}
-          <div ref={observerTarget} style={{ height: '20px' }} />
-          {isFetchingNextPage && (
-            <LoaderContainer style={{ paddingBlock: '1rem' }}>
-              <Spinner />
-            </LoaderContainer>
-          )}
-        </List>
+        <>
+          <List>
+            {chats?.pages.map((page) =>
+              page.content.map((data: Chat) => (
+                <CardContact
+                  key={data.id}
+                  name={data.chatName}
+                  session={data.sessionId}
+                  contact={data.whatsAppId}
+                  checked={selectedChats.includes(data.id)}
+                  onCheck={() => handleSelectChat(data.id)}
+                />
+              )),
+            )}
+            <div ref={ref} style={{ height: '20px' }} />
+            {isFetchingNextPage && (
+              <LoaderContainer style={{ paddingBlock: '1rem' }}>
+                <Spinner />
+              </LoaderContainer>
+            )}
+          </List>
+        </>
+      )}
+
+      {isListsModalOpen && (
+        <AddToListModal
+          onClose={() => setIsListsModalOpen(false)}
+          chatsId={selectedChats}
+          onAddedSuccessfully={() => setSelectedChats([])}
+        />
       )}
     </Wrapper>
   )

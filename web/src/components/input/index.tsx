@@ -1,3 +1,5 @@
+'use client'
+
 import { ComponentProps, ElementType } from 'react'
 import { Container, Keybind, StyledInput } from './styles'
 

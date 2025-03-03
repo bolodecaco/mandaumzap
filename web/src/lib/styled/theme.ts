@@ -41,6 +41,9 @@ export const THEME = {
         active: {
           backgroundColor: '#07584F',
         },
+        disabled: {
+          backgroundColor: '#A6A6A6',
+        },
       },
       ghost: {
         backgroundColor: 'transparent',
