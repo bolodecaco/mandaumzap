@@ -34,6 +34,13 @@ export const Container = styled.button<ButtonProps>`
             background-color: ${theme.variants.button.primary.active
               .backgroundColor};
           }
+
+          &:disabled {
+            background-color: ${theme.variants.button.primary.disabled
+              .backgroundColor};
+            border: none;
+            cursor: not-allowed;
+          }
         `
       : css`
           background-color: transparent;

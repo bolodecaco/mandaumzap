@@ -13,9 +13,11 @@ import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
 import { toast } from 'react-toastify'
 import { LoaderContainer, Spinner } from './styles'
+import { NewListModal } from '@/components/modal/newList'
 
 const Lists = () => {
   const [search, setSearch] = useState('')
+  const [isNewListModalOpen, setIsNewListModalOpen] = useState(false)
   const { data, error, isLoading } = useGetLists({ search })
 
   useEffect(() => {
@@ -38,7 +40,11 @@ const Lists = () => {
         onChange={(e) => setSearch(e.target.value)}
       />
       <Row style={{ gap: '0.5rem' }}>
-        <Button text="Nova lista" leftIcon={HiPlus} onClick={() => {}} />
+        <Button
+          text="Nova lista"
+          leftIcon={HiPlus}
+          onClick={() => setIsNewListModalOpen(true)}
+        />
         {/* <Selector
           label="Ordenar"
           options={['Mais recente', 'Mais antigo']}
@@ -81,6 +87,10 @@ const Lists = () => {
             onClickOptions={() => {}}
           />
         ))
+      )}
+
+      {isNewListModalOpen && (
+        <NewListModal onClose={() => setIsNewListModalOpen(false)} />
       )}
     </Wrapper>
   )
