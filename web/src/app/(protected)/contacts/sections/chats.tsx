@@ -121,9 +121,15 @@ const Chats = () => {
     setIsListsModalOpen(true)
   }
 
+  const handleSessionChange = (newValue: string) => {
+    setSession(newValue)
+  }
+
   useEffect(() => {
-    if (sessions && sessions[0]) setSession(sessions[0].id)
-  }, [sessions, setSession])
+    if (!session && sessions?.length) {
+      setSession(sessions[0].id)
+    }
+  }, [sessions, session, setSession])
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -168,7 +174,7 @@ const Chats = () => {
           isLoading={isLoading}
           options={SESSION_OPTIONS || []}
           value={session || ''}
-          onValueChange={(newValue) => setSession(newValue)}
+          onValueChange={handleSessionChange}
           height="2.5rem"
         />
         {selectedChats.length > 0 && (
@@ -190,7 +196,7 @@ const Chats = () => {
         <Session>Sessão</Session>
       </ListHeader>
 
-      {isLoadingChats ? (
+      {!session && isLoadingChats ? (
         <LoaderContainer>
           <Spinner />
         </LoaderContainer>

@@ -25,8 +25,6 @@ export const useGetChats = ({
         pageSize,
       })
 
-      console.log('search', search)
-
       if (!response.success) {
         throw new Error(response.error)
       }
