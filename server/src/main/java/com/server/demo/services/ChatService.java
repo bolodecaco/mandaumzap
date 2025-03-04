@@ -94,7 +94,10 @@ public class ChatService {
                 uniqueChats.putIfAbsent(chat.getId(), chat);
             }
             List<Chat> chatEntities = uniqueChats.values().stream()
-                    .filter(botChat -> chatRepository.findByWhatsAppId(botChat.getId()).isEmpty())
+            .filter(botChat -> {
+                boolean exists = chatRepository.findByWhatsAppIdAndSessionId(botChat.getId(), sessionId).isPresent();
+                return !exists;
+            })            
                     .map(botChat -> {
                         Chat chat = new Chat();
                         chat.setChatName(botChat.getName());
@@ -104,6 +107,7 @@ public class ChatService {
                         return chat;
                     })
                     .toList();
+
             if (!chatEntities.isEmpty()) {
                 chatRepository.saveAll(chatEntities);
             }
