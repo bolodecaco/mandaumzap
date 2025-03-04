@@ -33,7 +33,7 @@ public class Chat {
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String whatsAppId;
 
     @Column(nullable = false)

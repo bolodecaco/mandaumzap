@@ -196,18 +196,23 @@ const Chats = () => {
         <Session>Sessão</Session>
       </ListHeader>
 
-      {!session && isLoadingChats ? (
-        <LoaderContainer>
-          <Spinner />
-        </LoaderContainer>
-      ) : !chats?.pages[0]?.content.length ? (
+      {!session ||
+        (isLoadingChats && (
+          <LoaderContainer>
+            <Spinner />
+          </LoaderContainer>
+        ))}
+
+      {!isLoadingChats && !chats?.pages[0]?.content.length && (
         <Empty
           message="Não há chats sincronizados"
           icon={MdGroupAdd}
           action="Tente reconectar a sessão"
           onActionClick={handleReconnect}
         />
-      ) : (
+      )}
+
+      {!isLoadingChats && chats?.pages[0].content.length > 0 && (
         <>
           <List>
             {chats?.pages.map((page) =>
