@@ -1,7 +1,7 @@
 import { WaitTimeProps } from "../@types/WaitTimeProps";
 import crypto from "crypto";
 import { socketVersionPage, versionFinder, versionParser } from "./global";
-import { delay, WASocket } from "baileys";
+import { delay, WASocket } from "@whiskeysockets/baileys";
 
 export function getBetweenValue({
   textLength,

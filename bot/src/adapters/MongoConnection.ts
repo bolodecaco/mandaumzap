@@ -1,4 +1,4 @@
-import { AuthenticationCreds } from "baileys";
+import { AuthenticationCreds } from "@whiskeysockets/baileys";
 import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 import { ChatProps } from "../@types/ChatProps";
