@@ -67,15 +67,16 @@ class SessionService {
     const { sessionId, userId, text, receivers, type, url } = JSON.parse(
       message.Body
     );
+    if (!sessionId || !userId || !receivers.length) return;
     if (type && type === "progress") return;
     try {
-      if (url)
+      if (url) {
         return await this.sendImage({
           header: { receivers, sessionId, userId },
           url,
           text,
         });
-
+      }
       await this.sendText({ header: { receivers, sessionId, userId }, text });
     } catch (error: any) {
       this.logger.writeLog(`Error processing message: ${error.message}`);
@@ -161,7 +162,6 @@ class SessionService {
   }: MessageTextProps) {
     const validation = await this.validateSession({ sessionId, userId });
     if (!validation.isValid) return { wasSent: false, error: validation.error };
-
     let worker = this.sessions.get(sessionId);
     if (!worker) await this.startSession(sessionId);
     worker = this.sessions.get(sessionId);
