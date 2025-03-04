@@ -3,11 +3,12 @@ import {
   Browsers,
   UserFacingSocketConfig,
   WASocket,
-} from "@whiskeysockets/baileys";
+} from "baileys";
 import { pino } from "pino";
 import MongoConnection from "../adapters/MongoConnection";
 import { ChatProps } from "../@types/ChatProps";
 import { getWhatsappSocketVersion } from "../utils/functions";
+import { UseAuthState } from "../adapters/UseAuthState";
 
 class WASocketWrapper {
   private sessionId: string;
@@ -23,6 +24,16 @@ class WASocketWrapper {
       browser: Browsers.macOS("Desktop"),
       logger: this.logger,
       syncFullHistory: false,
+      linkPreviewImageThumbnailWidth: 852,
+      printQRInTerminal: true,
+      generateHighQualityLinkPreview: true,
+      markOnlineOnConnect: true,
+      connectTimeoutMs: 360000,
+      keepAliveIntervalMs: 15000,
+      retryRequestDelayMs: 100,
+      options: {
+        timeout: 240000,
+      },
     };
   }
 
@@ -56,8 +67,12 @@ class WASocketWrapper {
   }
 
   async start(): Promise<void> {
-    const mongoConnection = await this.getMongoConnection();
-    const authState = await mongoConnection.useAuthState();
+    const useAuthState = new UseAuthState({
+      logger: this.logger,
+      sessionId: this.sessionId,
+    });
+    await useAuthState.init();
+    const authState = await useAuthState.get();
     this.socketInstance = makeWASocket({
       ...this.socketOptions,
       auth: {
