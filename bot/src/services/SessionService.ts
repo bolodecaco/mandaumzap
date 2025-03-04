@@ -49,7 +49,7 @@ class SessionService {
   }
 
   private createSession(sessionId: string): Worker {
-    const workerPath = resolve(__dirname, "SessionWorker.js");
+    const workerPath = resolve(__dirname, "../workers/SessionWorker.js");
     const worker = new Worker(workerPath, {
       workerData: { sessionId },
     });
