@@ -1,14 +1,7 @@
-import {
-  AuthenticationCreds,
-  SignalDataTypeMap,
-  initAuthCreds,
-  BufferJSON,
-  proto,
-} from "@whiskeysockets/baileys";
+import { AuthenticationCreds } from "baileys";
 import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 import { ChatProps } from "../@types/ChatProps";
-import { ChatsDocument } from "../@types/ChatDocument";
 import { UserMongoProps } from "../@types/UserMongoProps";
 
 const {

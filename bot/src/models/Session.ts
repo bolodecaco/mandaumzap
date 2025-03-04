@@ -1,4 +1,4 @@
-import { WASocket, DisconnectReason, delay } from "@whiskeysockets/baileys";
+import { WASocket, DisconnectReason, delay } from "baileys";
 import { Boom } from "@hapi/boom";
 import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
