@@ -140,37 +140,54 @@ class SessionService {
     await this.mongoConnection.deleteSessions(sessions);
   }
 
+  private async validateSession(userSession: UserMongoProps) {
+    const { allowed, exists } = await this.checkSession(userSession);
+    if (!exists || !allowed) {
+      return {
+        isValid: false,
+        error: {
+          message: "Usuário não autorizado",
+          statusCode: 401,
+          details: "As credencias para operar com a sessão estam incorretas",
+        },
+      };
+    }
+    return { isValid: true };
+  }
+
   async sendText({
     header: { receivers, sessionId, userId },
     text,
-  }: MessageTextProps): Promise<boolean> {
-    const { allowed, exists } = await this.checkSession({ sessionId, userId });
-    if (!exists || !allowed) return false;
+  }: MessageTextProps) {
+    const validation = await this.validateSession({ sessionId, userId });
+    if (!validation.isValid) return { wasSent: false, error: validation.error };
+
     let worker = this.sessions.get(sessionId);
-    if (!worker && exists) await this.startSession(sessionId);
+    if (!worker) await this.startSession(sessionId);
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendText",
       data: { header: { receivers }, text },
     });
-    return true;
+    return { wasSent: true };
   }
 
   async sendImage({
     header: { receivers, sessionId, userId },
     url,
     text,
-  }: MessageMediaProps): Promise<boolean> {
-    const { allowed, exists } = await this.checkSession({ sessionId, userId });
-    if (!exists || !allowed) return false;
+  }: MessageMediaProps) {
+    const validation = await this.validateSession({ sessionId, userId });
+    if (!validation.isValid) return { wasSent: false, error: validation.error };
+
     let worker = this.sessions.get(sessionId);
-    if (!worker && exists) await this.startSession(sessionId);
+    if (!worker) await this.startSession(sessionId);
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendImage",
       data: { header: { receivers }, url, text },
     });
-    return true;
+    return { wasSent: true };
   }
 
   async sendPoll({
@@ -178,39 +195,42 @@ class SessionService {
     name,
     values,
     selectableCount,
-  }: MessagePollProps): Promise<boolean> {
-    const { allowed, exists } = await this.checkSession({ sessionId, userId });
-    if (!exists || !allowed) return false;
+  }: MessagePollProps) {
+    const validation = await this.validateSession({ sessionId, userId });
+    if (!validation.isValid) return { wasSent: false, error: validation.error };
+
     let worker = this.sessions.get(sessionId);
-    if (!worker && exists) await this.startSession(sessionId);
+    if (!worker) await this.startSession(sessionId);
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendPoll",
       data: { header: { receivers }, name, values, selectableCount },
     });
-    return true;
+    return { wasSent: true };
   }
 
   async sendVideo({
     header: { receivers, sessionId, userId },
     url,
     text,
-  }: MessageMediaProps): Promise<boolean> {
-    const { allowed, exists } = await this.checkSession({ sessionId, userId });
-    if (!exists || !allowed) return false;
+  }: MessageMediaProps) {
+    const validation = await this.validateSession({ sessionId, userId });
+    if (!validation.isValid) return { wasSent: false, error: validation.error };
+
     let worker = this.sessions.get(sessionId);
-    if (!worker && exists) await this.startSession(sessionId);
+    if (!worker) await this.startSession(sessionId);
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendVideo",
       data: { header: { receivers }, url, text },
     });
-    return true;
+    return { wasSent: true };
   }
 
   async getChats(userSession: UserMongoProps) {
-    const { allowed, exists } = await this.checkSession(userSession);
-    if (!exists || !allowed) return false;
+    const validation = await this.validateSession(userSession);
+    if (!validation.isValid) return { error: validation.error };
+
     const chats = await this.mongoConnection.getChats(userSession.sessionId);
     return { count: chats.length, chats };
   }
