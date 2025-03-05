@@ -4,7 +4,7 @@ import {
   initAuthCreds,
   BufferJSON,
   proto,
-} from "baileys";
+} from "@whiskeysockets/baileys";
 import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 

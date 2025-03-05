@@ -3,7 +3,7 @@ import {
   Browsers,
   UserFacingSocketConfig,
   WASocket,
-} from "baileys";
+} from "@whiskeysockets/baileys";
 import { pino } from "pino";
 import MongoConnection from "../adapters/MongoConnection";
 import { ChatProps } from "../@types/ChatProps";

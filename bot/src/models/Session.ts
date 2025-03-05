@@ -1,4 +1,4 @@
-import { WASocket, DisconnectReason, delay } from "baileys";
+import { WASocket, DisconnectReason, delay } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
@@ -105,16 +105,6 @@ class Session {
           await this.sendConnectionStatus("open");
         }
       );
-      this.socketClient!.ev.on("contacts.upsert", async (contacts) => {
-        const chats = contacts.map((contact) => {
-          return {
-            id: contact.id,
-            name: contact.notify || contact.verifiedName || "Desconhecido",
-          };
-        });
-        await this.waSocket.addChats(chats);
-        await this.sendConnectionStatus("open");
-      });
     });
   }
 }
