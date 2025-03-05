@@ -18,6 +18,9 @@ import { sendMessage } from '@/app/actions/messages/sendMessage'
 import { BiX } from 'react-icons/bi'
 import { useSession } from 'next-auth/react'
 import { ParsedContent, Notification } from '@/@types/notification'
+import { NotificationCard } from '@/components/notification'
+import { Empty } from '@/components/empty'
+import { IoMdNotificationsOutline } from 'react-icons/io'
 
 export function Content() {
   const { data } = useSession()
@@ -211,25 +214,25 @@ export function Content() {
           }}
         >
           <Title>Notificações</Title>
-          <Column style={{ gap: '0.5rem', overflowY: 'auto' }}>
+          <Column style={{ gap: '0.5rem', overflowY: 'auto', height: '100%' }}>
             {notifications.length > 0 ? (
               notifications.map((notification: Notification) => {
                 const content: ParsedContent = JSON.parse(notification.content)
 
                 return (
-                  <div
+                  <NotificationCard
+                    id={content.messageId}
+                    sentChats={content.sentChats}
+                    totalChats={content.totalChats}
                     key={content.messageId}
-                    style={{
-                      padding: '0.5rem',
-                      borderBottom: '1px solid #ccc',
-                    }}
-                  >
-                    {content.totalChats}
-                  </div>
+                  />
                 )
               })
             ) : (
-              <p>Nenhuma notificação ainda.</p>
+              <Empty
+                message="Suas notificações aparecerão aqui"
+                icon={IoMdNotificationsOutline}
+              />
             )}
           </Column>
         </Wrapper>
