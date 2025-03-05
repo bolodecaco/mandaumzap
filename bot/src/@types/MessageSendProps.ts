@@ -1,4 +1,4 @@
-interface MessageHeaderProps {
+export interface MessageHeaderProps {
   receivers: string[];
   sessionId: string;
   userId: string;

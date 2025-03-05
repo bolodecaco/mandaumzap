@@ -170,7 +170,7 @@ class SessionService {
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendText",
-      data: { header: { receivers, messageId }, text },
+      data: { header: { receivers, messageId, userId }, text },
     });
     return { wasSent: true };
   }
@@ -188,7 +188,7 @@ class SessionService {
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendImage",
-      data: { header: { receivers, messageId }, url, text },
+      data: { header: { receivers, messageId, userId }, url, text },
     });
     return { wasSent: true };
   }

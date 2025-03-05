@@ -10,7 +10,6 @@ import org.springframework.web.socket.TextMessage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.demo.dtos.NotificationDTO;
-import com.server.demo.dtos.RequestNotificationDTO;
 import com.server.demo.events.ConnectionEstablishedEvent;
 import com.server.demo.events.NotificationEvent;
 import com.server.demo.exception.BusinessException;
@@ -50,11 +49,19 @@ public class NotificationService {
         return notificationMapper.toDTOList(notifications);
     }
 
-    public NotificationDTO createNotification(RequestNotificationDTO notification) {
-        Notification newNotification = notificationMapper.toEntity(notification);
-        notificationRepository.save(newNotification);
-        eventPublisher.publishEvent(new NotificationEvent(this, newNotification.getReceiverId()));
-        return notificationMapper.toDTO(newNotification);
+    public NotificationDTO createNotification(Notification notification) {
+        Notification existsNotification = notificationRepository.findById(notification.getId())
+                .map(existing -> {
+                    existing.setContent(notification.getContent());
+                    existing.setReceiverId(notification.getReceiverId());
+                    existing.setType(notification.getType());
+                    existing.setRead(notification.isRead());
+                    existing.setId(notification.getId());
+                    return notificationRepository.save(existing);
+                })
+                .orElseGet(() -> notificationRepository.save(notification));
+        eventPublisher.publishEvent(new NotificationEvent(this, existsNotification.getReceiverId()));
+        return notificationMapper.toDTO(existsNotification);
     }
 
     public NotificationDTO updateRead(UUID id, boolean read, String receiverId) {
