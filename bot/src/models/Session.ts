@@ -47,7 +47,6 @@ class Session {
   async sendConnectionStatus(status: ConnectionStatus) {
     return await this.producerStatus.sendMessage({
       body: { status, sessionId: this.id },
-      messageGroupId: "connection-status",
       type: "status",
     });
   }

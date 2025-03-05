@@ -16,7 +16,7 @@ class MessageProducer {
     try {
       const params: SendMessageCommandInput = {
         QueueUrl: this.sqsClient.url,
-        MessageGroupId: message.messageGroupId,
+        MessageGroupId: crypto.randomUUID(),
         MessageDeduplicationId: crypto.randomUUID(),
         MessageBody: JSON.stringify(message.body),
       };

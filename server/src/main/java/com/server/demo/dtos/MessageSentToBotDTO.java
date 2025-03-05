@@ -26,4 +26,7 @@ public class MessageSentToBotDTO {
 
     @Schema(description = "URL da imagem", example = "https://example.com/image.jpg")
     private String url;
+
+    @Schema(description = "Identificador da mensagem", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+    private UUID messageId;
 }

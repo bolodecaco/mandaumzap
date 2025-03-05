@@ -6,8 +6,8 @@ const messageRouter = (sessionService: SessionService) => {
   const router = express.Router();
 
   router.post("/messages/send/text", async (req, res, next): Promise<any> => {
-    const { sessionId, text, receivers, userId } = req.body;
-    if (!sessionId || !userId || !text || !receivers) {
+    const { sessionId, text, receivers, userId, messageId } = req.body;
+    if (!sessionId || !userId || !text || !receivers || !messageId) {
       return next(
         new GlobalException({
           message: "Parâmetros inválidos",
@@ -19,7 +19,7 @@ const messageRouter = (sessionService: SessionService) => {
 
     try {
       const result = await sessionService.sendText({
-        header: { receivers, sessionId, userId },
+        header: { receivers, sessionId, userId, messageId },
         text,
       });
 
@@ -40,8 +40,8 @@ const messageRouter = (sessionService: SessionService) => {
   });
 
   router.post("/messages/send/image", async (req, res, next): Promise<any> => {
-    const { sessionId, url, receivers, userId, text } = req.body;
-    if (!sessionId || !url || !receivers) {
+    const { sessionId, url, receivers, userId, text, messageId } = req.body;
+    if (!sessionId || !url || !receivers || !messageId || !userId) {
       return next(
         new GlobalException({
           message: "Parâmetros inválidos",
@@ -53,7 +53,7 @@ const messageRouter = (sessionService: SessionService) => {
 
     try {
       const result = await sessionService.sendImage({
-        header: { receivers, sessionId, userId },
+        header: { receivers, sessionId, userId, messageId },
         url,
         text: text || "",
       });
@@ -75,8 +75,8 @@ const messageRouter = (sessionService: SessionService) => {
   });
 
   router.post("/messages/send/video", async (req, res, next): Promise<any> => {
-    const { sessionId, url, receivers, userId, text } = req.body;
-    if (!sessionId || !url || !receivers) {
+    const { sessionId, url, receivers, userId, text, messageId } = req.body;
+    if (!sessionId || !url || !receivers || !messageId || !userId) {
       return next(
         new GlobalException({
           message: "Parâmetros inválidos",
@@ -88,7 +88,7 @@ const messageRouter = (sessionService: SessionService) => {
 
     try {
       const result = await sessionService.sendVideo({
-        header: { receivers, sessionId, userId },
+        header: { receivers, sessionId, userId, messageId },
         url,
         text: text || "",
       });
@@ -110,9 +110,16 @@ const messageRouter = (sessionService: SessionService) => {
   });
 
   router.post("/messages/send/poll", async (req, res, next): Promise<any> => {
-    const { sessionId, name, values, selectableCount, receivers, userId } =
-      req.body;
-    if (!sessionId || !name || !values || !receivers) {
+    const {
+      sessionId,
+      name,
+      values,
+      selectableCount,
+      receivers,
+      userId,
+      messageId,
+    } = req.body;
+    if (!sessionId || !name || !values || !receivers || !userId || !messageId) {
       return next(
         new GlobalException({
           message: "Parâmetros inválidos",
@@ -124,7 +131,7 @@ const messageRouter = (sessionService: SessionService) => {
 
     try {
       const result = await sessionService.sendPoll({
-        header: { receivers, sessionId, userId },
+        header: { receivers, sessionId, userId, messageId },
         name,
         values,
         selectableCount,

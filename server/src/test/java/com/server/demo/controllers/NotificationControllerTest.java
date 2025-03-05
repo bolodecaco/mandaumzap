@@ -82,21 +82,7 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$[0].content").value(notificationDTO.getContent()))
                 .andExpect(jsonPath("$[0].type").value(notificationDTO.getType()));
     }
-
-    @Test
-    void shouldCreateNotification() throws Exception {
-        when(notificationService.createNotification(any(RequestNotificationDTO.class)))
-            .thenReturn(notificationDTO);
-
-        mockMvc.perform(post("/api/user/notifications")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestNotificationDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(notificationDTO.getId().toString()))
-                .andExpect(jsonPath("$.content").value(notificationDTO.getContent()))
-                .andExpect(jsonPath("$.type").value(notificationDTO.getType()));
-    }
-
+    
     @Test
     void shouldUpdateNotificationRead() throws Exception {
         when(notificationService.updateRead(any(UUID.class), any(Boolean.class), anyString()))

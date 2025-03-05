@@ -65,20 +65,22 @@ class SessionService {
 
   private async processMessage(message: Message) {
     if (!message.Body) return;
-    const { sessionId, userId, text, receivers, type, url } = JSON.parse(
-      message.Body
-    );
+    const { sessionId, userId, text, receivers, type, url, messageId } =
+      JSON.parse(message.Body);
     if (!sessionId || !userId || !receivers.length) return;
     if (type && type === "progress") return;
     try {
       if (url) {
         return await this.sendImage({
-          header: { receivers, sessionId, userId },
+          header: { receivers, sessionId, userId, messageId },
           url,
           text,
         });
       }
-      await this.sendText({ header: { receivers, sessionId, userId }, text });
+      await this.sendText({
+        header: { receivers, sessionId, userId, messageId },
+        text,
+      });
     } catch (error: any) {
       this.logger.writeLog(`Error processing message: ${error.message}`);
     }
@@ -158,7 +160,7 @@ class SessionService {
   }
 
   async sendText({
-    header: { receivers, sessionId, userId },
+    header: { receivers, sessionId, userId, messageId },
     text,
   }: MessageTextProps) {
     const validation = await this.validateSession({ sessionId, userId });
@@ -168,13 +170,13 @@ class SessionService {
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendText",
-      data: { header: { receivers }, text },
+      data: { header: { receivers, messageId, userId }, text },
     });
     return { wasSent: true };
   }
 
   async sendImage({
-    header: { receivers, sessionId, userId },
+    header: { receivers, sessionId, userId, messageId },
     url,
     text,
   }: MessageMediaProps) {
@@ -186,7 +188,7 @@ class SessionService {
     worker = this.sessions.get(sessionId);
     worker!.postMessage({
       type: "sendImage",
-      data: { header: { receivers }, url, text },
+      data: { header: { receivers, messageId, userId }, url, text },
     });
     return { wasSent: true };
   }
