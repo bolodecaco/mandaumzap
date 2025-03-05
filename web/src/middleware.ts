@@ -12,6 +12,7 @@ const publicRoutes = [
 export default auth((req) => {
   const isLoggedIn = !!req.auth
   const accessToken = isLoggedIn && req.auth?.accessToken
+  console.log(accessToken)
   const refreshToken = isLoggedIn && req.auth?.refreshToken
   const publicRoute = publicRoutes.find(
     (route) => req.nextUrl.pathname === route.path,
