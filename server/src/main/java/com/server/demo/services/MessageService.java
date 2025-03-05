@@ -46,9 +46,9 @@ public class MessageService {
         message.setLastSentAt(new Date());
 
         List<String> receiverIds = broadcastListService.getChatsFromList(message.getBroadcastList().getId(), userId)
-        .stream()
-        .map(ChatDTO::getWhatsAppId)
-        .toList();   
+                .stream()
+                .map(ChatDTO::getWhatsAppId)
+                .toList();
 
         MessageSentToBotDTO messageToBeSent = MessageSentToBotDTO.builder()
                 .sessionId(message.getSession().getId())
@@ -56,12 +56,13 @@ public class MessageService {
                 .text(message.getContent())
                 .receivers(receiverIds)
                 .url(message.getUrl())
+                .messageId(message.getId())
                 .build();
         Message currentMessage = messageRepository.save(message);
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
         messageProducer.sendObject(messageToBeSent);
         broadcastListService.incrementMessageSent(message.getBroadcastList().getId(), userId);
-    
+
         return messageDTO;
     }
 

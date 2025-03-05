@@ -35,7 +35,8 @@ const formatMessage = {
 async function genericSend<T>(
   receivers: string[],
   content: T,
-  formatMessage: (content: T) => any
+  formatMessage: (content: T) => any,
+  messageId?: string
 ) {
   if (!session)
     return parentPort?.postMessage({
@@ -47,6 +48,7 @@ async function genericSend<T>(
     sentChats: 0,
     unsentChats: 0,
     totalChats: receivers.length,
+    messageId,
   };
 
   for (const chat of receivers) {
@@ -56,14 +58,13 @@ async function genericSend<T>(
       const formattedMessage = formatMessage(content);
       await socket?.sendMessage(chat, formattedMessage);
       progress.sentChats++;
+      Producer.sendMessage({
+        body: { ...progress },
+        type: "progress",
+      });
     } catch (error) {
       progress.unsentChats++;
     }
-    Producer.sendMessage({
-      body: { ...progress },
-      messageGroupId: crypto.randomUUID(),
-      type: "progress",
-    });
   }
 }
 
@@ -88,13 +89,19 @@ const signalsActions: SignalsProps = {
     parentPort?.postMessage({ type: "chats", data: chats });
   },
   sendText: async ({ header, text }: MessageTextProps) => {
-    await genericSend(header.receivers, text, formatMessage["text"]);
+    await genericSend(
+      header.receivers,
+      text,
+      formatMessage["text"],
+      header.messageId
+    );
   },
   sendImage: async ({ header, url, text }: MessageMediaProps) => {
     await genericSend(
       header.receivers,
       { url, text, header },
-      formatMessage["image"]
+      formatMessage["image"],
+      header.messageId
     );
   },
   sendVideo: async ({ header, url, text }: MessageMediaProps) => {

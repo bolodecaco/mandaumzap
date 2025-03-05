@@ -226,6 +226,9 @@ paths:
                 sessionId:
                   type: string
                   example: "session"
+                messageId:
+                  type: string
+                  example: "messageId"
                 userId:
                   type: string
                   example: "userId"
@@ -272,6 +275,9 @@ paths:
                 sessionId:
                   type: string
                   example: "session"
+                messageId:
+                  type: string
+                  example: "messageId"
                 userId:
                   type: string
                   example: "userId"
@@ -321,6 +327,9 @@ paths:
                 sessionId:
                   type: string
                   example: "session"
+                messageId:
+                  type: string
+                  example: "messageId"
                 userId:
                   type: string
                   example: "userId"
@@ -373,6 +382,9 @@ paths:
                 userId:
                   type: string
                   example: "userId"
+                messageId:
+                  type: string
+                  example: "messageId"
                 name:
                   type: string
                   example: "Enquete de teste"

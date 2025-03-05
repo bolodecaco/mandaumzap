@@ -2,6 +2,7 @@ interface MessageHeaderProps {
   receivers: string[];
   sessionId: string;
   userId: string;
+  messageId: string;
 }
 
 export interface MessageRecieveProps {
