@@ -29,14 +29,11 @@ export const Button = ({
       {...props}
       disabled={isLoading || props.disabled}
     >
-      {!isLoading ? (
-        <>
-          {LeftIcon && <LeftIcon size={iconSize} color={iconColor} />}
-          {text}
-          {RightIcon && <RightIcon size={iconSize} color={iconColor} />}
-        </>
-      ) : (
-        <Spinner />
+      {!isLoading && LeftIcon && <LeftIcon size={iconSize} color={iconColor} />}
+      {isLoading && <Spinner />}
+      {isLoading ? 'Carregando...' : text}
+      {!isLoading && RightIcon && (
+        <RightIcon size={iconSize} color={iconColor} />
       )}
     </Container>
   )
