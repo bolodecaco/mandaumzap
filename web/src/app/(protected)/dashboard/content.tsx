@@ -17,6 +17,7 @@ import { toast } from 'react-toastify'
 import { sendMessage } from '@/app/actions/messages/sendMessage'
 import { BiX } from 'react-icons/bi'
 import { useSession } from 'next-auth/react'
+import { ParsedContent, Notification } from '@/@types/notification'
 
 export function Content() {
   const { data } = useSession()
@@ -28,7 +29,7 @@ export function Content() {
   const [receiverList, setReceiverList] = useState({} as List)
   const [sessionId, setSessionId] = useState('')
   const [isSendingMessage, setIsSendingMessage] = useState(false)
-  const [notifications, setNotifications] = useState<string[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
   const { data: sessions, isLoading } = useGetSessions()
 
@@ -55,19 +56,22 @@ export function Content() {
       `ws://localhost:8080/notify?receiverId=${receiverId}`,
     )
 
-    socket.onmessage = (event) => {
-      console.log('Received:', JSON.parse(event.data))
-      if (event.data.length > 0) {
-        setNotifications((prev) => [...prev, JSON.parse(event.data)])
+    const handleMessage = (event: MessageEvent) => {
+      const receivedData = JSON.parse(event.data)
+
+      if (Array.isArray(receivedData) && receivedData.length > 0) {
+        setNotifications((prev) => {
+          const newNotifications = receivedData.filter(
+            (newItem) => !prev.some((prevItem) => prevItem.id === newItem.id),
+          )
+          return [...prev, ...newNotifications]
+        })
       }
     }
 
-    socket.onerror = (error) => {
-      console.error('WebSocket Error:', error)
-    }
+    socket.onmessage = handleMessage
 
     return () => {
-      console.log('Cleaning up WebSocket connection')
       socket.close()
     }
   }, [data])
@@ -209,14 +213,21 @@ export function Content() {
           <Title>Notificações</Title>
           <Column style={{ gap: '0.5rem', overflowY: 'auto' }}>
             {notifications.length > 0 ? (
-              notifications.map((notification, index) => (
-                <div
-                  key={index}
-                  style={{ padding: '0.5rem', borderBottom: '1px solid #ccc' }}
-                >
-                  {notification}
-                </div>
-              ))
+              notifications.map((notification: Notification) => {
+                const content: ParsedContent = JSON.parse(notification.content)
+
+                return (
+                  <div
+                    key={content.messageId}
+                    style={{
+                      padding: '0.5rem',
+                      borderBottom: '1px solid #ccc',
+                    }}
+                  >
+                    {content.totalChats}
+                  </div>
+                )
+              })
             ) : (
               <p>Nenhuma notificação ainda.</p>
             )}

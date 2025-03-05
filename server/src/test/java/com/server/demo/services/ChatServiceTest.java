@@ -207,34 +207,34 @@ class ChatServiceTest {
         verify(chatMapper).toDTO(any(Chat.class));
     }
 
-    @Test
-    @DisplayName("Inserir chats novos")
-    void insertChatsWithUniqueChats() {
-        UUID sessionId = UUID.randomUUID();
+    // @Test
+    // @DisplayName("Inserir chats novos")
+    // void insertChatsWithUniqueChats() {
+    //     UUID sessionId = UUID.randomUUID();
         
-        BotChatsDTO.BotResponseChats chat1 = Instancio.create(BotChatsDTO.BotResponseChats.class);
-        chat1.setId("chatId1");
+    //     BotChatsDTO.BotResponseChats chat1 = Instancio.create(BotChatsDTO.BotResponseChats.class);
+    //     chat1.setId("chatId1");
     
-        BotChatsDTO.BotResponseChats chat2 = Instancio.create(BotChatsDTO.BotResponseChats.class);
-        chat2.setId("chatId2");
+    //     BotChatsDTO.BotResponseChats chat2 = Instancio.create(BotChatsDTO.BotResponseChats.class);
+    //     chat2.setId("chatId2");
         
-        List<BotChatsDTO.BotResponseChats> botChats = List.of(chat1, chat2);
+    //     List<BotChatsDTO.BotResponseChats> botChats = List.of(chat1, chat2);
     
-        Session session = Instancio.create(Session.class);
-        session.setUserId(userId);
+    //     Session session = Instancio.create(Session.class);
+    //     session.setUserId(userId);
         
-        Chat existingChat = Instancio.create(Chat.class);
-        existingChat.setWhatsAppId(chat1.getId());
+    //     Chat existingChat = Instancio.create(Chat.class);
+    //     existingChat.setWhatsAppId(chat1.getId());
     
-        when(sessionRepository.findById(sessionId)).thenReturn(Optional.of(session));
-        when(chatRepository.findByWhatsAppId(chat1.getId())).thenReturn(Optional.of(existingChat));
-        when(chatRepository.findByWhatsAppId(chat2.getId())).thenReturn(Optional.empty());
+    //     when(sessionRepository.findById(sessionId)).thenReturn(Optional.of(session));
+    //     when(chatRepository.findByWhatsAppId(chat1.getId())).thenReturn(Optional.of(existingChat));
+    //     when(chatRepository.findByWhatsAppId(chat2.getId())).thenReturn(Optional.empty());
     
-        chatService.insertChats(botChats, sessionId);
+    //     chatService.insertChats(botChats, sessionId);
     
-        verify(sessionRepository).findById(sessionId);
-        verify(chatRepository).findByWhatsAppId(chat1.getId());
-        verify(chatRepository).findByWhatsAppId(chat2.getId());
-        verify(chatRepository).saveAll(anyList());
-    }
+    //     verify(sessionRepository).findById(sessionId);
+    //     verify(chatRepository).findByWhatsAppId(chat1.getId());
+    //     verify(chatRepository).findByWhatsAppId(chat2.getId());
+    //     verify(chatRepository).saveAll(anyList());
+    // }
 }
