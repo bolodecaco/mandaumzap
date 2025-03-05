@@ -7,7 +7,7 @@ import { Device } from '@/components/device'
 import { Empty } from '@/components/empty'
 import { Confirmation } from '@/components/modal/confirmation'
 import { NewDevice } from '@/components/modal/newDevice'
-import { Row, Title, Wrapper } from '@/lib/styled/global'
+import { Column, Row, Title, Wrapper } from '@/lib/styled/global'
 import { THEME } from '@/lib/styled/theme'
 import { useGetSessions } from '@/services/session/useGetSessions'
 import { useState } from 'react'
@@ -17,12 +17,19 @@ import { HiPlus } from 'react-icons/hi'
 import Skeleton from 'react-loading-skeleton'
 import { toast } from 'react-toastify'
 import { Delete, List } from './styles'
+import { useGetMessages } from '@/services/message/useGetMessages'
 
 export const Content = () => {
   const [isNewDeviceModalOpen, setIsNewDeviceModalOpen] = useState(false)
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
 
   const { data, error, refetch, isLoading } = useGetSessions()
+  const {
+    data: messages,
+    error: messagesError,
+    refetch: refetchMessage,
+    isLoading: isMessagesLoading,
+  } = useGetMessages()
 
   const handleDeleteClick = () => {
     setIsConfirmationModalOpen(true)
@@ -51,7 +58,15 @@ export const Content = () => {
   }
 
   if (error) {
-    toast.error('Erro ao carregar dispositivos', { toastId: 'deviceError' })
+    toast.error('Erro ao carregar dispositivos. Tente recarregar a página', {
+      toastId: 'deviceError',
+    })
+  }
+
+  if (messagesError) {
+    toast.error('Erro ao carregar mensagens. Tente recarregar a página', {
+      toastId: 'messagesError',
+    })
   }
 
   return (
@@ -59,6 +74,7 @@ export const Content = () => {
       <Row style={{ flex: 1, minHeight: 0 }}>
         <Wrapper style={{ flex: 3, overflow: 'auto' }}>
           <Title>Histórico de mensagens</Title>
+          <Column></Column>
         </Wrapper>
 
         <Wrapper
