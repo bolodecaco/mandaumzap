@@ -8,7 +8,7 @@ type NextFetchRequestConfig = {
 }
 
 interface FetchAPIOptions {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
   next?: NextFetchRequestConfig

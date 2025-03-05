@@ -23,7 +23,6 @@ export const createMessage = createServerAction(
           sessionId,
         },
       })
-      console.log(response)
 
       return response
     } catch (err) {

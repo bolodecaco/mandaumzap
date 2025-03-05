@@ -13,6 +13,7 @@ import { FiSearch, FiX } from 'react-icons/fi'
 import { Background, Close, Header, StyledTitle } from '../styles'
 import { toast } from 'react-toastify'
 import { addChatsToList } from '@/app/actions/lists/addChatsToList'
+import { useDebounce } from '@/hooks/useDebouce'
 
 interface AddToListModalProps {
   onClose: () => void
@@ -26,7 +27,8 @@ export const AddToListModal = ({
   onAddedSuccessfully,
 }: AddToListModalProps) => {
   const [search, setSearch] = useState('')
-  const { data, isLoading } = useGetLists({ search })
+  const debouncedSearch = useDebounce(search, 300)
+  const { data, isLoading } = useGetLists({ search: debouncedSearch })
 
   const handleAddChatsToList = async (listId: string) => {
     const formattedChats = chatsId.map((id: string) => ({ chatId: id }))

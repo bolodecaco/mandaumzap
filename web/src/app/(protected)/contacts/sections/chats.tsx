@@ -27,6 +27,7 @@ import {
   Spinner,
   UserDiv,
 } from './styles'
+import { useDebounce } from '@/hooks/useDebouce'
 
 const ORDER_OPTIONS = [
   {
@@ -58,6 +59,7 @@ const Chats = () => {
   const [orderBy, setOrderBy] = useQueryState('orderBy')
   const [session, setSession] = useQueryState('session')
   const [search, setSearch] = useQueryState('search', parseAsString)
+  const debouncedSearch = useDebounce(search, 300)
   const [selectedChats, setSelectedChats] = useState<string[]>([])
   const [isListsModalOpen, setIsListsModalOpen] = useState(false)
 
@@ -72,7 +74,7 @@ const Chats = () => {
   } = useGetChats({
     sessionId: session || undefined,
     sort: (orderBy as Sort) || undefined,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   })
 
   const SESSION_OPTIONS = useMemo(

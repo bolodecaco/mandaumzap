@@ -14,11 +14,13 @@ interface CardListProps {
   lastUpdate?: string;
   onClickOptions: () => void;
   onSelected?: () => void
+  buttonText?: string;
 }
 
 export const CardList = ({
   title = 'ADS 6˚ período',
   lastUpdate = 'Último envio às 11:27',
+  buttonText,
   onClickOptions,
   onSelected
 }: CardListProps) => {
@@ -38,7 +40,7 @@ export const CardList = ({
           <LastUpdate>{lastUpdate}</LastUpdate>
         </Row>    
       )}
-      {onSelected && <Button text='Adicionar' onClick={onSelected} variant='primary' style={{ width: '6.5rem'}}/>}
+      {onSelected && <Button text={buttonText || 'Adicionar'} onClick={onSelected} variant='primary' style={{ width: '6.5rem'}}/>}
     </Container>
   );
 };

@@ -6,12 +6,14 @@ const endpoint = process.env.MINIO_ENDPOINT || ''
 const port = Number(process.env.MINIO_PORT) || 9000
 const accessKey = process.env.MINIO_ACCESSKEY || ''
 const secretKey = process.env.MINIO_SECRETKEY || ''
+const useSSL = !!process.env.MINIO_SSL
 
 const minioClient = new Client({
   endPoint: endpoint,
   port,
   accessKey,
   secretKey,
+  useSSL,
 })
 
 export const uploadImageToMinio = async (
