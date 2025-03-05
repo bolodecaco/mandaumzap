@@ -15,6 +15,7 @@ import { toast } from 'react-toastify'
 import { LoaderContainer, Spinner } from './styles'
 import { NewListModal } from '@/components/modal/newList'
 import { Selector } from '@/components/selector'
+import { useDebounce } from '@/hooks/useDebouce'
 
 const ORDER_OPTIONS = [
   {
@@ -36,9 +37,13 @@ const ORDER_OPTIONS = [
 
 const Lists = () => {
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
   const [sort, setSort] = useState<'title' | '-title' | 'lastActiveAt' | ''>('')
   const [isNewListModalOpen, setIsNewListModalOpen] = useState(false)
-  const { data, error, isLoading } = useGetLists({ search, sort })
+  const { data, error, isLoading } = useGetLists({
+    search: debouncedSearch,
+    sort,
+  })
 
   useEffect(() => {
     if (error) {

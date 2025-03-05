@@ -18,6 +18,7 @@ interface NewListModalProps {
 
 export const NewListModal = ({ onClose }: NewListModalProps) => {
   const [listName, setListName] = useState('')
+
   const queryClient = useQueryClient()
 
   const handleSubmit = async () => {
