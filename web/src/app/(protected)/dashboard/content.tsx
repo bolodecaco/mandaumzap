@@ -1,11 +1,10 @@
 'use client'
 
 import { Button } from '@/components/button'
-import { Input } from '@/components/input'
 import { Label } from '@/components/label'
 import { TextBox } from '@/components/textbox'
 import { Column, Row, Title, Wrapper } from '@/lib/styled/global'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AddList, Clear } from './styles'
 import { RxFilePlus } from 'react-icons/rx'
 import { THEME } from '@/lib/styled/theme'
@@ -17,8 +16,10 @@ import { createMessage } from '@/app/actions/messages/createMessage'
 import { toast } from 'react-toastify'
 import { sendMessage } from '@/app/actions/messages/sendMessage'
 import { BiX } from 'react-icons/bi'
+import { useSession } from 'next-auth/react'
 
 export function Content() {
+  const { data } = useSession()
   const [message, setMessage] = useState('')
   const [uploadedImage, setUploadedImage] = useState<string | undefined>(
     undefined,
@@ -27,6 +28,7 @@ export function Content() {
   const [receiverList, setReceiverList] = useState({} as List)
   const [sessionId, setSessionId] = useState('')
   const [isSendingMessage, setIsSendingMessage] = useState(false)
+  const [notifications, setNotifications] = useState<string[]>([])
 
   const { data: sessions, isLoading } = useGetSessions()
 
@@ -41,6 +43,34 @@ export function Content() {
         })),
     [sessions],
   )
+
+  useEffect(() => {
+    if (!data || !data.uuid) {
+      return
+    }
+
+    const receiverId = data.uuid
+
+    const socket = new WebSocket(
+      `ws://localhost:8080/notify?receiverId=${receiverId}`,
+    )
+
+    socket.onmessage = (event) => {
+      console.log('Received:', JSON.parse(event.data))
+      if (event.data.length > 0) {
+        setNotifications((prev) => [...prev, JSON.parse(event.data)])
+      }
+    }
+
+    socket.onerror = (error) => {
+      console.error('WebSocket Error:', error)
+    }
+
+    return () => {
+      console.log('Cleaning up WebSocket connection')
+      socket.close()
+    }
+  }, [data])
 
   const handleResetFields = () => {
     setMessage('')
@@ -64,7 +94,7 @@ export function Content() {
 
   const handleSendMessage = async () => {
     if (!message || !sessionId || !receiverList)
-      toast.error('É preciso preencher todos os campos')
+      return toast.error('É preciso preencher todos os campos')
 
     setIsSendingMessage(true)
 
@@ -177,20 +207,20 @@ export function Content() {
           }}
         >
           <Title>Notificações</Title>
-        </Wrapper>
-      </Row>
-
-      <Row style={{ flex: 1 }}>
-        <Wrapper style={{ flex: 3, overflow: 'auto' }}>
-          <Title>Rotinas mais usadas</Title>
-        </Wrapper>
-        <Wrapper
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <Title>Listas frequentes</Title>
+          <Column style={{ gap: '0.5rem', overflowY: 'auto' }}>
+            {notifications.length > 0 ? (
+              notifications.map((notification, index) => (
+                <div
+                  key={index}
+                  style={{ padding: '0.5rem', borderBottom: '1px solid #ccc' }}
+                >
+                  {notification}
+                </div>
+              ))
+            ) : (
+              <p>Nenhuma notificação ainda.</p>
+            )}
+          </Column>
         </Wrapper>
       </Row>
 

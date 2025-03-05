@@ -12,6 +12,7 @@ import { UserMongoProps } from "../@types/UserMongoProps";
 import MessageConsumer from "../consumer/MessageConsumer";
 import { ConnectionStatus } from "../@types/ConnectionStatus";
 import { Logger } from "../logger/Logger";
+import { Message } from "@aws-sdk/client-sqs";
 
 class SessionService {
   private logger: Logger;
@@ -62,7 +63,7 @@ class SessionService {
     return worker;
   }
 
-  private async processMessage(message: AWS.SQS.Message) {
+  private async processMessage(message: Message) {
     if (!message.Body) return;
     const { sessionId, userId, text, receivers, type, url } = JSON.parse(
       message.Body

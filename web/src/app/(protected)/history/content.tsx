@@ -25,10 +25,10 @@ export const Content = () => {
 
   const { data, error, refetch, isLoading } = useGetSessions()
   const {
-    data: messages,
+    // data: messages,
     error: messagesError,
-    refetch: refetchMessage,
-    isLoading: isMessagesLoading,
+    // refetch: refetchMessage,
+    // isLoading: isMessagesLoading,
   } = useGetMessages()
 
   const handleDeleteClick = () => {
