@@ -81,7 +81,6 @@ class Session {
           this.delete();
         }
         if (qr && this.id) {
-          qrcode.generate(qr, { small: true });
           setTimeout(() => {
             if (!this.isConnected) this.delete();
           }, 50 * 1000); //50 seconds
@@ -97,21 +96,15 @@ class Session {
         "messaging-history.set",
         async ({ contacts }) => {
           const chats = contacts.map((contact) => {
-            return { id: contact.id, name: contact.name || "Desconhecido" };
+            return {
+              id: contact.id,
+              name: contact.name || contact.notify || "Desconhecido",
+            };
           });
           await this.waSocket.addChats(chats);
           await this.sendConnectionStatus("open");
         }
       );
-      this.socketClient!.ev.on("contacts.upsert", (contacts) => {
-        const chats = contacts.map((contact) => {
-          return {
-            id: contact.id,
-            name: contact.notify || contact.verifiedName || "Desconhecido",
-          };
-        });
-        this.waSocket.addChats(chats);
-      });
     });
   }
 }

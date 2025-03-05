@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-import sessionRouter from "../controllers/SessionController";
-import chatRouter from "../controllers/ChatController";
-import messageRouter from "../controllers/MessageController";
+import sessionRouter from "./SessionController";
+import chatRouter from "./ChatController";
+import messageRouter from "./MessageController";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
-import SessionService from "./SessionService";
+import SessionService from "../services/SessionService";
 
 const app = express();
 dotenv.config();
@@ -49,9 +49,7 @@ app.all("*", (req: Request, res: Response): any => {
   return res.status(404).json({ error: "Not Found" });
 });
 
-// Error-handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error(err);
   res.status(err.statusCode || 500).json({
     message: err.message || "Internal Server Error",
     details: err.details || "An unexpected error occurred"

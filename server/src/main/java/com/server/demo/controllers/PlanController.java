@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +32,9 @@ public class PlanController {
 
     @Operation(summary = "Retorna um plano pelo ID")
     @GetMapping("/{id}")
-    public PlanDTO getPlanById(@PathVariable UUID id) {
-        return planService.getPlanById(id);
+    public ResponseEntity<PlanDTO> getPlanById(@PathVariable UUID id) {
+        PlanDTO plan = planService.getPlanById(id);
+        return (plan != null) ? ResponseEntity.ok(plan) : ResponseEntity.notFound().build();
     }
 }
+

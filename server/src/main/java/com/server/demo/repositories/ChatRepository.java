@@ -18,4 +18,6 @@ public interface ChatRepository extends JpaRepository<Chat, UUID>, JpaSpecificat
     Optional<Chat> findByIdAndUserId(UUID id, String userId);
 
     Optional<Chat> findByWhatsAppId(String whatsAppId);
+
+    Optional<Chat> findByWhatsAppIdAndSessionId(String whatsAppId, UUID sessionId);
 }

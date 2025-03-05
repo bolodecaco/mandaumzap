@@ -62,7 +62,7 @@ public class SessionService {
         return sessionMapper.toDTO(session);
     }
 
-    private int countUserSessions(String userId) {
+    public int countUserSessions(String userId) {
         return sessionRepository.countByUserId(userId);
     }
 
@@ -104,7 +104,7 @@ public class SessionService {
         }
     }
 
-    private Mono<String> startBotConnection(RequestBotDTO botRequestDTO) {
+    public Mono<String> startBotConnection(RequestBotDTO botRequestDTO) {
         return webClientBuilder
                 .baseUrl(botUrl)
                 .build()
@@ -127,7 +127,7 @@ public class SessionService {
                 });
     }
 
-    private void requestDeleteSession(UUID sessionId, String userId) {
+    public void requestDeleteSession(UUID sessionId, String userId) {
         webClientBuilder
                 .baseUrl(botUrl)
                 .build()
@@ -141,7 +141,7 @@ public class SessionService {
                 .block();
     }
 
-    private void requestDeleteAllSession(String userId) {
+    public void requestDeleteAllSession(String userId) {
         webClientBuilder
                 .baseUrl(botUrl)
                 .build()
@@ -155,7 +155,7 @@ public class SessionService {
                 .block();
     }
 
-    private void requestCloseSession(UUID sessionId, String userId) {
+    public void requestCloseSession(UUID sessionId, String userId) {
         webClientBuilder
                 .baseUrl(botUrl)
                 .build()
@@ -169,7 +169,7 @@ public class SessionService {
                 .block();
     }
 
-    private BotDTO parseQrCode(String qrcodeJSON) {
+    public BotDTO parseQrCode(String qrcodeJSON) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.readValue(qrcodeJSON, BotDTO.class);

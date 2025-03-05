@@ -1,5 +1,7 @@
+'use client'
+
 import { ComponentProps, ElementType } from 'react'
-import { Container } from './styles'
+import { Container, Spinner } from './styles'
 
 interface ButtonProps extends ComponentProps<'button'> {
   leftIcon?: ElementType
@@ -9,23 +11,31 @@ interface ButtonProps extends ComponentProps<'button'> {
   text?: string
   weight?: 'bold' | 'normal'
   variant?: 'primary' | 'ghost'
+  isLoading?: boolean
 }
 
 export const Button = ({
   leftIcon: LeftIcon,
   rightIcon: RightIcon,
   text,
-  weight,
+  isLoading,
   iconSize = 16,
   iconColor = 'white',
   variant = 'primary',
   ...props
 }: ButtonProps) => {
   return (
-    <Container $variant={variant} {...props} $weight={weight}>
-      {LeftIcon && <LeftIcon size={iconSize} color={iconColor} />}
-      {text}
-      {RightIcon && <RightIcon size={iconSize} color={iconColor} />}
+    <Container
+      $variant={variant}
+      {...props}
+      disabled={isLoading || props.disabled}
+    >
+      {!isLoading && LeftIcon && <LeftIcon size={iconSize} color={iconColor} />}
+      {isLoading && <Spinner />}
+      {isLoading ? 'Carregando...' : text}
+      {!isLoading && RightIcon && (
+        <RightIcon size={iconSize} color={iconColor} />
+      )}
     </Container>
   )
 }

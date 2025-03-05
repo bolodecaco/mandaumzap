@@ -8,7 +8,7 @@ type NextFetchRequestConfig = {
 }
 
 interface FetchAPIOptions {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any
   next?: NextFetchRequestConfig
@@ -35,7 +35,9 @@ export async function fetcher(endpoint: string, options: FetchAPIOptions) {
     ? `?${new URLSearchParams(
         Object.entries(queryParams).reduce(
           (acc, [key, value]) => {
-            acc[key] = String(value)
+            if (value !== undefined) {
+              acc[key] = String(value)
+            }
             return acc
           },
           {} as Record<string, string>,

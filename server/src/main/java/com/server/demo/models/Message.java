@@ -44,7 +44,7 @@ public class Message {
     @Column(name = "times_sent", nullable = false)
     private int timesSent = 0;
 
-    @Column(nullable = true)
+    @Column(nullable = true, length = 3000)
     private String url;
 
     @Temporal(TemporalType.TIMESTAMP)

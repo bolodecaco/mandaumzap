@@ -6,6 +6,7 @@ interface CardContactProps {
   name: string
   session: string
   contact: string
+  checked?: boolean
   onCheck?: () => void
 }
 
@@ -13,6 +14,7 @@ export const CardContact = ({
   session,
   name,
   contact,
+  checked,
   onCheck,
 }: CardContactProps) => {
   const normalizedContact = contact.includes('@s.whatsapp.net')
@@ -21,7 +23,7 @@ export const CardContact = ({
 
   return (
     <Container>
-      <Checkbox type="checkbox" onClick={onCheck} />
+      <Checkbox type="checkbox" checked={checked} onChange={onCheck} />
       <UserDiv>
         {name === 'Desconhecido' ? (
           <Avatar />

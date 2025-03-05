@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
+import { jwtDecode } from 'jwt-decode'
 
 const publicRoutes = [
   {
@@ -10,9 +11,31 @@ const publicRoutes = [
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth
+  const accessToken = isLoggedIn && req.auth?.accessToken
+  const refreshToken = isLoggedIn && req.auth?.refreshToken
   const publicRoute = publicRoutes.find(
     (route) => req.nextUrl.pathname === route.path,
   )
+
+  if (!publicRoute && isLoggedIn && accessToken) {
+    try {
+      const decodedToken = jwtDecode(accessToken)
+      const expirationTime = (decodedToken.exp || 0) * 1000 // Convert to milliseconds
+
+      if (Date.now() >= expirationTime && !refreshToken) {
+        const callbackUrl = encodeURIComponent(req.nextUrl.pathname)
+        return NextResponse.redirect(
+          new URL(`/login?callbackUrl=${callbackUrl}`, req.url),
+        )
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      const callbackUrl = encodeURIComponent(req.nextUrl.pathname)
+      return NextResponse.redirect(
+        new URL(`/login?callbackUrl=${callbackUrl}`, req.url),
+      )
+    }
+  }
 
   if (!publicRoute && !isLoggedIn) {
     const callbackUrl = encodeURIComponent(req.nextUrl.pathname)

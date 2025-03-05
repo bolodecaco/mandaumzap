@@ -1,33 +1,57 @@
 'use client'
 
+import { List } from '@/@types/list'
 import { Button } from '@/components/button'
 import { CardList } from '@/components/cardList'
 import { Empty } from '@/components/empty'
 import { Input } from '@/components/input'
+import { NewListModal } from '@/components/modal/newList'
+import { Selector } from '@/components/selector'
+import { useDebounce } from '@/hooks/useDebouce'
 import { Row, Title, Wrapper } from '@/lib/styled/global'
-import { useMemo } from 'react'
+import { useGetLists } from '@/services/list/useGetLists'
+import { useEffect, useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { HiPlus } from 'react-icons/hi'
 import { RiPlayListAddFill } from 'react-icons/ri'
+import { toast } from 'react-toastify'
+import { LoaderContainer, Spinner } from './styles'
+
+const ORDER_OPTIONS = [
+  {
+    id: 1,
+    value: 'lastActiveAt',
+    name: 'Ativo recentemente',
+  },
+  {
+    id: 2,
+    value: 'title',
+    name: 'Nome (A-z)',
+  },
+  {
+    id: 3,
+    value: '-title',
+    name: 'Nome (Z-a)',
+  },
+]
 
 const Lists = () => {
-  const data = useMemo(
-    () =>
-      Array(5).fill({
-        title: 'ADS 6˚ periodo',
-        avatars: [
-          { name: 'joao' },
-          { name: 'Desconhecido' },
-          { name: 'Desconhecido' },
-          { name: 'Desconhecido' },
-          { name: 'maria' },
-          { name: 'pedro' },
-          { name: 'Desconhecido' },
-          { name: 'ana' },
-        ],
-      }),
-    [],
-  )
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+  const [sort, setSort] = useState<'title' | '-title' | 'lastActiveAt' | ''>('')
+  const [isNewListModalOpen, setIsNewListModalOpen] = useState(false)
+  const { data, error, isLoading } = useGetLists({
+    search: debouncedSearch,
+    sort,
+  })
+
+  useEffect(() => {
+    if (error) {
+      toast.error(`Erro ao carregar listas. Tente carregar a página.`, {
+        toastId: 'lists',
+      })
+    }
+  }, [error])
 
   return (
     <Wrapper style={{ flex: 1, alignItems: 'center' }}>
@@ -37,33 +61,31 @@ const Lists = () => {
         height="3.225rem"
         leftIcon={FiSearch}
         placeholder="Pesquisar lista"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
       />
       <Row style={{ gap: '0.5rem' }}>
         <Button
           text="Nova lista"
           leftIcon={HiPlus}
-          onClick={() => {}}
-          weight="normal"
-        />
-        {/* <Selector
-          label="Ordenar"
-          options={['Mais recente', 'Mais antigo']}
-          onSelect={() => {}}
-          height="2.5rem"
-          isOpen={openSelectorLists === 'ordenar'}
-          onOpenChange={() => handleOpenSelectorLists('ordenar')}
+          onClick={() => setIsNewListModalOpen(true)}
         />
         <Selector
-          label="Filtrar"
-          options={['Disponível', 'Indisponível']}
-          onSelect={() => {}}
+          label="Ordenar"
+          options={ORDER_OPTIONS}
+          value={sort || ''}
+          onValueChange={(newValue) =>
+            setSort(newValue as 'title' | '-title' | 'lastActiveAt' | '')
+          }
           height="2.5rem"
-          isOpen={openSelectorLists === 'filtrar'}
-          onOpenChange={() => handleOpenSelectorLists('filtrar')}
-        /> */}
+        />
       </Row>
 
-      {data.length === 0 ? (
+      {isLoading ? (
+        <LoaderContainer>
+          <Spinner />
+        </LoaderContainer>
+      ) : data?.content.length === 0 ? (
         <Empty
           message="Nenhuma lista cadastrada"
           icon={RiPlayListAddFill}
@@ -71,14 +93,22 @@ const Lists = () => {
           onActionClick={() => {}}
         />
       ) : (
-        data.map((item, index) => (
+        data?.content.map((list: List) => (
           <CardList
-            key={`${item.title}-${index}`}
-            {...item}
-            lastUpdate="Último envio às 11:27"
+            key={list.id}
+            title={list.title}
+            lastUpdate={
+              list.lastActiveAt
+                ? list.lastActiveAt.toISOString()
+                : 'Nenhuma mensagem enviada'
+            }
             onClickOptions={() => {}}
           />
         ))
+      )}
+
+      {isNewListModalOpen && (
+        <NewListModal onClose={() => setIsNewListModalOpen(false)} />
       )}
     </Wrapper>
   )

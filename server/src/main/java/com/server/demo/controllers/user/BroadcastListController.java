@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +34,6 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/user/lists")
 @Tag(name = "Lista de transmissão", description = "API das listas de transmissões")
-@EnableCaching
 public class BroadcastListController {
 
     @Autowired
@@ -48,7 +44,6 @@ public class BroadcastListController {
 
     @Operation(summary = "Retorna todos as listas")
     @GetMapping
-    @Cacheable(value = "broadcastsLists", key = "#search + '-' + #page + '-' + #size + '-' + #sort")
     public ResponseEntity<Page<BroadcastListDTO>> getAllChats(
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
@@ -62,42 +57,36 @@ public class BroadcastListController {
 
     @Operation(summary = "Retorna uma lista de transmissão pelo ID")
     @GetMapping("/{id}")
-    @Cacheable(value = "broadcastsLists", key = "#id")
     public ResponseEntity<BroadcastListDTO> getListById(@PathVariable UUID id) {
         return ResponseEntity.ok(listService.getListById(id, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Cria uma nova lista de transmissão")
     @PostMapping
-    @CacheEvict(value = "broadcastsLists", allEntries = true)
     public ResponseEntity<BroadcastListDTO> createList(@Valid @RequestBody RequestBroadcastListDTO list) {
         return ResponseEntity.ok(listService.createList(list, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Adiciona uma lista de chats a uma lista de transmissão")
     @PostMapping("/{id}/chats")
-    @CacheEvict(value = "broadcastsLists", allEntries = true)
     public ResponseEntity<BroadcastListDTO> addChatToList(@PathVariable UUID id, @RequestBody List<AddChatToBroadcastListDTO> chatsDto) {
         return ResponseEntity.ok(listService.addChats(id, chatsDto, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Remove um chat de uma lista de transmissão")
     @DeleteMapping("/{id}/chats")
-    @CacheEvict(value = "broadcastsLists", allEntries = true)
     public ResponseEntity<BroadcastListDTO> removeChatFromList(@PathVariable UUID id, @RequestBody AddChatToBroadcastListDTO chatDto) {
         return ResponseEntity.ok(listService.removeChat(id, chatDto, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Atualiza uma lista de transmissão")
     @PutMapping("/{id}")
-    @CacheEvict(value = "broadcastsLists", allEntries = true)
     public ResponseEntity<BroadcastListDTO> updateList(@Valid @PathVariable UUID id, @RequestBody UpdateBroadcastListDTO listDetails) {
         return ResponseEntity.ok(listService.updateList(id, listDetails, jwtService.getCurrentUserId()));
     }
 
     @Operation(summary = "Deleta uma lista de transmissão")
     @DeleteMapping("/{id}")
-    @CacheEvict(value = "broadcastsLists", allEntries = true)
     public ResponseEntity<Void> deleteList(@PathVariable UUID id) {
         listService.deleteList(id, jwtService.getCurrentUserId());
         return ResponseEntity.noContent().build();
@@ -105,7 +94,6 @@ public class BroadcastListController {
 
     @Operation(summary = "Retorna todos os chats de uma lista de transmissão")
     @GetMapping("/{id}/chats")
-    @Cacheable(value = "chats", key = "#id")
     public ResponseEntity<List<ChatDTO>> getChatsFromList(@PathVariable UUID id) {
         return ResponseEntity.ok(listService.getChatsFromList(id, jwtService.getCurrentUserId()));
     }

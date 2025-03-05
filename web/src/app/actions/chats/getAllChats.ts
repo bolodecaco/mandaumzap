@@ -17,7 +17,7 @@ export interface GetChatsParams {
 export const getAllChats = createServerAction(
   async ({
     sessionId,
-    search = '',
+    search,
     page = 0,
     pageSize = 10,
     sort = 'chatName',

@@ -1,11 +1,21 @@
+'use client'
+
 import { ButtonGroup, Container, Divider } from './styles'
 import { Option } from './option'
+import { useRef } from 'react'
 
 interface ToolbarProps {
   onApplyFormatting: (format: string) => void
+  onUploadImage: (file: File) => void
 }
 
-export const Toolbar = ({ onApplyFormatting }: ToolbarProps) => {
+export const Toolbar = ({ onApplyFormatting, onUploadImage }: ToolbarProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageSelect = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <Container>
       <ButtonGroup>
@@ -49,11 +59,24 @@ export const Toolbar = ({ onApplyFormatting }: ToolbarProps) => {
           iconName="emoji"
           iconAlt="ícone de emoji"
         />
-        <Option
-          //   onClick={() => onApplyFormatting('image')}
-          iconName="image"
-          iconAlt="ícone de imagem"
-        />
+        <ButtonGroup>
+          <Option
+            onClick={handleImageSelect}
+            iconName="image"
+            iconAlt="ícone de imagem"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files?.[0]) {
+                onUploadImage(e.target.files[0])
+              }
+            }}
+          />
+        </ButtonGroup>
       </ButtonGroup>
     </Container>
   )
