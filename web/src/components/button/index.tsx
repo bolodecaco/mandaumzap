@@ -9,6 +9,7 @@ interface ButtonProps extends ComponentProps<'button'> {
   iconColor?: string
   iconSize?: number
   text?: string
+  weight?: 'bold' | 'normal'
   variant?: 'primary' | 'ghost'
   isLoading?: boolean
 }

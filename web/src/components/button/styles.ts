@@ -2,6 +2,7 @@ import styled, { css, keyframes } from 'styled-components'
 
 type ButtonProps = {
   $variant?: 'primary' | 'ghost'
+  $weight?: 'bold' | 'normal'
 }
 
 const spin = keyframes`
@@ -19,7 +20,7 @@ export const Container = styled.button<ButtonProps>`
   justify-content: center;
   cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: ${({ $weight }) => ($weight === 'bold' ? 600 : 400)};
   letter-spacing: 0.05px;
   transition: 100ms linear;
 

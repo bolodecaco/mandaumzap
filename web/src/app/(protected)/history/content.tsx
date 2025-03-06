@@ -90,6 +90,7 @@ export const Content = () => {
               text="Novo dispositivo"
               leftIcon={HiPlus}
               onClick={handleNewDeviceClick}
+              weight="normal"
             />
             <Delete
               text="Remover todos"

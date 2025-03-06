@@ -15,6 +15,7 @@ export const THEME = {
     keybind: '#D3DCE5',
     hover: '#F5F5F5',
     lastUpdateText: '#6A727C',
+    refreshIcon: '#878787',
   },
 
   variants: {
