@@ -20,6 +20,9 @@ import { Delete, Header, Headline, Line, List, Text } from './styles'
 import { useGetMessages } from '@/services/message/useGetMessages'
 import { useGetLists } from '@/services/list/useGetLists'
 import { clearHistory } from '@/app/actions/messages/clearHistory'
+import { List as ListsType } from '@/@types/list'
+import { Message } from '@/@types/message'
+import { formatLastSentAt } from '@/lib/utils'
 
 export const Content = () => {
   const [isNewDeviceModalOpen, setIsNewDeviceModalOpen] = useState(false)
@@ -28,12 +31,7 @@ export const Content = () => {
     useState(false)
 
   const { data, error, refetch, isLoading } = useGetSessions()
-  const {
-    data: lists,
-    listsError,
-    refetch: refetchList,
-    isLoading: isListsLoading,
-  } = useGetLists({})
+  const { data: lists, isLoading: isListsLoading } = useGetLists({})
   const {
     data: messages,
     error: messagesError,
@@ -86,7 +84,7 @@ export const Content = () => {
   }
 
   const findMatchingList = (listId: string) => {
-    const list = lists?.content.find((list) => list.id === listId)
+    const list = lists?.content.find((list: ListsType) => list.id === listId)
     return list
   }
 
@@ -126,13 +124,15 @@ export const Content = () => {
             </Header>
             <List style={{ marginLeft: 0 }}>
               {!isMessagesLoading &&
-                messages.map((message) => {
+                messages.map((message: Message) => {
                   const matchingList = findMatchingList(message.broadcastListId)
                   return (
                     <Line key={message.id}>
                       <Text style={{ flex: 3 }}>{message.content}</Text>
                       <Text style={{ flex: 1 }}>{matchingList.title}</Text>
-                      <Text style={{ flex: 1 }}>Ontem, 11:26</Text>
+                      <Text style={{ flex: 1 }}>
+                        {formatLastSentAt(message.lastSent)}
+                      </Text>
                     </Line>
                   )
                 })}

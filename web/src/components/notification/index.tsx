@@ -13,12 +13,14 @@ interface NotificationCardProps {
   id: string
   totalChats: number
   sentChats: number
+  onRead: () => void
 }
 
 export const NotificationCard = ({
   id,
   totalChats,
   sentChats,
+  onRead,
 }: NotificationCardProps) => {
   const progress = useMemo(() => {
     if (totalChats === 0) return 0
@@ -44,7 +46,9 @@ export const NotificationCard = ({
       toast.error('Erro ao marcar notificação como lida. Tente novamente.', {
         toastId: 'notificationError',
       })
+      return
     }
+    onRead()
   }
 
   return (
