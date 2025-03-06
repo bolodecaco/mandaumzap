@@ -43,6 +43,7 @@ public class MessageProgressConsumer {
         for (Message message : messages) {
             try {
                 SqsMessageProgressDTO sqsMessageParse = objectMapper.readValue(message.getBody(), SqsMessageProgressDTO.class);
+                logger.info("Mensagem recebida: {}", sqsMessageParse);
                 amazonSQS.deleteMessage(queueUrl, message.getReceiptHandle());
                 Notification notification = new Notification();
                 notification.setId(sqsMessageParse.getMessageId());

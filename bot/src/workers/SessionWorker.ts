@@ -16,7 +16,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 let session: Session;
-const Producer = new MessageProducer(process.env.SQS_URL!);
+const Producer = new MessageProducer(process.env.SQS_PROGRESS_URL!);
 
 const formatMessage = {
   text: (text: string) => ({ text }),
