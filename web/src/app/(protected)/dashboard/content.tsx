@@ -60,14 +60,28 @@ export function Content() {
     )
 
     const handleMessage = (event: MessageEvent) => {
-      const receivedData = JSON.parse(event.data)
+      const receivedData: Notification[] = JSON.parse(event.data)
 
-      if (Array.isArray(receivedData) && receivedData.length > 0) {
+      const isDataValid = Array.isArray(receivedData) && receivedData.length > 0
+
+      if (isDataValid) {
         setNotifications((prev) => {
-          const newNotifications = receivedData.filter(
-            (newItem) => !prev.some((prevItem) => prevItem.id === newItem.id),
-          )
-          return [...prev, ...newNotifications]
+          const updatedNotifications = receivedData.map((newItem) => {
+            const existingItem = prev.find(
+              (prevItem) => prevItem.id === newItem.id,
+            )
+            return existingItem ? { ...existingItem, ...newItem } : newItem
+          })
+
+          const mergedNotifications = [
+            ...prev.filter(
+              (prevItem) =>
+                !receivedData.some((newItem) => newItem.id === prevItem.id),
+            ),
+            ...updatedNotifications,
+          ]
+
+          return mergedNotifications
         })
       }
     }

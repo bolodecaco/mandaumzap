@@ -55,7 +55,7 @@ export const NotificationCard = ({
       </Row>
       <Description>{description}</Description>
       <ProgressBar progress={progress} />
-      {progress && (
+      {progress === 100 && (
         <Button
           onClick={handleReadNotification}
           leftIcon={FaCheck}
