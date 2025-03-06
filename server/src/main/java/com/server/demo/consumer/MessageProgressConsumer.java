@@ -44,9 +44,6 @@ public class MessageProgressConsumer {
             try {
                 SqsMessageProgressDTO sqsMessageParse = objectMapper.readValue(message.getBody(), SqsMessageProgressDTO.class);
                 amazonSQS.deleteMessage(queueUrl, message.getReceiptHandle());
-                if (sqsMessageParse.getSessionId() != null) {
-                    return;
-                }
                 Notification notification = new Notification();
                 notification.setId(sqsMessageParse.getMessageId());
                 notification.setReceiverId(sqsMessageParse.getUserId());
@@ -54,7 +51,6 @@ public class MessageProgressConsumer {
                 notification.setType("progress");
                 notification.setRead(false);
                 notificationService.createNotification(notification);
-                logger.info("Notifição: {}", notification);
             } catch (Exception e) {
                 logger.error("Erro ao processar mensagem: {}", e.getMessage());
 
