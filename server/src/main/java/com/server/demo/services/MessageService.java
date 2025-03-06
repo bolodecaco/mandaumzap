@@ -55,6 +55,9 @@ public class MessageService {
         String userId = message.getUserId();
         message.setTimesSent(message.getTimesSent() + 1);
         message.setLastSentAt(new Date());
+        if (message.getFirstSentAt() == null) {
+            message.setFirstSentAt(new Date());
+        }
 
         List<String> receiverIds = broadcastListService.getChatsFromList(message.getBroadcastList().getId(), userId)
                 .stream()
@@ -90,6 +93,11 @@ public class MessageService {
     public List<MessageDTO> getMessagesBySessionId(UUID sessionId, String userId) {
         List<Message> messages = messageRepository.findBySessionIdAndUserId(sessionId, userId);
         return messageMapper.toDTOList(messages);
+    }
+
+    @Transactional
+    public void deleteAllByUSerId(String userId) {
+        messageRepository.deleteByUserId(userId);
     }
 
     public MessageDTO saveMessage(RequestMessageDTO message, String userId) {
