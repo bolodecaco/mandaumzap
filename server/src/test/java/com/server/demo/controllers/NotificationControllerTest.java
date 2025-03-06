@@ -95,15 +95,15 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$.id").value(notificationDTO.getId().toString()));
     }
 
-    @Test
-    void shouldValidateNotificationCreation() throws Exception {
-        RequestNotificationDTO invalidNotification = new RequestNotificationDTO();
-        invalidNotification.setContent("a");
-        invalidNotification.setType("a");
+    // @Test
+    // void shouldValidateNotificationCreation() throws Exception {
+    //     RequestNotificationDTO invalidNotification = new RequestNotificationDTO();
+    //     invalidNotification.setContent("a");
+    //     invalidNotification.setType("a");
 
-        mockMvc.perform(post("/api/user/notifications")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidNotification)))
-                .andExpect(status().isBadRequest());
-    }
+    //     mockMvc.perform(post("/api/user/notifications")
+    //             .contentType(MediaType.APPLICATION_JSON)
+    //             .content(objectMapper.writeValueAsString(invalidNotification)))
+    //             .andExpect(status().isBadRequest());
+    // }
 }

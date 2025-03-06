@@ -17,6 +17,10 @@ import { toast } from 'react-toastify'
 import { sendMessage } from '@/app/actions/messages/sendMessage'
 import { BiX } from 'react-icons/bi'
 import { useSession } from 'next-auth/react'
+import { ParsedContent, Notification } from '@/@types/notification'
+import { NotificationCard } from '@/components/notification'
+import { Empty } from '@/components/empty'
+import { IoMdNotificationsOutline } from 'react-icons/io'
 
 export function Content() {
   const { data } = useSession()
@@ -28,7 +32,7 @@ export function Content() {
   const [receiverList, setReceiverList] = useState({} as List)
   const [sessionId, setSessionId] = useState('')
   const [isSendingMessage, setIsSendingMessage] = useState(false)
-  const [notifications, setNotifications] = useState<string[]>([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
   const { data: sessions, isLoading } = useGetSessions()
 
@@ -52,22 +56,38 @@ export function Content() {
     const receiverId = data.uuid
 
     const socket = new WebSocket(
-      `ws://localhost:8080/notify?receiverId=${receiverId}`,
+      `${process.env.NEXT_PUBLIC_WS_URL}/notify?receiverId=${receiverId}`,
     )
 
-    socket.onmessage = (event) => {
-      console.log('Received:', JSON.parse(event.data))
-      if (event.data.length > 0) {
-        setNotifications((prev) => [...prev, JSON.parse(event.data)])
+    const handleMessage = (event: MessageEvent) => {
+      const receivedData: Notification[] = JSON.parse(event.data)
+
+      const isDataValid = Array.isArray(receivedData) && receivedData.length > 0
+
+      if (isDataValid) {
+        setNotifications((prev) => {
+          const updatedNotifications = receivedData.map((newItem) => {
+            const existingItem = prev.find(
+              (prevItem) => prevItem.id === newItem.id,
+            )
+            return existingItem ? { ...existingItem, ...newItem } : newItem
+          })
+
+          const mergedNotifications = [
+            ...prev.filter(
+              (prevItem) =>
+                !receivedData.some((newItem) => newItem.id === prevItem.id),
+            ),
+            ...updatedNotifications,
+          ]
+
+          return mergedNotifications
+        })
       }
     }
 
-    socket.onerror = (error) => {
-      console.error('WebSocket Error:', error)
-    }
-
+    socket.onmessage = handleMessage
     return () => {
-      console.log('Cleaning up WebSocket connection')
       socket.close()
     }
   }, [data])
@@ -90,6 +110,13 @@ export function Content() {
 
   const handleSessionChange = (newValue: string) => {
     setSessionId(newValue)
+  }
+
+  const handleReadNotification = (id: string) => {
+    const updatedNotifications = notifications.filter(
+      (notification) => notification.id !== id,
+    )
+    setNotifications(updatedNotifications)
   }
 
   const handleSendMessage = async () => {
@@ -207,18 +234,26 @@ export function Content() {
           }}
         >
           <Title>Notificações</Title>
-          <Column style={{ gap: '0.5rem', overflowY: 'auto' }}>
+          <Column style={{ gap: '0.5rem', overflowY: 'auto', height: '100%' }}>
             {notifications.length > 0 ? (
-              notifications.map((notification, index) => (
-                <div
-                  key={index}
-                  style={{ padding: '0.5rem', borderBottom: '1px solid #ccc' }}
-                >
-                  {notification}
-                </div>
-              ))
+              notifications.map((notification: Notification) => {
+                const content: ParsedContent = JSON.parse(notification.content)
+
+                return (
+                  <NotificationCard
+                    id={content.messageId}
+                    sentChats={content.sentChats}
+                    totalChats={content.totalChats}
+                    onRead={() => handleReadNotification(content.messageId)}
+                    key={content.messageId}
+                  />
+                )
+              })
             ) : (
-              <p>Nenhuma notificação ainda.</p>
+              <Empty
+                message="Suas notificações aparecerão aqui"
+                icon={IoMdNotificationsOutline}
+              />
             )}
           </Column>
         </Wrapper>

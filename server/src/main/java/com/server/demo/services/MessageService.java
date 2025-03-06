@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.MessageDTO;
@@ -34,6 +36,15 @@ public class MessageService {
     @Autowired
     private BroadcastListService broadcastListService;
 
+    @Autowired
+    private WebClient.Builder webClientBuilder;
+
+    @Value("${bot.whatsapp.url}")
+    private String botUrl;
+
+    @Value("${bot.whatsapp.token}")
+    private String botToken;
+
     @Transactional
     public MessageDTO sendMessage(UUID messageId) {
         Message message = messageRepository.findById(messageId)
@@ -44,6 +55,9 @@ public class MessageService {
         String userId = message.getUserId();
         message.setTimesSent(message.getTimesSent() + 1);
         message.setLastSentAt(new Date());
+        if (message.getFirstSentAt() == null) {
+            message.setFirstSentAt(new Date());
+        }
 
         List<String> receiverIds = broadcastListService.getChatsFromList(message.getBroadcastList().getId(), userId)
                 .stream()
@@ -60,7 +74,10 @@ public class MessageService {
                 .build();
         Message currentMessage = messageRepository.save(message);
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
-        messageProducer.sendObject(messageToBeSent);
+        if (messageToBeSent.getUrl() != null) {
+            this.requestSendMessageBot(messageToBeSent, "/api/messages/send/image");
+        }
+        this.requestSendMessageBot(messageToBeSent, "/api/messages/send/text");
         broadcastListService.incrementMessageSent(message.getBroadcastList().getId(), userId);
 
         return messageDTO;
@@ -78,6 +95,11 @@ public class MessageService {
         return messageMapper.toDTOList(messages);
     }
 
+    @Transactional
+    public void deleteAllByUSerId(String userId) {
+        messageRepository.deleteByUserId(userId);
+    }
+
     public MessageDTO saveMessage(RequestMessageDTO message, String userId) {
         Message currentMessage = messageMapper.toEntity(message);
         currentMessage.setUserId(userId);
@@ -88,6 +110,26 @@ public class MessageService {
     public List<MessageDTO> getActiveMessages(String userId) {
         List<Message> messages = messageRepository.findByDeletedAtIsNullAndUserId(userId);
         return messageMapper.toDTOList(messages);
+    }
+
+    public void clearHistory(String userId) {
+        List<Message> messages = messageRepository.findByUserId(userId);
+        messageRepository.deleteAll(messages);
+    }
+
+    public void requestSendMessageBot(MessageSentToBotDTO message, String path) {
+        webClientBuilder
+                .baseUrl(botUrl)
+                .build()
+                .post()
+                .uri(uriBuilder -> uriBuilder
+                .path(path)
+                .queryParam("token", botToken)
+                .build())
+                .bodyValue(message)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
     }
 
     public void deleteMessage(UUID messageId, String userId) {

@@ -15,9 +15,12 @@ import com.server.demo.models.Notification;
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
     List<Notification> findByReceiverId(String id);
+
     Optional<Notification> findByIdAndReceiverId(UUID id, String receiverId);
 
     @Query("SELECT n FROM Notification n WHERE n.receiverId = :receiverId AND n.read = false")
     List<Notification> findUnreadNotificationsByReceiverId(@Param("receiverId") String receiverId);
+
+    List<Notification> findByReceiverIdAndReadFalse(String receiverId);
 
 }

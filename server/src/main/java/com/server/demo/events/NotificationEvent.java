@@ -1,6 +1,5 @@
 package com.server.demo.events;
 
-
 import org.springframework.context.ApplicationEvent;
 
 public class NotificationEvent extends ApplicationEvent {

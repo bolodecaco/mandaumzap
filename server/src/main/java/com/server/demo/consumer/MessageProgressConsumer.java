@@ -25,7 +25,7 @@ public class MessageProgressConsumer {
     @Autowired
     private AmazonSQS amazonSQS;
 
-    @Value("${cloud.aws.sqs.queue-name}")
+    @Value("${cloud.aws.sqs.queue-progress-message-name}")
     private String queueName;
 
     @Autowired
@@ -43,10 +43,8 @@ public class MessageProgressConsumer {
         for (Message message : messages) {
             try {
                 SqsMessageProgressDTO sqsMessageParse = objectMapper.readValue(message.getBody(), SqsMessageProgressDTO.class);
+                logger.info("Mensagem recebida: {}", sqsMessageParse);
                 amazonSQS.deleteMessage(queueUrl, message.getReceiptHandle());
-                if (sqsMessageParse.getSessionId() != null) {
-                    return;
-                }
                 Notification notification = new Notification();
                 notification.setId(sqsMessageParse.getMessageId());
                 notification.setReceiverId(sqsMessageParse.getUserId());
