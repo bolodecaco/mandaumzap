@@ -56,13 +56,18 @@ jobs:
             fi
             
             # Continue with deployment
-            if ! docker compose -f docker-compose.prod.yml ps | grep -q spring-app; then
+            if ! docker compose -f docker-compose.prod.yml ps | grep -q spring-app || ! docker compose -f docker-compose.prod.yml ps | grep -q front; then
               echo "First deployment detected. Initializing all services..."
               docker compose -f docker-compose.prod.yml up -d
             else
-              echo "Updating backend only..."
-              docker compose -f docker-compose.prod.yml pull spring-app
-              docker images -q ${{ secrets.DOCKER_USERNAME }}/mandaumzap:latest | xargs -r docker rmi || true
-              docker compose -f docker-compose.prod.yml up -d --no-deps spring-app
+              echo "Updating backend and frontend..."
+              # Pull the latest backend and frontend images
+              docker compose -f docker-compose.prod.yml pull spring-app front
+              # Remove the old backend and frontend images
+              docker images -q ${{ secrets.DOCKER_USERNAME }}/mandaumzap_back:latest | xargs -r docker rmi || true
+              docker images -q ${{ secrets.DOCKER_USERNAME }}/mandaumzap_front:latest | xargs -r docker rmi || true
+              # Recreate the containers
+              docker compose -f docker-compose.prod.yml up -d --no-deps spring-app front
+              # Clean up unused images
               docker image prune -f
             fi
