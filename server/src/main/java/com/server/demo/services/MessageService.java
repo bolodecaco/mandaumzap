@@ -95,6 +95,11 @@ public class MessageService {
         return messageMapper.toDTOList(messages);
     }
 
+    @Transactional
+    public void deleteAllByUSerId(String userId) {
+        messageRepository.deleteByUserId(userId);
+    }
+
     public MessageDTO saveMessage(RequestMessageDTO message, String userId) {
         Message currentMessage = messageMapper.toEntity(message);
         currentMessage.setUserId(userId);

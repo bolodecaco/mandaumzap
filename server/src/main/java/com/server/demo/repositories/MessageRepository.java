@@ -19,4 +19,6 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Optional<Message> findByIdAndUserId(UUID id, String userId);
 
     List<Message> findBySessionIdAndUserId(UUID sessionId, String userId);
+
+    void deleteByUserId(String userId);
 }

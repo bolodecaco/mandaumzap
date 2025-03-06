@@ -69,4 +69,11 @@ public class MessageController {
         messageService.deleteMessage(id, jwtService.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Deleta todas as mensagens do usuário")
+    @DeleteMapping
+    public ResponseEntity<String> deleteAllMessages() {
+        messageService.deleteAllByUSerId(jwtService.getCurrentUserId());
+        return ResponseEntity.noContent().build();
+    }
 }
