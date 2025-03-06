@@ -25,7 +25,7 @@ public class MessageProgressConsumer {
     @Autowired
     private AmazonSQS amazonSQS;
 
-    @Value("${cloud.aws.sqs.queue-name}")
+    @Value("${cloud.aws.sqs.queue-progress-message-name}")
     private String queueName;
 
     @Autowired
@@ -54,6 +54,7 @@ public class MessageProgressConsumer {
                 notification.setType("progress");
                 notification.setRead(false);
                 notificationService.createNotification(notification);
+                logger.info("Notifição: {}", notification);
             } catch (Exception e) {
                 logger.error("Erro ao processar mensagem: {}", e.getMessage());
 

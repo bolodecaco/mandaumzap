@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.server.demo.dtos.ChatDTO;
 import com.server.demo.dtos.MessageDTO;
@@ -34,6 +36,15 @@ public class MessageService {
     @Autowired
     private BroadcastListService broadcastListService;
 
+    @Autowired
+    private WebClient.Builder webClientBuilder;
+
+    @Value("${bot.whatsapp.url}")
+    private String botUrl;
+
+    @Value("${bot.whatsapp.token}")
+    private String botToken;
+
     @Transactional
     public MessageDTO sendMessage(UUID messageId) {
         Message message = messageRepository.findById(messageId)
@@ -60,7 +71,10 @@ public class MessageService {
                 .build();
         Message currentMessage = messageRepository.save(message);
         MessageDTO messageDTO = messageMapper.toDTO(currentMessage);
-        messageProducer.sendObject(messageToBeSent);
+        if (messageToBeSent.getUrl() != null) {
+            this.requestSendMessageBot(messageToBeSent, "/api/messages/send/image");
+        }
+        this.requestSendMessageBot(messageToBeSent, "/api/messages/send/text");
         broadcastListService.incrementMessageSent(message.getBroadcastList().getId(), userId);
 
         return messageDTO;
@@ -88,6 +102,21 @@ public class MessageService {
     public List<MessageDTO> getActiveMessages(String userId) {
         List<Message> messages = messageRepository.findByDeletedAtIsNullAndUserId(userId);
         return messageMapper.toDTOList(messages);
+    }
+
+    public void requestSendMessageBot(MessageSentToBotDTO message, String path) {
+        webClientBuilder
+                .baseUrl(botUrl)
+                .build()
+                .post()
+                .uri(uriBuilder -> uriBuilder
+                .path(path)
+                .queryParam("token", botToken)
+                .build())
+                .bodyValue(message)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
     }
 
     public void deleteMessage(UUID messageId, String userId) {
