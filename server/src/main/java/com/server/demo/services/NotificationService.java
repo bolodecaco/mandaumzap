@@ -77,8 +77,9 @@ public class NotificationService {
                 .orElseThrow(() -> new BusinessException(String.format("Notificação com id %s não encontrada.", id)));
         notification.setRead(read);
         Notification updatedNotification = notificationRepository.save(notification);
+        NotificationDTO dto = notificationMapper.toDTO(updatedNotification);
         eventPublisher.publishEvent(new NotificationEvent(this, updatedNotification.getReceiverId()));
-        return notificationMapper.toDTO(updatedNotification);
+        return dto;
     }
 
     public NotificationDTO deleteNotification(UUID id) {
@@ -118,7 +119,9 @@ public class NotificationService {
     }
 
     @EventListener
-    public void onNotificationChanged(NotificationEvent event) {
-        sendUnreadNotifications(event.getReceiverId());
-    }
+public void onNotificationChanged(NotificationEvent event) {
+    System.out.println("Evento recebido para: " + event.getReceiverId());
+    sendUnreadNotifications(event.getReceiverId());
+}
+
 }

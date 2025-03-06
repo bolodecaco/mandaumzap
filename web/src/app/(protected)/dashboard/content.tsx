@@ -1,158 +1,159 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/button'
-import { Label } from '@/components/label'
-import { TextBox } from '@/components/textbox'
-import { Column, Row, Title, Wrapper } from '@/lib/styled/global'
-import { useEffect, useMemo, useState } from 'react'
-import { AddList, Clear } from './styles'
-import { RxFilePlus } from 'react-icons/rx'
-import { THEME } from '@/lib/styled/theme'
-import { useGetSessions } from '@/services/session/useGetSessions'
-import { SendToListModal } from '@/components/modal/sendToList'
-import { List } from '@/@types/list'
-import { Selector } from '@/components/selector'
-import { createMessage } from '@/app/actions/messages/createMessage'
-import { toast } from 'react-toastify'
-import { sendMessage } from '@/app/actions/messages/sendMessage'
-import { BiX } from 'react-icons/bi'
-import { useSession } from 'next-auth/react'
-import { ParsedContent, Notification } from '@/@types/notification'
-import { NotificationCard } from '@/components/notification'
-import { Empty } from '@/components/empty'
-import { IoMdNotificationsOutline } from 'react-icons/io'
+import { Button } from "@/components/button";
+import { Label } from "@/components/label";
+import { TextBox } from "@/components/textbox";
+import { Column, Row, Title, Wrapper } from "@/lib/styled/global";
+import { useEffect, useMemo, useState } from "react";
+import { AddList, Clear } from "./styles";
+import { RxFilePlus } from "react-icons/rx";
+import { THEME } from "@/lib/styled/theme";
+import { useGetSessions } from "@/services/session/useGetSessions";
+import { SendToListModal } from "@/components/modal/sendToList";
+import { List } from "@/@types/list";
+import { Selector } from "@/components/selector";
+import { createMessage } from "@/app/actions/messages/createMessage";
+import { toast } from "react-toastify";
+import { sendMessage } from "@/app/actions/messages/sendMessage";
+import { BiX } from "react-icons/bi";
+import { useSession } from "next-auth/react";
+import { ParsedContent, Notification } from "@/@types/notification";
+import { NotificationCard } from "@/components/notification";
+import { Empty } from "@/components/empty";
+import { IoMdNotificationsOutline } from "react-icons/io";
 
 export function Content() {
-  const { data } = useSession()
-  const [message, setMessage] = useState('')
+  const { data } = useSession();
+  const [message, setMessage] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | undefined>(
-    undefined,
-  )
-  const [isListsModalOpen, setIsListsModalOpen] = useState(false)
-  const [receiverList, setReceiverList] = useState({} as List)
-  const [sessionId, setSessionId] = useState('')
-  const [isSendingMessage, setIsSendingMessage] = useState(false)
-  const [notifications, setNotifications] = useState<Notification[]>([])
+    undefined
+  );
+  const [isListsModalOpen, setIsListsModalOpen] = useState(false);
+  const [receiverList, setReceiverList] = useState({} as List);
+  const [sessionId, setSessionId] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const { data: sessions, isLoading } = useGetSessions()
+  const { data: sessions, isLoading } = useGetSessions();
 
   const SESSION_OPTIONS = useMemo(
     () =>
       sessions
-        ?.filter((session) => session.status === 'open')
+        ?.filter((session) => session.status === "open")
         .map((session) => ({
           id: session.id,
           value: session.id,
           name: session.id,
         })),
-    [sessions],
-  )
+    [sessions]
+  );
 
   useEffect(() => {
     if (!data || !data.uuid) {
-      return
+      return;
     }
 
-    const receiverId = data.uuid
+    const receiverId = data.uuid;
 
     const socket = new WebSocket(
-      `ws://localhost:8080/notify?receiverId=${receiverId}`,
-    )
+      `ws://localhost:8080/notify?receiverId=${receiverId}`
+    );
 
     const handleMessage = (event: MessageEvent) => {
-      const receivedData: Notification[] = JSON.parse(event.data)
+      const receivedData: Notification[] = JSON.parse(event.data);
 
-      const isDataValid = Array.isArray(receivedData) && receivedData.length > 0
+      const isDataValid =
+        Array.isArray(receivedData) && receivedData.length > 0;
 
       if (isDataValid) {
         setNotifications((prev) => {
           const updatedNotifications = receivedData.map((newItem) => {
             const existingItem = prev.find(
-              (prevItem) => prevItem.id === newItem.id,
-            )
-            return existingItem ? { ...existingItem, ...newItem } : newItem
-          })
+              (prevItem) => prevItem.id === newItem.id
+            );
+            return existingItem ? { ...existingItem, ...newItem } : newItem;
+          });
 
           const mergedNotifications = [
             ...prev.filter(
               (prevItem) =>
-                !receivedData.some((newItem) => newItem.id === prevItem.id),
+                !receivedData.some((newItem) => newItem.id === prevItem.id)
             ),
             ...updatedNotifications,
-          ]
+          ];
 
-          return mergedNotifications
-        })
+          return mergedNotifications;
+        });
       }
-    }
+    };
 
-    socket.onmessage = handleMessage
-
+    socket.onmessage = handleMessage;
+    console.log(notifications);
     return () => {
-      socket.close()
-    }
-  }, [data])
+      socket.close();
+    };
+  }, [data]);
 
   const handleResetFields = () => {
-    setMessage('')
-    setUploadedImage(undefined)
-    setReceiverList({} as List)
-    setSessionId('')
-  }
+    setMessage("");
+    setUploadedImage(undefined);
+    setReceiverList({} as List);
+    setSessionId("");
+  };
 
   const handleSelectList = (list: List) => {
-    setReceiverList(list)
-    setIsListsModalOpen(false)
-  }
+    setReceiverList(list);
+    setIsListsModalOpen(false);
+  };
 
   const handleImageUpload = (imageUrl: string | undefined) => {
-    setUploadedImage(imageUrl)
-  }
+    setUploadedImage(imageUrl);
+  };
 
   const handleSessionChange = (newValue: string) => {
-    setSessionId(newValue)
-  }
+    setSessionId(newValue);
+  };
 
   const handleSendMessage = async () => {
     if (!message || !sessionId || !receiverList)
-      return toast.error('É preciso preencher todos os campos')
+      return toast.error("É preciso preencher todos os campos");
 
-    setIsSendingMessage(true)
+    setIsSendingMessage(true);
 
     const response = await createMessage({
       content: message,
       listId: receiverList.id,
       sessionId,
       url: uploadedImage,
-    })
+    });
 
     if (response.success) {
-      const res = await sendMessage({ messageId: response.value.id })
+      const res = await sendMessage({ messageId: response.value.id });
       if (res.success) {
-        toast.success('Iniciando o envio da mensagem.', {
-          toastId: 'messageSuccess',
-        })
-        setIsSendingMessage(false)
+        toast.success("Iniciando o envio da mensagem.", {
+          toastId: "messageSuccess",
+        });
+        setIsSendingMessage(false);
       }
-      return
+      return;
     }
 
-    setIsSendingMessage(false)
+    setIsSendingMessage(false);
 
     toast.error(`Erro ao enviar mensagem. ${response.error}`, {
-      toastId: 'messageError',
-    })
-  }
+      toastId: "messageError",
+    });
+  };
 
   return (
     <>
       <Row style={{ flex: 1 }}>
-        <Wrapper style={{ flex: 3, overflow: 'auto' }}>
+        <Wrapper style={{ flex: 3, overflow: "auto" }}>
           <Title>Enviar mensagem</Title>
 
-          <Column style={{ gap: '0.5rem' }}>
+          <Column style={{ gap: "0.5rem" }}>
             <Label>
-              Sessão<strong style={{ color: 'red' }}>*</strong>
+              Sessão<strong style={{ color: "red" }}>*</strong>
             </Label>
             <div>
               <Selector
@@ -165,7 +166,7 @@ export function Content() {
               />
             </div>
             <Label htmlFor="receiver">
-              Destinatário<strong style={{ color: 'red' }}>*</strong>
+              Destinatário<strong style={{ color: "red" }}>*</strong>
             </Label>
             {!receiverList.id ? (
               <AddList
@@ -180,9 +181,9 @@ export function Content() {
                 text={receiverList.title}
                 variant="ghost"
                 style={{
-                  width: 'fit-content',
-                  paddingInline: '1rem',
-                  fontWeight: '500',
+                  width: "fit-content",
+                  paddingInline: "1rem",
+                  fontWeight: "500",
                 }}
                 rightIcon={BiX}
                 iconColor={THEME.colors.title}
@@ -192,9 +193,9 @@ export function Content() {
             )}
           </Column>
 
-          <Column style={{ gap: '0.5rem', flex: 1 }}>
+          <Column style={{ gap: "0.5rem", flex: 1 }}>
             <Label htmlFor="message">
-              Mensagem<strong style={{ color: 'red' }}>*</strong>
+              Mensagem<strong style={{ color: "red" }}>*</strong>
             </Label>
             <TextBox
               placeholder="Digite uma mensagem para ser enviado à todos da lista"
@@ -207,15 +208,15 @@ export function Content() {
             />
           </Column>
 
-          <Row style={{ gap: '0.5rem', justifyContent: 'flex-end' }}>
+          <Row style={{ gap: "0.5rem", justifyContent: "flex-end" }}>
             <Clear
               text="Limpar tudo"
               variant="ghost"
               onClick={handleResetFields}
             />
             <Button
-              text={isSendingMessage ? 'Enviando' : 'Enviar'}
-              style={{ width: '6.625rem' }}
+              text={isSendingMessage ? "Enviando" : "Enviar"}
+              style={{ width: "6.625rem" }}
               isLoading={isSendingMessage}
               onClick={handleSendMessage}
             />
@@ -224,14 +225,14 @@ export function Content() {
         <Wrapper
           style={{
             flex: 1,
-            overflow: 'hidden',
+            overflow: "hidden",
           }}
         >
           <Title>Notificações</Title>
-          <Column style={{ gap: '0.5rem', overflowY: 'auto', height: '100%' }}>
+          <Column style={{ gap: "0.5rem", overflowY: "auto", height: "100%" }}>
             {notifications.length > 0 ? (
               notifications.map((notification: Notification) => {
-                const content: ParsedContent = JSON.parse(notification.content)
+                const content: ParsedContent = JSON.parse(notification.content);
 
                 return (
                   <NotificationCard
@@ -240,7 +241,7 @@ export function Content() {
                     totalChats={content.totalChats}
                     key={content.messageId}
                   />
-                )
+                );
               })
             ) : (
               <Empty
@@ -259,5 +260,5 @@ export function Content() {
         />
       )}
     </>
-  )
+  );
 }
