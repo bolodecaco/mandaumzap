@@ -21,14 +21,14 @@ jobs:
         with:
           context: ./server
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/back/mandaumzap:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/mandaumzap_back:latest
       
       - name: Build and push Docker image front
         uses: docker/build-push-action@v5
         with:
           context: ./web
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/front/mandaumzap:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/mandaumzap_front:latest
       
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
