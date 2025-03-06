@@ -31,18 +31,15 @@ public class KeycloakUserController {
         try {
             var userInfo = new HashMap<String, Object>();
 
-            // Dados básicos do token
             userInfo.put("username", jwt.getClaimAsString("preferred_username"));
             userInfo.put("email", jwt.getClaimAsString("email"));
             userInfo.put("firstName", jwt.getClaimAsString("given_name"));
             userInfo.put("lastName", jwt.getClaimAsString("family_name"));
             userInfo.put("roles", securityService.getCurrentUserRoles());
 
-            // Buscar dados personalizados do Keycloak
             String userId = jwt.getSubject();
             UserRepresentation user = keycloakUserService.getUserInfo(userId);
 
-            // Adicionar atributos personalizados específicos
             Map<String, List<String>> attributes = user.getAttributes();
             if (attributes != null) {
                 userInfo.put("nomeDaMae", getFirstAttributeValue(attributes, "nomeDaMae"));

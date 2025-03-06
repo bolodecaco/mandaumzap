@@ -23,4 +23,10 @@ public class MessageSentToBotDTO {
 
     @Schema(description = "Lista de destinatários", example = "[\"5511999999999@s.whatsapp.net\",\"31636136171888171313@g.us\"]")
     private List<String> receivers;
+
+    @Schema(description = "URL da imagem", example = "https://example.com/image.jpg")
+    private String url;
+
+    @Schema(description = "Identificador da mensagem", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+    private UUID messageId;
 }

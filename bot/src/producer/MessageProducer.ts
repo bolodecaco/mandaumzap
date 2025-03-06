@@ -1,4 +1,4 @@
-import { SQS } from "aws-sdk";
+import { SendMessageCommandInput } from "@aws-sdk/client-sqs";
 import crypto from "crypto";
 import { MessageToBeSentSQSProps } from "../@types/MessageSQSProps";
 import SQSClient from "../adapters/SqsClient";
@@ -8,19 +8,19 @@ class MessageProducer {
   private sqsClient: SQSClient;
   private logger = new Logger();
 
-  constructor() {
-    this.sqsClient = new SQSClient();
+  constructor(url: string) {
+    this.sqsClient = new SQSClient(url);
   }
 
-  async sendProgress(message: MessageToBeSentSQSProps) {
+  async sendMessage(message: MessageToBeSentSQSProps) {
     try {
-      const params: SQS.Types.SendMessageRequest = {
+      const params: SendMessageCommandInput = {
         QueueUrl: this.sqsClient.url,
-        MessageGroupId: message.messageGroupId,
+        MessageGroupId: crypto.randomUUID(),
         MessageDeduplicationId: crypto.randomUUID(),
-        MessageBody: JSON.stringify(message),
+        MessageBody: JSON.stringify(message.body),
       };
-      await this.sqsClient.sqs.sendMessage(params).promise();
+      await this.sqsClient.sqs.sendMessage(params);
     } catch (error: any) {
       this.logger.writeLog(`Error sending SQS message: ${error?.message}`);
     }

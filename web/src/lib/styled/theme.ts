@@ -8,6 +8,13 @@ export const THEME = {
     title: '#37475B',
     background: '#F6F8F8',
     border: '#F0F1F2',
+    darkBorder: '#BDBEBF',
+    input: '#FDFDFD',
+    toolbar: '#EAEAEA',
+    placeholder: '#A6A6A6',
+    keybind: '#D3DCE5',
+    hover: '#F5F5F5',
+    lastUpdateText: '#6A727C',
   },
 
   variants: {
@@ -33,6 +40,9 @@ export const THEME = {
         },
         active: {
           backgroundColor: '#07584F',
+        },
+        disabled: {
+          backgroundColor: '#A6A6A6',
         },
       },
       ghost: {

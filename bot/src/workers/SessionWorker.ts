@@ -6,13 +6,17 @@ import { SignalsProps } from "../@types/SignalsProps";
 import { fakeTyping } from "../utils/functions";
 import MessageProducer from "../producer/MessageProducer";
 import {
+  MessageHeaderProps,
   MessageMediaProps,
   MessagePollProps,
   MessageTextProps,
 } from "../@types/MessageSendProps";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 let session: Session;
-const Producer = new MessageProducer();
+const Producer = new MessageProducer(process.env.SQS_PROGRESS_URL!);
 
 const formatMessage = {
   text: (text: string) => ({ text }),
@@ -30,7 +34,7 @@ const formatMessage = {
 };
 
 async function genericSend<T>(
-  receivers: string[],
+  header: MessageHeaderProps,
   content: T,
   formatMessage: (content: T) => any
 ) {
@@ -39,11 +43,13 @@ async function genericSend<T>(
       type: "error",
       data: "Session not initialized",
     });
-
+  const { receivers, messageId, userId } = header;
   const progress = {
     sentChats: 0,
     unsentChats: 0,
     totalChats: receivers.length,
+    messageId,
+    userId,
   };
 
   for (const chat of receivers) {
@@ -53,14 +59,13 @@ async function genericSend<T>(
       const formattedMessage = formatMessage(content);
       await socket?.sendMessage(chat, formattedMessage);
       progress.sentChats++;
+      await Producer.sendMessage({
+        body: { ...progress },
+        type: "progress",
+      });
     } catch (error) {
       progress.unsentChats++;
     }
-    Producer.sendProgress({
-      body: { ...progress },
-      messageGroupId: crypto.randomUUID(),
-      type: "progress",
-    });
   }
 }
 
@@ -85,21 +90,13 @@ const signalsActions: SignalsProps = {
     parentPort?.postMessage({ type: "chats", data: chats });
   },
   sendText: async ({ header, text }: MessageTextProps) => {
-    await genericSend(header.receivers, text, formatMessage["text"]);
+    await genericSend(header, text, formatMessage["text"]);
   },
   sendImage: async ({ header, url, text }: MessageMediaProps) => {
-    await genericSend(
-      header.receivers,
-      { url, text, header },
-      formatMessage["image"]
-    );
+    await genericSend(header, { url, text, header }, formatMessage["image"]);
   },
   sendVideo: async ({ header, url, text }: MessageMediaProps) => {
-    await genericSend(
-      header.receivers,
-      { url, text, header },
-      formatMessage["video"]
-    );
+    await genericSend(header, { url, text, header }, formatMessage["video"]);
   },
   sendPoll: async ({
     header,
@@ -108,7 +105,7 @@ const signalsActions: SignalsProps = {
     values,
   }: MessagePollProps) => {
     await genericSend(
-      header.receivers!,
+      header,
       { name, values, selectableCount, header },
       formatMessage["poll"]
     );

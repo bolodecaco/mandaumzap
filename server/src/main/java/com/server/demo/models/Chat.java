@@ -1,13 +1,16 @@
 package com.server.demo.models;
 
+import java.util.List;
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -26,7 +29,7 @@ public class Chat {
     @Column(nullable = false)
     private String userId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
@@ -37,6 +40,8 @@ public class Chat {
     private String chatName;
 
     @Column(nullable = false)
-    private boolean isGroup;
+
+    @ManyToMany(mappedBy = "chats", cascade = CascadeType.ALL)
+    private List<BroadcastList> broadcastLists;
 
 }

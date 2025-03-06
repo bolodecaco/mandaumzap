@@ -1,26 +1,54 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
+import { jwtDecode } from 'jwt-decode'
 
-const protectedRoutes = ['/dashboard', '/history']
-const publicRoutes = ['/login']
+const publicRoutes = [
+  {
+    path: '/login',
+    whenAuthenticated: 'redirect',
+  },
+] as const
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route),
-  )
-  const isPublicRoute = publicRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route),
+  const accessToken = isLoggedIn && req.auth?.accessToken
+  const refreshToken = isLoggedIn && req.auth?.refreshToken
+  const publicRoute = publicRoutes.find(
+    (route) => req.nextUrl.pathname === route.path,
   )
 
-  if (isProtectedRoute && !isLoggedIn) {
+  if (!publicRoute && isLoggedIn && accessToken) {
+    try {
+      const decodedToken = jwtDecode(accessToken)
+      const expirationTime = (decodedToken.exp || 0) * 1000 // Convert to milliseconds
+
+      if (Date.now() >= expirationTime && !refreshToken) {
+        const callbackUrl = encodeURIComponent(req.nextUrl.pathname)
+        return NextResponse.redirect(
+          new URL(`/login?callbackUrl=${callbackUrl}`, req.url),
+        )
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      const callbackUrl = encodeURIComponent(req.nextUrl.pathname)
+      return NextResponse.redirect(
+        new URL(`/login?callbackUrl=${callbackUrl}`, req.url),
+      )
+    }
+  }
+
+  if (!publicRoute && !isLoggedIn) {
     const callbackUrl = encodeURIComponent(req.nextUrl.pathname)
     return NextResponse.redirect(
       new URL(`/login?callbackUrl=${callbackUrl}`, req.url),
     )
   }
 
-  if (isPublicRoute && isLoggedIn) {
+  if (
+    publicRoute &&
+    isLoggedIn &&
+    publicRoute.whenAuthenticated === 'redirect'
+  ) {
     const callbackUrl = req.nextUrl.searchParams.get('callbackUrl')
     if (callbackUrl) {
       return NextResponse.redirect(new URL(callbackUrl, req.url))

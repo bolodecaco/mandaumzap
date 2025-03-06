@@ -37,12 +37,14 @@ public class DynamicScheduler implements SchedulingConfigurer {
             registerTask.setScheduler(taskScheduler);
         }
         routineService.getAllRoutines().forEach(routine -> {
-            Runnable task = () -> messageService.sendMessage(routine.getMessageId());
+            Runnable task = () -> {
+                messageService.sendMessage(routine.getMessageId());
+                routineService.updateTimesSent(routine.getId(), routine.getTimesSent() + 1);
+            };
             registerTask.addCronTask(new CronTask(task, routine.getCron()));
         });
         if (registerTask != null) {
             registerTask.afterPropertiesSet();
         }
-
     }
 }

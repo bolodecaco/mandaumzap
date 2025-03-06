@@ -4,12 +4,18 @@ import WASocketWrapper from "./Socket";
 import qrcode from "qrcode-terminal";
 import { ConnectSessionProps } from "../@types/ConnectSessionProps";
 import { parentPort } from "worker_threads";
+import MessageProducer from "../producer/MessageProducer";
+import dotenv from "dotenv";
+import { ConnectionStatus } from "../@types/ConnectionStatus";
+
+dotenv.config();
 
 class Session {
   private id: string;
   private waSocket: WASocketWrapper;
   private socketClient: WASocket | null = null;
   private isConnected: boolean;
+  private producerStatus = new MessageProducer(process.env.SQS_STATUS_URL!);
 
   constructor(id: string) {
     this.id = id;
@@ -38,6 +44,13 @@ class Session {
     process.exit(0);
   }
 
+  async sendConnectionStatus(status: ConnectionStatus) {
+    return await this.producerStatus.sendMessage({
+      body: { status, sessionId: this.id },
+      type: "status",
+    });
+  }
+
   async connect(): Promise<ConnectSessionProps> {
     await this.waSocket.start();
     this.socketClient = this.waSocket.getSocket();
@@ -47,6 +60,7 @@ class Session {
           ?.statusCode;
         const { connection, qr } = update;
         if (connection === "open") {
+          await this.sendConnectionStatus("open");
           this.isConnected = true;
           return resolve({
             qrcode: "",
@@ -57,6 +71,7 @@ class Session {
         if (connection === "close") {
           if (DisconnectReason.restartRequired == statusCode)
             return this.connect();
+          await this.sendConnectionStatus("close");
           resolve({
             socket: this.socketClient!,
             qrcode: "",
@@ -65,10 +80,10 @@ class Session {
           this.delete();
         }
         if (qr && this.id) {
-          qrcode.generate(qr, { small: true });
           setTimeout(() => {
             if (!this.isConnected) this.delete();
           }, 50 * 1000); //50 seconds
+          await this.sendConnectionStatus("pending");
           resolve({
             socket: this.socketClient!,
             qrcode: qr,
@@ -76,21 +91,19 @@ class Session {
           });
         }
       });
-      this.socketClient!.ev.on("messaging-history.set", ({ contacts }) => {
-        const chats = contacts.map((contact) => {
-          return { id: contact.id, name: contact.name || "Desconhecido" };
-        });
-        this.waSocket.addChats(chats);
-      });
-      this.socketClient!.ev.on("contacts.upsert", (contacts) => {
-        const chats = contacts.map((contact) => {
-          return {
-            id: contact.id,
-            name: contact.notify || contact.verifiedName || "Desconhecido",
-          };
-        });
-        this.waSocket.addChats(chats);
-      });
+      this.socketClient!.ev.on(
+        "messaging-history.set",
+        async ({ contacts }) => {
+          const chats = contacts.map((contact) => {
+            return {
+              id: contact.id,
+              name: contact.name || contact.notify || "Desconhecido",
+            };
+          });
+          await this.waSocket.addChats(chats);
+          await this.sendConnectionStatus("open");
+        }
+      );
     });
   }
 }

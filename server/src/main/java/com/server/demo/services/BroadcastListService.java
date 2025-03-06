@@ -3,7 +3,12 @@ package com.server.demo.services;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.server.demo.dtos.AddChatToBroadcastListDTO;
@@ -18,9 +23,12 @@ import com.server.demo.models.BroadcastList;
 import com.server.demo.models.Chat;
 import com.server.demo.repositories.BroadcastListRepository;
 import com.server.demo.repositories.ChatRepository;
+import com.server.demo.specification.BroadcastListSpecification;
 
 @Service
 public class BroadcastListService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     @Autowired
     private BroadcastListRepository broadcastListRepository;
@@ -34,11 +42,16 @@ public class BroadcastListService {
     @Autowired
     private ChatMapper chatMapper;
 
-    public List<BroadcastListDTO> findAllByUserId(String userId) {
-        List<BroadcastList> list = broadcastListRepository.findAllByUserId(userId);
-        return broadcastListMapper.toDTOList(list);
+    public Page<BroadcastListDTO> findAllByUserId(String userId, Pageable pageable, String search) {
+        try {
+            Specification<BroadcastList> specification = BroadcastListSpecification.withFilters(userId, search);
+            Page<BroadcastList> listsPage = broadcastListRepository.findAll(specification, pageable);
+            return listsPage.map(broadcastListMapper::toDTO);
+        } catch (Exception e) {
+            logger.error("Erro ao buscar listas: {}", e.getMessage());
+            throw new BusinessException("Erro ao buscar listas");
+        }
     }
-
 
     public BroadcastListDTO getListById(UUID id, String userId) {
         BroadcastList list = broadcastListRepository.findByIdAndUserId(id, userId)
@@ -74,13 +87,23 @@ public class BroadcastListService {
         broadcastListRepository.delete(list);
     }
 
-    public BroadcastListDTO addChat(UUID id, AddChatToBroadcastListDTO chatDto, String userId) {
+    public BroadcastListDTO addChats(UUID id, List<AddChatToBroadcastListDTO> chatsDto, String userId) {
         BroadcastList list = broadcastListRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new BusinessException(String.format("Lista de transmissão com id %s não encontrada", id)));
-        Chat chat = chatRepository.findById((chatDto.getChatId()))
-                .orElseThrow(() -> new BusinessException(String.format("Chat com id %s não encontrado", chatDto.getChatId())));
-        list.getChats().add(chat);
+
+        List<Chat> chatsToAdd = chatsDto.stream()
+                .map(chatDto -> chatRepository.findById(chatDto.getChatId())
+                .orElseThrow(() -> new BusinessException(String.format("Chat com id %s não encontrado", chatDto.getChatId()))))
+                .filter(chat -> !list.getChats().contains(chat))
+                .toList();
+
+        if (chatsToAdd.isEmpty()) {
+            throw new BusinessException("Nenhum novo chat foi adicionado, pois todos já estão na lista.");
+        }
+
+        list.getChats().addAll(chatsToAdd);
         broadcastListRepository.save(list);
+
         return broadcastListMapper.toDTO(list);
     }
 

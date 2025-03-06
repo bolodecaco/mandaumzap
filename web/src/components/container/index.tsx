@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { BiHome } from 'react-icons/bi'
-import { PiClockCounterClockwise } from 'react-icons/pi'
+import { PiAddressBook, PiClockCounterClockwise } from 'react-icons/pi'
 import { Sidebar } from '../sideBar'
 import { StyledPage } from './styles'
 
@@ -16,6 +16,11 @@ const NAV_ITEMS = [
   },
   {
     id: 2,
+    href: '/contacts',
+    icon: PiAddressBook,
+  },
+  {
+    id: 3,
     href: '/history',
     icon: PiClockCounterClockwise,
   },
@@ -24,7 +29,7 @@ const NAV_ITEMS = [
 export const Container = ({ children }: ContainerProps) => {
   return (
     <StyledPage>
-      <Sidebar footerItems={[]} navItems={NAV_ITEMS} />
+      <Sidebar navItems={NAV_ITEMS} />
       {children}
     </StyledPage>
   )

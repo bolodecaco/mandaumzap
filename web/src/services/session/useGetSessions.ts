@@ -1,14 +1,16 @@
-import { fetcher } from '@/lib/api'
+import { Session } from '@/@types/session'
+import { getAllSesions } from '@/app/actions/sessions/getAllSessions'
 import { useQuery } from '@tanstack/react-query'
 
 export const useGetSessions = () => {
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryKey: ['sessions'],
-    queryFn: () => fetcher('/user/sessions', { method: 'GET' }),
+    queryFn: () => getAllSesions(),
   })
   return {
-    data,
-    error,
+    data: data?.success ? (data.value as Session[]) : undefined,
+    error: !data?.success ? data?.error : error,
+    refetch,
     isLoading,
   }
 }

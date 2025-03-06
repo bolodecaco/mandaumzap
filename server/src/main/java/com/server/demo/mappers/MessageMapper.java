@@ -14,17 +14,18 @@ import com.server.demo.models.Message;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MessageMapper {
-    
+
     @Mapping(target = "sessionId", source = "session.id")
     @Mapping(target = "broadcastListId", source = "broadcastList.id")
+    @Mapping(target = "lastSent", source = "lastSentAt")
     MessageDTO toDTO(Message message);
-    
+
     @Mapping(target = "session.id", source = "sessionId")
     @Mapping(target = "broadcastList.id", source = "broadcastListId")
     Message toEntity(RequestMessageDTO messageDTO);
-    
+
     RequestMessageDTO toRequestDTO(MessageDTO messageDTO);
-    
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     List<MessageDTO> toDTOList(List<Message> messages);

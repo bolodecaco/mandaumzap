@@ -1,4 +1,7 @@
+type Status = 'pending' | 'close' | 'open' | 'error'
+
 export interface Session {
   id: string
-  active: boolean
+  status: Status
+  qrcode?: string
 }

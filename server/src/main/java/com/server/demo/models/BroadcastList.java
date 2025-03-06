@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,9 +30,9 @@ public class BroadcastList {
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId; 
+    private String userId;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "broadcast_list_chats",
             joinColumns = @JoinColumn(name = "list_id"),
