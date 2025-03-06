@@ -125,4 +125,10 @@ class MessageControllerTest {
         mockMvc.perform(delete("/api/user/messages/" + messageDTO.getId()))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    void shouldDeleteAllMessages() throws Exception {
+        mockMvc.perform(delete("/api/user/messages"))
+                .andExpect(status().isNoContent());
+    }
 }

@@ -104,6 +104,11 @@ public class MessageService {
         return messageMapper.toDTOList(messages);
     }
 
+    public void clearHistory(String userId) {
+        List<Message> messages = messageRepository.findByUserId(userId);
+        messageRepository.deleteAll(messages);
+    }
+
     public void requestSendMessageBot(MessageSentToBotDTO message, String path) {
         webClientBuilder
                 .baseUrl(botUrl)
