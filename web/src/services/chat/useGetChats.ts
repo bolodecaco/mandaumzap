@@ -6,12 +6,14 @@ interface UseGetChatsParams {
   sort?: Sort
   search?: string
   pageSize?: number
+  enabled?: boolean
 }
 
 export const useGetChats = ({
   sessionId,
   sort,
   search,
+  enabled,
   pageSize = 10,
 }: UseGetChatsParams) => {
   return useInfiniteQuery({
@@ -34,5 +36,6 @@ export const useGetChats = ({
     getNextPageParam: (lastPage) =>
       lastPage.last ? undefined : lastPage.number + 1,
     initialPageParam: 0,
+    enabled,
   })
 }

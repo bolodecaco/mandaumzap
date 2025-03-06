@@ -75,6 +75,7 @@ const Chats = () => {
     sessionId: session || undefined,
     sort: (orderBy as Sort) || undefined,
     search: debouncedSearch || undefined,
+    enabled: !!session,
   })
 
   const SESSION_OPTIONS = useMemo(
