@@ -28,7 +28,34 @@ export const DivInfo = styled.div`
   gap: 0.5rem;
 `
 export const Text = styled.span`
-  font-weight: 600;
+  font-weight: bold;
   font-size: 0.875rem;
   color: ${({ theme }) => theme.colors.title};
+`
+export const Section = styled.div`
+  margin-bottom: 1rem;
+`
+
+export const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: normal;
+  color: ${({ theme }) => theme.colors.title};
+  margin-bottom: 0.5rem;
+  gap: 0.25rem;
+  display: flex;
+  align-items: center;
+`
+
+export const CardGrid = styled.div<{ $expanded: boolean }>`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  opacity: ${({ $expanded }) => ($expanded ? '1' : '0')};
+  margin-top: ${({ $expanded }) => ($expanded ? '0' : '-1rem')};
+  height: ${({ $expanded }) => ($expanded ? 'auto' : '0')};
+  pointer-events: ${({ $expanded }) => ($expanded ? 'all' : 'none')};
+  transition: all 0.2s ease-in-out;
 `
