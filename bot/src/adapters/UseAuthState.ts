@@ -7,11 +7,15 @@ import {
 } from "@whiskeysockets/baileys";
 import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
+import dotenv from 'dotenv'
+
+dotenv.config({ override: true})
 
 const {
   DB_URI = "mongodb://admin:pass@localhost:27017",
   DB_NAME = "mandaumzap",
 } = process.env;
+
 
 export class UseAuthState {
   sessionId: string;

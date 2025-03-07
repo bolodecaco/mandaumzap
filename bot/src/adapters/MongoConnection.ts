@@ -3,11 +3,15 @@ import { MongoClient, Collection } from "mongodb";
 import { Logger } from "pino";
 import { ChatProps } from "../@types/ChatProps";
 import { UserMongoProps } from "../@types/UserMongoProps";
+import dotenv from 'dotenv'
+
+dotenv.config({ override: true})
 
 const {
   DB_URI = "mongodb://admin:pass@localhost:27017",
   DB_NAME = "mandaumzap",
 } = process.env;
+
 
 class MongoConnection {
   sessionId: string;
